@@ -1,0 +1,29 @@
+
+---
+
+## 3. Fichier `.env.example`
+
+**Nom du fichier :** `.env.example` (avec le point au début et `.example` à la fin)
+**Emplacement :** Dans le dossier `backend/`
+
+```env
+# ============================================================
+# Configuration du serveur
+# ============================================================
+PORT=3000
+
+# ============================================================
+# Clés API Intelligence Artificielle
+# ============================================================
+# Groq (recommandé, gratuit : https://console.groq.com)
+GROQ_API_KEY=
+
+# OpenRouter (optionnel, fallback : https://openrouter.ai)
+OPENROUTER_API_KEY=
+
+# ============================================================
+# Envoi d'emails (optionnel)
+# ============================================================
+# Resend (gratuit 100 emails/mois : https://resend.com)
+RESEND_API_KEY=
+RESEND_FROM_EMAIL=

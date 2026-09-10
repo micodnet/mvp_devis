@@ -1,0 +1,9 @@
+{
+  "products": [
+    { "ref": "REF-1001", "name": "Ampoule LED 10W", "unitPrice": 12.50 },
+    { "ref": "REF-1002", "name": "Câble HDMI 2m", "unitPrice": 8.90 },
+    { "ref": "REF-1003", "name": "Disque SSD 1To", "unitPrice": 89.99 },
+    { "ref": "REF-1004", "name": "Souris sans fil", "unitPrice": 24.99 },
+    { "ref": "REF-1005", "name": "Clavier mécanique", "unitPrice": 59.90 }
+  ]
+}
