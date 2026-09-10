@@ -6,7 +6,6 @@
     <title>Devis Express Pro</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet" />
     <style>
-        /* ========== STYLES GÉNÉRAUX ========== */
         * { margin:0; padding:0; box-sizing:border-box; font-family:'Inter',sans-serif; }
         body {
             background:#0b1120;
@@ -15,86 +14,89 @@
             display:flex;
             justify-content:center;
             align-items:flex-start;
+            color:#e2e8f0;
         }
-        .app {
-            max-width:1200px;
+
+        /* ============ AUTH SCREEN ============ */
+        #authScreen {
+            max-width:440px;
             width:100%;
+            margin:80px auto 0;
             background:#161f32;
             border-radius:32px;
-            padding:28px 32px;
+            padding:40px 32px;
             border:1px solid rgba(255,255,255,0.06);
             box-shadow:0 40px 80px rgba(0,0,0,0.7);
         }
-        /* ========== EN-TÊTE ========== */
+        #authScreen h1 { color:#fff; font-size:26px; margin-bottom:6px; }
+        #authScreen h1 span { color:#f97316; }
+        #authScreen .sub { color:#94a3b8; font-size:14px; margin-bottom:24px; }
+        #authScreen .form-group { margin-bottom:14px; }
+        #authScreen label { display:block; color:#94a3b8; font-size:13px; margin-bottom:4px; }
+        #authScreen input {
+            width:100%; padding:12px 16px; border-radius:12px;
+            background:#0b1120; border:1px solid #2a3a55; color:#e2e8f0; font-size:14px;
+        }
+        #authScreen input:focus { outline:2px solid #f97316; border-color:transparent; }
+        #authScreen button {
+            width:100%; padding:14px; border-radius:60px; border:none;
+            background:#f97316; color:#0b1120; font-weight:700; font-size:15px;
+            cursor:pointer; margin-top:8px; transition:0.2s;
+        }
+        #authScreen button:hover { background:#ea580c; }
+        #authScreen .toggle {
+            text-align:center; margin-top:16px; color:#94a3b8; font-size:13px;
+        }
+        #authScreen .toggle a { color:#f97316; cursor:pointer; font-weight:600; text-decoration:none; }
+        #authScreen .error {
+            background:#1f1220; color:#f87171; padding:10px 14px; border-radius:10px;
+            border:1px solid #3f1e24; margin-bottom:14px; font-size:13px; display:none;
+        }
+
+        /* ============ APP PRINCIPALE ============ */
+        .app {
+            max-width:1200px; width:100%;
+            background:#161f32; border-radius:32px; padding:28px 32px;
+            border:1px solid rgba(255,255,255,0.06);
+            box-shadow:0 40px 80px rgba(0,0,0,0.7);
+            display:none;
+        }
         .header {
-            display:flex;
-            justify-content:space-between;
-            align-items:center;
+            display:flex; justify-content:space-between; align-items:center;
             border-bottom:1px solid rgba(255,255,255,0.06);
-            padding-bottom:16px;
-            margin-bottom:24px;
-            flex-wrap:wrap;
-            gap:12px;
+            padding-bottom:16px; margin-bottom:24px; flex-wrap:wrap; gap:12px;
         }
-        .logo-area h1 {
-            font-size:26px;
-            font-weight:700;
-            color:#fff;
-        }
+        .logo-area h1 { font-size:26px; font-weight:700; color:#fff; }
         .logo-area h1 span { color:#f97316; }
-        .logo-area .sub { color:#94a3b8; font-size:13px; }
-        /* Onglets */
-        .tabs {
-            display:flex;
-            gap:6px;
-            background:#0b1120;
-            padding:4px;
-            border-radius:60px;
+        .logo-area .sub { color:#94a3b8; font-size:12px; }
+        .user-area {
+            display:flex; align-items:center; gap:12px; color:#94a3b8; font-size:13px;
         }
+        .user-area .email { color:#e2e8f0; font-weight:500; }
+        .user-area .logout {
+            background:#1a253b; border:1px solid #2a3a55; color:#e2e8f0;
+            padding:6px 14px; border-radius:60px; cursor:pointer; font-size:12px;
+            font-weight:600; transition:0.2s;
+        }
+        .user-area .logout:hover { background:#3f1e24; border-color:#7f1d1d; color:#f87171; }
+
+        .tabs { display:flex; gap:6px; background:#0b1120; padding:4px; border-radius:60px; margin-top:12px; }
         .tab-btn {
-            background:transparent;
-            border:none;
-            padding:8px 20px;
-            border-radius:40px;
-            color:#94a3b8;
-            font-weight:600;
-            font-size:14px;
-            cursor:pointer;
-            transition:0.2s;
+            background:transparent; border:none; padding:8px 20px; border-radius:40px;
+            color:#94a3b8; font-weight:600; font-size:14px; cursor:pointer; transition:0.2s;
         }
-        .tab-btn.active {
-            background:#f97316;
-            color:#0b1120;
-        }
+        .tab-btn.active { background:#f97316; color:#0b1120; }
         .tab-btn:hover:not(.active) { background:#1e2a41; color:#e2e8f0; }
-        /* Contenu des onglets */
+
         .tab-content { display:none; margin-top:8px; }
         .tab-content.active { display:block; }
 
-        /* ========== CARTES ========== */
-        .card {
-            background:#111b2e;
-            border-radius:20px;
-            padding:24px;
-            border:1px solid #1e2a41;
-            margin-bottom:20px;
-        }
-        .card-title {
-            font-size:18px;
-            font-weight:600;
-            color:#e2e8f0;
-            margin-bottom:16px;
-        }
+        .card { background:#111b2e; border-radius:20px; padding:24px; border:1px solid #1e2a41; margin-bottom:20px; }
+        .card-title { font-size:18px; font-weight:600; color:#e2e8f0; margin-bottom:16px; }
 
-        /* ========== DEVIS (onglet 1) ========== */
         .drop-zone {
-            border:2px dashed #2a3a55;
-            border-radius:20px;
-            padding:32px;
-            text-align:center;
-            background:#0b1120;
-            cursor:pointer;
-            transition:0.25s;
+            border:2px dashed #2a3a55; border-radius:20px; padding:32px; text-align:center;
+            background:#0b1120; cursor:pointer; transition:0.25s;
         }
         .drop-zone.dragover { border-color:#f97316; background:#1e2a3f; }
         .drop-zone .icon { font-size:40px; color:#3b82f6; }
@@ -102,215 +104,163 @@
         .drop-zone span { color:#64748b; font-size:13px; }
         #file-name { margin-top:8px; color:#3b82f6; font-weight:500; }
         .btn-orange {
-            background:#f97316;
-            color:#0b1120;
-            border:none;
-            padding:14px 28px;
-            border-radius:60px;
-            font-weight:700;
-            font-size:16px;
-            width:100%;
-            cursor:pointer;
-            transition:0.2s;
-            margin-top:16px;
+            background:#f97316; color:#0b1120; border:none; padding:14px 28px;
+            border-radius:60px; font-weight:700; font-size:16px; width:100%;
+            cursor:pointer; transition:0.2s; margin-top:16px;
         }
         .btn-orange:hover { background:#ea580c; transform:translateY(-2px); box-shadow:0 8px 30px rgba(249,115,22,0.3); }
         .btn-orange:disabled { background:#334155; color:#94a3b8; cursor:not-allowed; transform:none; box-shadow:none; }
 
-        /* Logs IA */
-        #ia-panel {
-            margin-top:16px;
-            background:#0b1120;
-            border-radius:16px;
-            border:1px solid #1e2a41;
-            overflow:hidden;
-            display:none;
-        }
+        #ia-panel { margin-top:16px; background:#0b1120; border-radius:16px; border:1px solid #1e2a41; overflow:hidden; display:none; }
         #ia-panel .ia-header {
-            background:#111b2e;
-            padding:10px 16px;
-            display:flex;
-            justify-content:space-between;
-            border-bottom:1px solid #1e2a41;
-            color:#94a3b8;
-            font-weight:600;
-            font-size:13px;
+            background:#111b2e; padding:10px 16px; display:flex; justify-content:space-between;
+            border-bottom:1px solid #1e2a41; color:#94a3b8; font-weight:600; font-size:13px;
         }
         #ia-console {
-            padding:12px 16px;
-            max-height:160px;
-            overflow-y:auto;
-            background:#080e1a;
-            font-size:12px;
-            color:#cbd5e1;
-            font-family:monospace;
-            line-height:1.8;
+            padding:12px 16px; max-height:160px; overflow-y:auto; background:#080e1a;
+            font-size:12px; color:#cbd5e1; font-family:monospace; line-height:1.8;
         }
         #ia-console .log-time { color:#64748b; margin-right:12px; }
-        #ia-console .log-msg .highlight { color:#f97316; font-weight:600; }
 
-        /* Résultats */
-        #result {
-            margin-top:20px;
-            display:none;
-        }
+        #result { margin-top:20px; display:none; }
         #result table { width:100%; border-collapse:collapse; font-size:14px; }
         #result th { text-align:left; padding:10px; color:#94a3b8; background:#0b1120; font-size:12px; text-transform:uppercase; }
         #result td { padding:10px; border-bottom:1px solid #1e2a41; color:#e2e8f0; }
         .total-box {
-            background:#0b1120;
-            padding:16px 24px;
-            border-radius:16px;
-            display:flex;
-            justify-content:flex-end;
-            align-items:center;
-            gap:20px;
-            border:1px solid #f97316;
-            border-right:6px solid #f97316;
-            margin-top:16px;
+            background:#0b1120; padding:16px 24px; border-radius:16px;
+            display:flex; justify-content:flex-end; align-items:center; gap:20px;
+            border:1px solid #f97316; border-right:6px solid #f97316; margin-top:16px;
         }
         .total-box .label { color:#94a3b8; font-weight:500; }
         .total-box .amount { font-size:28px; font-weight:700; color:#fff; }
-        .actions {
-            display:flex;
-            gap:12px;
-            margin-top:16px;
-            flex-wrap:wrap;
-        }
+        .actions { display:flex; gap:12px; margin-top:16px; flex-wrap:wrap; }
         .actions a {
-            flex:1;
-            text-align:center;
-            padding:12px;
-            border-radius:60px;
-            background:#1a253b;
-            border:1px solid #2a3a55;
-            color:#e2e8f0;
-            font-weight:600;
-            font-size:14px;
-            text-decoration:none;
-            cursor:pointer;
-            transition:0.2s;
-            min-width:140px;
+            flex:1; text-align:center; padding:12px; border-radius:60px;
+            background:#1a253b; border:1px solid #2a3a55; color:#e2e8f0;
+            font-weight:600; font-size:14px; text-decoration:none; cursor:pointer;
+            transition:0.2s; min-width:140px;
         }
         .actions a:hover { background:#24324b; border-color:#3b82f6; }
         .actions .primary { background:#3b82f6; border-color:#3b82f6; color:#fff; }
         .actions .primary:hover { background:#2563eb; }
 
-        /* ========== PARAMÈTRES ========== */
         .form-group { margin-bottom:16px; }
         .form-group label { display:block; color:#94a3b8; font-weight:500; font-size:13px; margin-bottom:4px; }
-        .form-group input, .form-group textarea {
-            width:100%;
-            padding:10px 14px;
-            border-radius:12px;
-            background:#0b1120;
-            border:1px solid #2a3a55;
-            color:#e2e8f0;
-            font-size:14px;
+        .form-group input {
+            width:100%; padding:10px 14px; border-radius:12px; background:#0b1120;
+            border:1px solid #2a3a55; color:#e2e8f0; font-size:14px;
         }
-        .form-group input:focus, .form-group textarea:focus { outline:2px solid #f97316; border-color:transparent; }
+        .form-group input:focus { outline:2px solid #f97316; border-color:transparent; }
         .form-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
-        .btn-save { background:#3b82f6; color:#fff; border:none; padding:12px 24px; border-radius:60px; font-weight:600; cursor:pointer; }
+        .btn-save {
+            background:#3b82f6; color:#fff; border:none; padding:12px 24px;
+            border-radius:60px; font-weight:600; cursor:pointer;
+        }
         .btn-save:hover { background:#2563eb; }
 
-        /* ========== HISTORIQUE ========== */
         .history-item {
-            display:flex;
-            justify-content:space-between;
-            padding:12px 0;
-            border-bottom:1px solid #1e2a41;
-            color:#e2e8f0;
-            align-items:center;
+            display:flex; justify-content:space-between; padding:12px 0;
+            border-bottom:1px solid #1e2a41; color:#e2e8f0; align-items:center;
         }
         .history-item .h-number { font-weight:600; color:#f97316; }
-        .history-item .h-date { color:#94a3b8; font-size:13px; }
+        .history-item .h-date { color:#94a3b8; font-size:13px; margin-left:12px; }
         .history-item .h-total { font-weight:600; }
-        .history-item .h-actions a { margin-left:12px; color:#3b82f6; text-decoration:none; font-size:13px; }
 
-        /* ========== DASHBOARD ========== */
-        .stats-grid {
-            display:grid;
-            grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
-            gap:16px;
-            margin-bottom:24px;
-        }
-        .stat-card {
-            background:#0b1120;
-            padding:20px;
-            border-radius:16px;
-            text-align:center;
-            border:1px solid #1e2a41;
-        }
+        .stats-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:16px; margin-bottom:24px; }
+        .stat-card { background:#0b1120; padding:20px; border-radius:16px; text-align:center; border:1px solid #1e2a41; }
         .stat-card .number { font-size:32px; font-weight:700; color:#fff; }
         .stat-card .label { color:#94a3b8; font-size:13px; margin-top:4px; }
         .top-products li {
-            display:flex;
-            justify-content:space-between;
-            padding:8px 0;
-            border-bottom:1px solid #1e2a41;
-            color:#e2e8f0;
+            display:flex; justify-content:space-between; padding:8px 0;
+            border-bottom:1px solid #1e2a41; color:#e2e8f0;
         }
-        .top-products .product-name { font-weight:500; }
         .top-products .product-qty { color:#94a3b8; }
 
-        /* ========== RESPONSIVE ========== */
         @media (max-width:768px) {
             .header { flex-direction:column; align-items:stretch; }
             .tabs { overflow-x:auto; }
             .form-row { grid-template-columns:1fr; }
         }
-        .error-msg { color:#f87171; background:#1f1220; padding:12px 16px; border-radius:12px; border:1px solid #3f1e24; margin-top:12px; display:none; }
+        .error-msg {
+            color:#f87171; background:#1f1220; padding:12px 16px; border-radius:12px;
+            border:1px solid #3f1e24; margin-top:12px; display:none;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
-<div class="app">
-    <!-- EN-TÊTE -->
+
+<!-- ==================== ÉCRAN D'AUTHENTIFICATION ==================== -->
+<div id="authScreen">
+    <h1>Devis <span>Express</span> Pro</h1>
+    <div class="sub">Connectez-vous ou créez votre compte</div>
+
+    <div class="error" id="authError"></div>
+
+    <form id="authForm">
+        <div class="form-group">
+            <label>Email</label>
+            <input type="email" id="authEmail" required placeholder="vous@entreprise.com" />
+        </div>
+        <div class="form-group">
+            <label>Mot de passe</label>
+            <input type="password" id="authPassword" required placeholder="••••••••" minlength="6" />
+        </div>
+        <button type="submit" id="authSubmitBtn">Se connecter</button>
+    </form>
+
+    <div class="toggle">
+        <span id="toggleText">Pas encore de compte ?</span>
+        <a id="toggleAuth">Créer un compte</a>
+    </div>
+</div>
+
+<!-- ==================== APPLICATION PRINCIPALE ==================== -->
+<div class="app" id="appContainer">
     <div class="header">
         <div class="logo-area">
             <h1>Devis <span>Express</span> Pro</h1>
             <div class="sub">⚡ IA + Gestion complète</div>
         </div>
-        <div class="tabs">
-            <button class="tab-btn active" data-tab="tab-devis">📄 Devis</button>
-            <button class="tab-btn" data-tab="tab-settings">⚙️ Paramètres</button>
-            <button class="tab-btn" data-tab="tab-history">📜 Historique</button>
-            <button class="tab-btn" data-tab="tab-dashboard">📊 Dashboard</button>
+        <div class="user-area">
+            <span class="email" id="userEmail"></span>
+            <button class="logout" id="logoutBtn">Déconnexion</button>
         </div>
     </div>
 
-    <!-- ==================== ONGLET DEVIS ==================== -->
+    <div class="tabs">
+        <button class="tab-btn active" data-tab="tab-devis">📄 Devis</button>
+        <button class="tab-btn" data-tab="tab-settings">⚙️ Paramètres</button>
+        <button class="tab-btn" data-tab="tab-history">📜 Historique</button>
+        <button class="tab-btn" data-tab="tab-dashboard">📊 Dashboard</button>
+    </div>
+
+    <!-- ONGLET DEVIS -->
     <div id="tab-devis" class="tab-content active">
         <div class="card">
             <div class="drop-zone" id="dropZone">
                 <div class="icon">📄</div>
                 <p>Déposez votre fichier (PDF, Word, Excel, CSV, TXT)</p>
                 <span>ou cliquez pour parcourir</span>
-                <input type="file" id="fileInput" class="file-input" accept=".pdf,.doc,.docx,.txt,.csv,.xlsx,.xls" style="display:none;" />
+                <input type="file" id="fileInput" style="display:none;" accept=".pdf,.doc,.docx,.txt,.csv,.xlsx,.xls" />
                 <div id="file-name"></div>
             </div>
             <button class="btn-orange" id="generateBtn" disabled>🚀 Générer le devis</button>
 
-            <!-- Panneau IA -->
             <div id="ia-panel">
-                <div class="ia-header">
-                    <span>🧠 Journal d’exécution de l’IA</span>
-                    <span style="color:#22c55e;">● actif</span>
-                </div>
-                <div id="ia-console">
-                    <div><span class="log-time">Système</span> En attente d’analyse...</div>
-                </div>
+                <div class="ia-header"><span>🧠 Journal d'exécution de l'IA</span><span style="color:#22c55e;">● actif</span></div>
+                <div id="ia-console"><div><span class="log-time">Système</span> En attente...</div></div>
             </div>
 
             <div class="error-msg" id="errorMsg"></div>
 
-            <!-- Résultats -->
             <div id="result">
                 <h3 style="color:#e2e8f0; margin-bottom:12px;">📋 Devis généré</h3>
                 <div style="display:flex; justify-content:space-between; color:#94a3b8; font-size:13px; margin-bottom:8px;">
-                    <span>N° <span id="quoteNumber"></span></span>
+                    <span>N° <span id="quoteNumber" style="color:#f97316; font-weight:600;"></span></span>
                     <span>Émis le <span id="issueDate"></span> - Valable jusqu'au <span id="validDate"></span></span>
                 </div>
-                <div class="table-wrap" style="overflow-x:auto;">
+                <div style="overflow-x:auto;">
                     <table>
                         <thead><tr><th>Référence</th><th>Désignation</th><th style="text-align:center;">Qté</th><th style="text-align:right;">P.U. HT</th><th style="text-align:right;">Total HT</th></tr></thead>
                         <tbody id="itemsBody"></tbody>
@@ -320,7 +270,6 @@
                     <span class="label">TOTAL TTC</span>
                     <span class="amount" id="totalAmount">0,00 €</span>
                 </div>
-                <!-- Envoi par email -->
                 <div style="margin-top:16px; display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
                     <input type="email" id="clientEmail" placeholder="Email du client" style="flex:1; min-width:200px; padding:10px 14px; border-radius:60px; background:#0b1120; border:1px solid #2a3a55; color:#e2e8f0;" />
                     <button class="btn-orange" id="sendEmailBtn" style="flex:0 0 auto; width:auto; padding:10px 24px; margin-top:0;">✉️ Envoyer</button>
@@ -333,103 +282,183 @@
         </div>
     </div>
 
-    <!-- ==================== ONGLET PARAMÈTRES ==================== -->
+    <!-- ONGLET PARAMÈTRES -->
     <div id="tab-settings" class="tab-content">
         <div class="card">
             <div class="card-title">🏢 Paramètres de l'entreprise</div>
             <form id="settingsForm">
-                <div class="form-group">
-                    <label>Nom de l'entreprise *</label>
-                    <input type="text" id="companyName" required />
-                </div>
-                <div class="form-group">
-                    <label>Adresse</label>
-                    <input type="text" id="companyAddress" />
+                <div class="form-group"><label>Nom de l'entreprise *</label><input type="text" id="companyName" required /></div>
+                <div class="form-group"><label>Adresse</label><input type="text" id="companyAddress" /></div>
+                <div class="form-row">
+                    <div class="form-group"><label>SIRET</label><input type="text" id="companySiret" /></div>
+                    <div class="form-group"><label>Numéro de TVA</label><input type="text" id="companyTva" /></div>
                 </div>
                 <div class="form-row">
-                    <div class="form-group">
-                        <label>SIRET</label>
-                        <input type="text" id="companySiret" />
-                    </div>
-                    <div class="form-group">
-                        <label>Numéro de TVA</label>
-                        <input type="text" id="companyTva" />
-                    </div>
+                    <div class="form-group"><label>Téléphone</label><input type="text" id="companyPhone" /></div>
+                    <div class="form-group"><label>Email</label><input type="email" id="companyEmail" /></div>
                 </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Téléphone</label>
-                        <input type="text" id="companyPhone" />
-                    </div>
-                    <div class="form-group">
-                        <label>Email</label>
-                        <input type="email" id="companyEmail" />
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>Site web</label>
-                    <input type="text" id="companyWebsite" />
-                </div>
-                <div class="form-group">
-                    <label>Logo (image PNG ou JPEG)</label>
-                    <input type="file" id="logoInput" accept="image/png,image/jpeg" />
-                    <div id="logoPreview" style="margin-top:8px;"></div>
-                </div>
+                <div class="form-group"><label>Site web</label><input type="text" id="companyWebsite" /></div>
+                <div class="form-group"><label>Logo (PNG ou JPEG)</label><input type="file" id="logoInput" accept="image/png,image/jpeg" /><div id="logoPreview" style="margin-top:8px;"></div></div>
                 <button type="submit" class="btn-save">💾 Enregistrer les paramètres</button>
             </form>
         </div>
     </div>
 
-    <!-- ==================== ONGLET HISTORIQUE ==================== -->
+    <!-- ONGLET HISTORIQUE -->
     <div id="tab-history" class="tab-content">
         <div class="card">
-            <div class="card-title">📜 Historique des devis</div>
-            <div id="historyList">
-                <p style="color:#64748b;">Chargement...</p>
-            </div>
+            <div class="card-title">📜 Historique de vos devis</div>
+            <div id="historyList"><p style="color:#64748b;">Chargement...</p></div>
         </div>
     </div>
 
-    <!-- ==================== ONGLET DASHBOARD ==================== -->
+    <!-- ONGLET DASHBOARD -->
     <div id="tab-dashboard" class="tab-content">
         <div class="card">
-            <div class="card-title">📊 Statistiques</div>
-            <div class="stats-grid" id="statsGrid">
+            <div class="card-title">📊 Vos statistiques</div>
+            <div class="stats-grid">
                 <div class="stat-card"><div class="number" id="statTotalQuotes">0</div><div class="label">Devis générés</div></div>
                 <div class="stat-card"><div class="number" id="statTotalAmount">0,00 €</div><div class="label">Montant total</div></div>
             </div>
             <div class="card-title" style="margin-top:20px;">🏆 Produits les plus demandés</div>
-            <ul class="top-products" id="topProductsList">
-                <li style="color:#64748b;">Aucune donnée pour le moment.</li>
-            </ul>
+            <ul class="top-products" id="topProductsList"><li style="color:#64748b;">Aucune donnée.</li></ul>
         </div>
     </div>
 </div>
 
 <script>
 // ================================================================
-// 1. GESTION DES ONGLETS
+// 1. GESTION DU TOKEN (localStorage)
 // ================================================================
-const tabBtns = document.querySelectorAll('.tab-btn');
-const tabContents = document.querySelectorAll('.tab-content');
-tabBtns.forEach(btn => {
+function getToken() { return localStorage.getItem('devis_token'); }
+function setToken(t) { localStorage.setItem('devis_token', t); }
+function clearToken() { localStorage.removeItem('devis_token'); localStorage.removeItem('devis_user'); }
+function getUser() {
+    try { return JSON.parse(localStorage.getItem('devis_user')); } catch(e) { return null; }
+}
+
+// Fonction fetch qui ajoute automatiquement le token
+async function apiFetch(url, options = {}) {
+    const token = getToken();
+    const headers = { ...(options.headers || {}) };
+    if (token) headers['Authorization'] = 'Bearer ' + token;
+    const response = await fetch(url, { ...options, headers });
+    if (response.status === 401 || response.status === 403) {
+        // Token expiré ou invalide → déconnexion
+        clearToken();
+        showAuth();
+        throw new Error('Session expirée. Veuillez vous reconnecter.');
+    }
+    return response;
+}
+
+// ================================================================
+// 2. ÉCRAN AUTH
+// ================================================================
+const authScreen = document.getElementById('authScreen');
+const appContainer = document.getElementById('appContainer');
+const authForm = document.getElementById('authForm');
+const authEmail = document.getElementById('authEmail');
+const authPassword = document.getElementById('authPassword');
+const authError = document.getElementById('authError');
+const authSubmitBtn = document.getElementById('authSubmitBtn');
+const toggleAuth = document.getElementById('toggleAuth');
+const toggleText = document.getElementById('toggleText');
+
+let isSignup = false;
+
+toggleAuth.addEventListener('click', () => {
+    isSignup = !isSignup;
+    if (isSignup) {
+        authSubmitBtn.textContent = 'Créer mon compte';
+        toggleText.textContent = 'Déjà un compte ?';
+        toggleAuth.textContent = 'Se connecter';
+    } else {
+        authSubmitBtn.textContent = 'Se connecter';
+        toggleText.textContent = 'Pas encore de compte ?';
+        toggleAuth.textContent = 'Créer un compte';
+    }
+    authError.style.display = 'none';
+});
+
+authForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    authError.style.display = 'none';
+    const email = authEmail.value.trim();
+    const password = authPassword.value;
+
+    const endpoint = isSignup ? '/api/auth/signup' : '/api/auth/login';
+    authSubmitBtn.disabled = true;
+    authSubmitBtn.textContent = 'Chargement...';
+
+    try {
+        const res = await fetch(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Erreur inconnue');
+
+        setToken(data.token);
+        localStorage.setItem('devis_user', JSON.stringify(data.user));
+        showApp();
+    } catch (err) {
+        authError.textContent = '❌ ' + err.message;
+        authError.style.display = 'block';
+    } finally {
+        authSubmitBtn.disabled = false;
+        authSubmitBtn.textContent = isSignup ? 'Créer mon compte' : 'Se connecter';
+    }
+});
+
+function showAuth() {
+    authScreen.style.display = 'block';
+    appContainer.style.display = 'none';
+}
+function showApp() {
+    authScreen.style.display = 'none';
+    appContainer.style.display = 'block';
+    const user = getUser();
+    if (user) document.getElementById('userEmail').textContent = user.email;
+    loadSettings();
+}
+
+// Déconnexion
+document.getElementById('logoutBtn').addEventListener('click', () => {
+    if (confirm('Se déconnecter ?')) {
+        clearToken();
+        showAuth();
+    }
+});
+
+// Au démarrage : vérifier si on a déjà un token
+if (getToken()) {
+    showApp();
+} else {
+    showAuth();
+}
+
+// ================================================================
+// 3. ONGLETS
+// ================================================================
+document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-        tabBtns.forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-        tabContents.forEach(c => c.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
         document.getElementById(btn.dataset.tab).classList.add('active');
-        // Rafraîchir l'historique et le dashboard quand on les affiche
         if (btn.dataset.tab === 'tab-history') loadHistory();
         if (btn.dataset.tab === 'tab-dashboard') loadDashboard();
     });
 });
 
 // ================================================================
-// 2. CHARGEMENT DES PARAMÈTRES AU DÉMARRAGE
+// 4. PARAMÈTRES
 // ================================================================
 async function loadSettings() {
     try {
-        const res = await fetch('/api/settings');
+        const res = await apiFetch('/api/settings');
         const data = await res.json();
         document.getElementById('companyName').value = data.companyName || '';
         document.getElementById('companyAddress').value = data.address || '';
@@ -439,27 +468,42 @@ async function loadSettings() {
         document.getElementById('companyEmail').value = data.email || '';
         document.getElementById('companyWebsite').value = data.website || '';
         if (data.logo) {
-            const preview = document.getElementById('logoPreview');
-            preview.innerHTML = `<img src="${data.logo}" style="max-height:80px; border-radius:8px;" />`;
+            document.getElementById('logoPreview').innerHTML = `<img src="${data.logo}" style="max-height:80px; border-radius:8px;" />`;
         }
-    } catch(e) { console.warn('Erreur chargement settings', e); }
+    } catch(e) { console.warn(e); }
 }
-loadSettings();
 
-// ================================================================
-// 3. SAUVEGARDE DES PARAMÈTRES
-// ================================================================
+function resizeImage(file, maxWidth, maxHeight) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const img = new Image();
+            img.onload = () => {
+                let w = img.width, h = img.height;
+                if (w > maxWidth || h > maxHeight) {
+                    const r = Math.min(maxWidth / w, maxHeight / h);
+                    w = Math.round(w * r); h = Math.round(h * r);
+                }
+                const canvas = document.createElement('canvas');
+                canvas.width = w; canvas.height = h;
+                canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                resolve(canvas.toDataURL('image/png'));
+            };
+            img.onerror = () => reject(new Error('Image illisible'));
+            img.src = e.target.result;
+        };
+        reader.onerror = () => reject(new Error('Erreur lecture'));
+        reader.readAsDataURL(file);
+    });
+}
+
 document.getElementById('settingsForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const logoFile = document.getElementById('logoInput').files[0];
     let logoBase64 = null;
     if (logoFile) {
-        const reader = new FileReader();
-        const dataUrl = await new Promise((resolve) => {
-            reader.onload = (ev) => resolve(ev.target.result);
-            reader.readAsDataURL(logoFile);
-        });
-        logoBase64 = dataUrl;
+        try { logoBase64 = await resizeImage(logoFile, 200, 200); }
+        catch(err) { alert('Erreur logo : ' + err.message); return; }
     }
     const settings = {
         companyName: document.getElementById('companyName').value,
@@ -472,146 +516,98 @@ document.getElementById('settingsForm').addEventListener('submit', async (e) => 
         logo: logoBase64 || undefined
     };
     try {
-        const res = await fetch('/api/settings', {
+        const res = await apiFetch('/api/settings', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(settings)
         });
-        if (res.ok) {
-            alert('Paramètres enregistrés !');
-            // Recharger les paramètres pour afficher le logo
-            loadSettings();
-        } else {
-            alert('Erreur lors de l\'enregistrement.');
-        }
+        if (res.ok) { alert('✅ Paramètres enregistrés !'); loadSettings(); }
+        else alert('❌ Erreur enregistrement.');
     } catch(err) { alert(err.message); }
 });
 
 // ================================================================
-// 4. FONCTIONS DE GESTION DU DEVIS (comme avant, mais enrichies)
+// 5. DEVIS
 // ================================================================
 const dropZone = document.getElementById('dropZone');
 const fileInput = document.getElementById('fileInput');
-const fileName = document.getElementById('file-name');
+const fileNameEl = document.getElementById('file-name');
 const generateBtn = document.getElementById('generateBtn');
 const errorMsg = document.getElementById('errorMsg');
 const resultDiv = document.getElementById('result');
 const itemsBody = document.getElementById('itemsBody');
 const totalAmount = document.getElementById('totalAmount');
-const quoteNumberSpan = document.getElementById('quoteNumber');
-const issueDateSpan = document.getElementById('issueDate');
-const validDateSpan = document.getElementById('validDate');
+const iaPanel = document.getElementById('ia-panel');
+const iaConsole = document.getElementById('ia-console');
 const downloadPdfBtn = document.getElementById('downloadPdfBtn');
 const resetBtn = document.getElementById('resetBtn');
 const sendEmailBtn = document.getElementById('sendEmailBtn');
-const clientEmail = document.getElementById('clientEmail');
-
-const iaPanel = document.getElementById('ia-panel');
-const iaConsole = document.getElementById('ia-console');
+const clientEmailInput = document.getElementById('clientEmail');
 
 let selectedFile = null;
 let lastDevisData = null;
 
-// Fonction pour ajouter un log IA
-function addLog(message, type = 'info') {
+function addLog(msg) {
     const time = new Date().toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
     const div = document.createElement('div');
-    div.innerHTML = `<span class="log-time">${time}</span> <span class="log-msg">${message}</span>`;
+    div.innerHTML = `<span class="log-time">${time}</span> ${msg}`;
     iaConsole.appendChild(div);
     iaConsole.scrollTop = iaConsole.scrollHeight;
 }
 
-function clearLogs() { iaConsole.innerHTML = ''; }
-
-// Gestion du drop
 dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
 dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
 dropZone.addEventListener('drop', (e) => {
-    e.preventDefault();
-    dropZone.classList.remove('dragover');
+    e.preventDefault(); dropZone.classList.remove('dragover');
     if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
 });
 dropZone.addEventListener('click', () => fileInput.click());
 fileInput.addEventListener('change', (e) => { if (e.target.files.length) handleFile(e.target.files[0]); });
 
 function handleFile(file) {
-    const validTypes = [
-        'application/pdf',
-        'application/msword',
-        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-        'text/plain',
-        'text/csv',
-        'application/vnd.ms-excel',
-        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-    ];
-    if (!validTypes.includes(file.type)) {
-        showError('Format non supporté. Utilisez PDF, Word, Excel, CSV ou TXT.');
-        return;
-    }
+    const valid = ['application/pdf','application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document','text/plain','text/csv','application/vnd.ms-excel','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'];
+    if (!valid.includes(file.type)) { showError('Format non supporté.'); return; }
     selectedFile = file;
-    fileName.textContent = `📎 ${file.name} (${(file.size/1024).toFixed(0)} Ko)`;
+    fileNameEl.textContent = `📎 ${file.name} (${(file.size/1024).toFixed(0)} Ko)`;
     generateBtn.disabled = false;
     errorMsg.style.display = 'none';
     resultDiv.style.display = 'none';
     iaPanel.style.display = 'none';
-    clearLogs();
+    iaConsole.innerHTML = '';
 }
 
 function showError(msg) {
     errorMsg.textContent = '⛔ ' + msg;
     errorMsg.style.display = 'block';
-    iaPanel.style.display = 'none';
 }
 
-// Génération du devis
 generateBtn.addEventListener('click', async () => {
     if (!selectedFile) return;
     resultDiv.style.display = 'none';
     errorMsg.style.display = 'none';
     iaPanel.style.display = 'block';
-    clearLogs();
+    iaConsole.innerHTML = '';
     addLog('🚀 Lancement du moteur IA...');
-    addLog(`📄 Fichier reçu : ${selectedFile.name} (${(selectedFile.size/1024).toFixed(0)} Ko)`);
-
+    addLog(`📄 Fichier : ${selectedFile.name}`);
     generateBtn.disabled = true;
-    generateBtn.innerHTML = '<span class="spinner" style="display:inline-block;width:20px;height:20px;border:3px solid rgba(11,17,32,0.2);border-top:3px solid #0b1120;border-radius:50%;animation:spin 0.7s linear infinite;"></span> Analyse en cours';
+    generateBtn.innerHTML = '<span style="display:inline-block;width:18px;height:18px;border:3px solid rgba(11,17,32,0.2);border-top:3px solid #0b1120;border-radius:50%;animation:spin 0.7s linear infinite;"></span> Analyse';
 
-    const formData = new FormData();
-    formData.append('file', selectedFile);
+    const fd = new FormData();
+    fd.append('file', selectedFile);
 
     try {
-        addLog('🔍 Phase 1 : OCR et extraction du texte...');
-        const response = await fetch('/api/generate-quote', {
-            method: 'POST',
-            body: formData,
-        });
+        const response = await apiFetch('/api/generate-quote', { method: 'POST', body: fd });
         if (!response.ok) {
             const err = await response.json();
             throw new Error(err.error || 'Erreur serveur');
         }
         const data = await response.json();
-        // Logs IA
-        if (data.logs && Array.isArray(data.logs)) {
-            data.logs.forEach(log => addLog(log));
-        }
+        if (data.logs) data.logs.forEach(l => addLog(l));
         lastDevisData = data;
         displayResult(data);
-        // Ajouter à l'historique
-        await fetch('/api/history', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                quoteNumber: data.quoteNumber,
-                issueDate: data.issueDate,
-                validDate: data.validDate,
-                total: data.total,
-                items: data.items,
-                clientEmail: clientEmail.value || ''
-            })
-        });
     } catch(err) {
         showError(err.message);
-        addLog(`❌ Erreur : ${err.message}`);
+        addLog(`❌ ${err.message}`);
     } finally {
         generateBtn.disabled = false;
         generateBtn.innerHTML = '🚀 Générer le devis';
@@ -619,163 +615,114 @@ generateBtn.addEventListener('click', async () => {
 });
 
 function displayResult(data) {
-    const tbody = itemsBody;
-    tbody.innerHTML = '';
+    itemsBody.innerHTML = '';
     data.items.forEach(item => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
             <td><span style="background:#1a253b;padding:2px 12px;border-radius:40px;border:1px solid #2a3a55;color:#94a3b8;font-size:12px;">${item.ref || 'N/R'}</span></td>
-            <td><strong style="color:#e2e8f0;">${item.name}</strong></td>
+            <td><strong>${item.name}</strong></td>
             <td style="text-align:center;">${item.qty}</td>
             <td style="text-align:right;">${item.unitPrice.toFixed(2)} €</td>
             <td style="text-align:right;font-weight:600;color:#f97316;">${item.total.toFixed(2)} €</td>
         `;
-        tbody.appendChild(tr);
+        itemsBody.appendChild(tr);
     });
     totalAmount.textContent = data.total.toFixed(2) + ' €';
-    quoteNumberSpan.textContent = data.quoteNumber;
-    issueDateSpan.textContent = data.issueDate;
-    validDateSpan.textContent = data.validDate;
+    document.getElementById('quoteNumber').textContent = data.quoteNumber;
+    document.getElementById('issueDate').textContent = data.issueDate;
+    document.getElementById('validDate').textContent = data.validDate;
     resultDiv.style.display = 'block';
-    addLog(`✅ Devis ${data.quoteNumber} généré, total : ${data.total.toFixed(2)} €`);
 }
 
-// Téléchargement PDF
 downloadPdfBtn.addEventListener('click', async (e) => {
     e.preventDefault();
     if (!lastDevisData) return;
     try {
         downloadPdfBtn.textContent = '⏳ Génération...';
         const url = '/api/download-pdf?data=' + encodeURIComponent(JSON.stringify(lastDevisData));
-        const response = await fetch(url);
+        const response = await apiFetch(url);
         if (!response.ok) throw new Error('Erreur téléchargement');
         const blob = await response.blob();
-        const urlBlob = window.URL.createObjectURL(blob);
+        const u = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
-        a.href = urlBlob;
-        a.download = `devis_${lastDevisData.quoteNumber}.pdf`;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        window.URL.revokeObjectURL(urlBlob);
+        a.href = u; a.download = `devis_${lastDevisData.quoteNumber}.pdf`;
+        document.body.appendChild(a); a.click(); a.remove();
+        window.URL.revokeObjectURL(u);
         downloadPdfBtn.textContent = '⬇ Télécharger le PDF';
-    } catch(err) {
-        showError('Erreur téléchargement : ' + err.message);
-        downloadPdfBtn.textContent = '⬇ Télécharger le PDF';
-    }
+    } catch(err) { showError(err.message); downloadPdfBtn.textContent = '⬇ Télécharger le PDF'; }
 });
 
-// Envoi par email
 sendEmailBtn.addEventListener('click', async () => {
-    const email = clientEmail.value.trim();
-    if (!email) { alert('Veuillez saisir l\'email du client.'); return; }
+    const email = clientEmailInput.value.trim();
+    if (!email) { alert('Saisissez un email.'); return; }
     if (!lastDevisData) { alert('Générez un devis d\'abord.'); return; }
+    sendEmailBtn.textContent = '⏳ Envoi...';
+    sendEmailBtn.disabled = true;
     try {
-        sendEmailBtn.textContent = '⏳ Envoi...';
-        sendEmailBtn.disabled = true;
-        const payload = { ...lastDevisData, email };
-        const res = await fetch('/api/send-email', {
+        const res = await apiFetch('/api/send-email', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
+            body: JSON.stringify({ ...lastDevisData, email })
         });
-        const result = await res.json();
-        if (res.ok) {
-            alert('✅ Devis envoyé à ' + email);
-        } else {
-            alert('❌ Erreur : ' + (result.error || 'Inconnue'));
-        }
-    } catch(err) { alert('Erreur : ' + err.message); }
-    finally {
-        sendEmailBtn.textContent = '✉️ Envoyer';
-        sendEmailBtn.disabled = false;
-    }
+        const r = await res.json();
+        if (res.ok) alert('✅ Envoyé à ' + email);
+        else alert('❌ ' + (r.error || 'Erreur'));
+    } catch(err) { alert(err.message); }
+    finally { sendEmailBtn.textContent = '✉️ Envoyer'; sendEmailBtn.disabled = false; }
 });
 
-// Reset
 resetBtn.addEventListener('click', () => {
     selectedFile = null;
-    fileName.textContent = '';
+    fileNameEl.textContent = '';
     generateBtn.disabled = true;
     resultDiv.style.display = 'none';
     errorMsg.style.display = 'none';
     fileInput.value = '';
     lastDevisData = null;
     iaPanel.style.display = 'none';
-    clearLogs();
-    clientEmail.value = '';
+    iaConsole.innerHTML = '';
+    clientEmailInput.value = '';
 });
 
 // ================================================================
-// 5. CHARGEMENT DE L'HISTORIQUE
+// 6. HISTORIQUE
 // ================================================================
 async function loadHistory() {
     try {
-        const res = await fetch('/api/history');
+        const res = await apiFetch('/api/history');
         const data = await res.json();
-        const container = document.getElementById('historyList');
-        if (data.length === 0) {
-            container.innerHTML = '<p style="color:#64748b;">Aucun devis généré pour le moment.</p>';
-            return;
-        }
-        let html = '';
-        data.slice().reverse().forEach(item => {
-            html += `
-                <div class="history-item">
-                    <div>
-                        <span class="h-number">${item.quoteNumber || 'N°'}</span>
-                        <span class="h-date">${item.issueDate || ''}</span>
-                        ${item.clientEmail ? `<span style="color:#94a3b8;font-size:13px;margin-left:12px;">${item.clientEmail}</span>` : ''}
-                    </div>
-                    <div>
-                        <span class="h-total">${(item.total || 0).toFixed(2)} €</span>
-                        <span class="h-actions">
-                            <a href="#" onclick="alert('Téléchargement non implémenté pour la démo')">📄</a>
-                        </span>
-                    </div>
+        const c = document.getElementById('historyList');
+        if (data.length === 0) { c.innerHTML = '<p style="color:#64748b;">Aucun devis pour le moment.</p>'; return; }
+        c.innerHTML = data.map(item => `
+            <div class="history-item">
+                <div>
+                    <span class="h-number">${item.quoteNumber}</span>
+                    <span class="h-date">${item.issueDate}</span>
+                    ${item.clientEmail ? `<span class="h-date">→ ${item.clientEmail}</span>` : ''}
                 </div>
-            `;
-        });
-        container.innerHTML = html;
-    } catch(err) {
-        document.getElementById('historyList').innerHTML = '<p style="color:#f87171;">Erreur de chargement.</p>';
-    }
+                <div><span class="h-total">${item.total.toFixed(2)} €</span></div>
+            </div>
+        `).join('');
+    } catch(err) { document.getElementById('historyList').innerHTML = '<p style="color:#f87171;">Erreur de chargement.</p>'; }
 }
 
 // ================================================================
-// 6. CHARGEMENT DU DASHBOARD
+// 7. DASHBOARD
 // ================================================================
 async function loadDashboard() {
     try {
-        const res = await fetch('/api/dashboard');
+        const res = await apiFetch('/api/dashboard');
         const data = await res.json();
-        document.getElementById('statTotalQuotes').textContent = data.totalQuotes || 0;
-        document.getElementById('statTotalAmount').textContent = (data.totalAmount || 0).toFixed(2) + ' €';
+        document.getElementById('statTotalQuotes').textContent = data.totalQuotes;
+        document.getElementById('statTotalAmount').textContent = data.totalAmount.toFixed(2) + ' €';
         const list = document.getElementById('topProductsList');
-        if (data.topProducts && data.topProducts.length > 0) {
-            list.innerHTML = data.topProducts.map(p =>
-                `<li><span class="product-name">${p.name}</span><span class="product-qty">${p.qty} unités</span></li>`
-            ).join('');
+        if (data.topProducts.length > 0) {
+            list.innerHTML = data.topProducts.map(p => `<li><span>${p.name}</span><span class="product-qty">${p.qty} unités</span></li>`).join('');
         } else {
-            list.innerHTML = '<li style="color:#64748b;">Aucune donnée pour le moment.</li>';
+            list.innerHTML = '<li style="color:#64748b;">Aucune donnée.</li>';
         }
-    } catch(err) {
-        console.warn('Erreur dashboard', err);
-    }
+    } catch(e) { console.warn(e); }
 }
-
-// ================================================================
-// 7. KEYFRAMES POUR LE SPINNER
-// ================================================================
-const style = document.createElement('style');
-style.textContent = `@keyframes spin { to { transform: rotate(360deg); } }`;
-document.head.appendChild(style);
-
-// ================================================================
-// 8. CHARGEMENT INITIAL (historique et dashboard si actifs)
-// ================================================================
-// On charge l'historique et le dashboard seulement si leurs onglets sont actifs par défaut (non, c'est devis)
-// On les chargera au clic sur l'onglet (déjà fait plus haut)
 </script>
 </body>
 </html>
