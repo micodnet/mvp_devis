@@ -104,8 +104,8 @@ async function callGroq(prompt) {
 
     // Only models that are currently valid on Groq
     const models = [
-        'openai/gpt-oss-20b',
         'openai/gpt-oss-120b',
+        'openai/gpt-oss-20b',
     ];
 
     let lastError = null;
