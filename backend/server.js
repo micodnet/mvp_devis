@@ -19,17 +19,13 @@ const port = process.env.PORT || 3000;
 
 // Middleware
 app.use(cors());
-app.use(express.json({ limit: '10mb' })); // 10mb pour le logo en base64
+app.use(express.json({ limit: '10mb' }));
 app.use(express.static(path.join(__dirname, '../frontend')));
 
-// ------------------------------------------------------------
-// ROUTES PUBLIQUES (pas d'authentification requise)
-// ------------------------------------------------------------
+// Routes publiques
 app.use('/api/auth', authRoutes);
 
-// ------------------------------------------------------------
-// MULTER (upload de fichiers)
-// ------------------------------------------------------------
+// Multer
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         const uploadDir = path.join(__dirname, 'uploads');
@@ -44,12 +40,8 @@ const storage = multer.diskStorage({
 const upload = multer({ storage, limits: { fileSize: 5 * 1024 * 1024 } });
 
 // ============================================================
-// ROUTES PROTÉGÉES (authentification requise)
+// GET /api/settings
 // ============================================================
-
-// ------------------------------------------------------------
-// GET /api/settings — Récupérer les paramètres de l'utilisateur
-// ------------------------------------------------------------
 app.get('/api/settings', authenticateToken, async (req, res) => {
     try {
         const result = await pool.query(
@@ -57,9 +49,8 @@ app.get('/api/settings', authenticateToken, async (req, res) => {
             [req.user.id]
         );
         if (result.rows.length === 0) {
-            // Cas rare : créer par défaut si absent
             await pool.query('INSERT INTO settings (user_id) VALUES ($1)', [req.user.id]);
-            return res.json({ companyName: 'Votre Entreprise' });
+            return res.json({ companyName: 'Votre Entreprise', vatRegime: 'franchise', vatRate: 21 });
         }
         const s = result.rows[0];
         res.json({
@@ -70,7 +61,9 @@ app.get('/api/settings', authenticateToken, async (req, res) => {
             phone: s.phone,
             email: s.email,
             website: s.website,
-            logo: s.logo
+            logo: s.logo,
+            vatRegime: s.vat_regime || 'franchise',
+            vatRate: parseFloat(s.vat_rate) || 21
         });
     } catch (err) {
         console.error(err);
@@ -78,15 +71,15 @@ app.get('/api/settings', authenticateToken, async (req, res) => {
     }
 });
 
-// ------------------------------------------------------------
-// POST /api/settings — Sauvegarder les paramètres
-// ------------------------------------------------------------
+// ============================================================
+// POST /api/settings
+// ============================================================
 app.post('/api/settings', authenticateToken, async (req, res) => {
-    const { companyName, address, siret, tva, phone, email, website, logo } = req.body;
+    const { companyName, address, siret, tva, phone, email, website, logo, vatRegime, vatRate } = req.body;
     try {
         await pool.query(`
-            INSERT INTO settings (user_id, company_name, address, siret, tva, phone, email, website, logo, updated_at)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, NOW())
+            INSERT INTO settings (user_id, company_name, address, siret, tva, phone, email, website, logo, vat_regime, vat_rate, updated_at)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW())
             ON CONFLICT (user_id) DO UPDATE SET
                 company_name = EXCLUDED.company_name,
                 address = EXCLUDED.address,
@@ -96,8 +89,10 @@ app.post('/api/settings', authenticateToken, async (req, res) => {
                 email = EXCLUDED.email,
                 website = EXCLUDED.website,
                 logo = COALESCE(EXCLUDED.logo, settings.logo),
+                vat_regime = EXCLUDED.vat_regime,
+                vat_rate = EXCLUDED.vat_rate,
                 updated_at = NOW()
-        `, [req.user.id, companyName, address, siret, tva, phone, email, website, logo]);
+        `, [req.user.id, companyName, address, siret, tva, phone, email, website, logo, vatRegime || 'franchise', vatRate || 21]);
         res.json({ success: true });
     } catch (err) {
         console.error(err);
@@ -105,9 +100,9 @@ app.post('/api/settings', authenticateToken, async (req, res) => {
     }
 });
 
-// ------------------------------------------------------------
-// GET /api/history — Historique des devis de l'utilisateur
-// ------------------------------------------------------------
+// ============================================================
+// GET /api/history
+// ============================================================
 app.get('/api/history', authenticateToken, async (req, res) => {
     try {
         const result = await pool.query(
@@ -118,8 +113,11 @@ app.get('/api/history', authenticateToken, async (req, res) => {
             quoteNumber: r.quote_number,
             issueDate: r.issue_date,
             validDate: r.valid_date,
+            subtotal: parseFloat(r.subtotal) || 0,
+            vatAmount: parseFloat(r.vat_amount) || 0,
             total: parseFloat(r.total),
             items: r.items,
+            clientName: r.client_name,
             clientEmail: r.client_email
         }));
         res.json(history);
@@ -129,9 +127,9 @@ app.get('/api/history', authenticateToken, async (req, res) => {
     }
 });
 
-// ------------------------------------------------------------
-// POST /api/generate-quote — Générer un devis (IA)
-// ------------------------------------------------------------
+// ============================================================
+// POST /api/generate-quote
+// ============================================================
 app.post('/api/generate-quote', authenticateToken, upload.single('file'), async (req, res) => {
     const logs = [];
     try {
@@ -139,22 +137,50 @@ app.post('/api/generate-quote', authenticateToken, upload.single('file'), async 
         const filePath = req.file.path;
         const mimeType = req.file.mimetype;
 
-        logs.push(`📂 Fichier reçu : ${req.file.originalname}`);
+        const clientName = req.body.clientName || '';
+        const clientAddress = req.body.clientAddress || '';
+        const clientVat = req.body.clientVat || '';
+        const clientEmail = req.body.clientEmail || '';
+
+        logs.push(`Fichier reçu : ${req.file.originalname}`);
         const text = await extractTextFromFile(filePath, mimeType);
         if (!text || text.trim().length < 10) {
             fs.unlinkSync(filePath);
             return res.status(400).json({ error: 'Fichier vide ou illisible.' });
         }
-        logs.push(`📝 Texte extrait (${text.length} caractères).`);
+        logs.push(`Texte extrait (${text.length} caractères).`);
 
         const result = await extractItemsFromText(text);
         const items = result.items;
         const iaLogs = result.logs || [];
-        const total = items.reduce((sum, item) => sum + item.total, 0);
-        logs.push(`💰 Total calculé : ${total.toFixed(2)} €`);
         fs.unlinkSync(filePath);
 
-        // --- Générer un numéro de devis UNIQUE PAR UTILISATEUR ---
+        // ---- Calcul HT ----
+        const subtotal = items.reduce((sum, item) => sum + item.total, 0);
+
+        // ---- CHARGEMENT DES PARAMÈTRES (AVANT le calcul de TVA) ----
+        const settingsResult = await pool.query(
+            'SELECT * FROM settings WHERE user_id = $1',
+            [req.user.id]
+        );
+        const s = settingsResult.rows[0] || {};
+
+        const vatRegime = s.vat_regime || 'franchise';
+        const vatRate = parseFloat(s.vat_rate) || 21;
+
+        // ---- Calcul TVA et TTC ----
+        const vatAmount = vatRegime === 'assujetti' ? subtotal * (vatRate / 100) : 0;
+        const total = subtotal + vatAmount;
+
+        logs.push(`Total HT : ${subtotal.toFixed(2)} €`);
+        if (vatRegime === 'assujetti') {
+            logs.push(`TVA (${vatRate}%) : ${vatAmount.toFixed(2)} €`);
+            logs.push(`Total TTC : ${total.toFixed(2)} €`);
+        } else {
+            logs.push(`Franchise de TVA : pas de TVA appliquée.`);
+        }
+
+        // ---- Numéro de devis unique par utilisateur ----
         const counterResult = await pool.query(
             'SELECT last_number FROM counters WHERE user_id = $1',
             [req.user.id]
@@ -179,12 +205,7 @@ app.post('/api/generate-quote', authenticateToken, upload.single('file'), async 
         validUntil.setDate(validUntil.getDate() + 30);
         const validDate = validUntil.toISOString().slice(0, 10);
 
-        // --- Charger les paramètres de CET utilisateur ---
-        const settingsResult = await pool.query(
-            'SELECT * FROM settings WHERE user_id = $1',
-            [req.user.id]
-        );
-        const s = settingsResult.rows[0] || {};
+        // ---- Objet company (utilise le `s` déjà chargé plus haut) ----
         const company = {
             companyName: s.company_name,
             address: s.address,
@@ -193,23 +214,25 @@ app.post('/api/generate-quote', authenticateToken, upload.single('file'), async 
             phone: s.phone,
             email: s.email,
             website: s.website,
-            logo: s.logo
+            logo: s.logo,
+            vatRegime,
+            vatRate
         };
 
-        // --- Sauvegarder le devis dans la base (sans le client email pour l'instant) ---
+        // ---- Insertion du devis en base ----
         await pool.query(`
-            INSERT INTO quotes (user_id, quote_number, issue_date, valid_date, total, items)
-            VALUES ($1, $2, $3, $4, $5, $6)
-        `, [req.user.id, quoteNumber, issueDate, validDate, total, JSON.stringify(items)]);
+            INSERT INTO quotes (user_id, quote_number, issue_date, valid_date, subtotal, vat_amount, total, vat_regime, items, client_name, client_address, client_vat, client_email)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+        `, [req.user.id, quoteNumber, issueDate, validDate, subtotal, vatAmount, total, vatRegime,
+            JSON.stringify(items), clientName, clientAddress, clientVat, clientEmail]);
 
         res.json({
-            items,
-            total,
+            items, subtotal, vatAmount, total,
+            vatRegime, vatRate,
             logs: [...logs, ...iaLogs],
-            quoteNumber,
-            issueDate,
-            validDate,
-            company
+            quoteNumber, issueDate, validDate,
+            company,
+            client: { name: clientName, address: clientAddress, vat: clientVat, email: clientEmail }
         });
     } catch (error) {
         console.error(error);
@@ -218,19 +241,23 @@ app.post('/api/generate-quote', authenticateToken, upload.single('file'), async 
     }
 });
 
-// ------------------------------------------------------------
-// GET /api/download-pdf — Générer le PDF
-// ------------------------------------------------------------
+// ============================================================
+// GET /api/download-pdf
+// ============================================================
 app.get('/api/download-pdf', authenticateToken, async (req, res) => {
     try {
         const dataParam = req.query.data;
         if (!dataParam) return res.status(400).send('Données manquantes');
-        const data = JSON.parse(decodeURIComponent(dataParam));
-        const { items, total, quoteNumber, issueDate, validDate, company } = data;
+        const data = JSON.parse(dataParam);
+        const { items, subtotal, vatAmount, total, vatRegime, vatRate, quoteNumber, issueDate, validDate, company, client } = data;
 
         if (!items || items.length === 0) return res.status(400).send('Aucun article');
 
-        const pdfBytes = await generateQuotePDF(items, total, quoteNumber, issueDate, validDate, company);
+        const pdfBytes = await generateQuotePDF(
+            items, subtotal, vatAmount, total,
+            vatRegime, vatRate, quoteNumber, issueDate, validDate,
+            company, client
+        );
         res.setHeader('Content-Type', 'application/pdf');
         res.setHeader('Content-Disposition', `attachment; filename=devis_${quoteNumber}.pdf`);
         res.send(Buffer.from(pdfBytes));
@@ -240,22 +267,32 @@ app.get('/api/download-pdf', authenticateToken, async (req, res) => {
     }
 });
 
-// ------------------------------------------------------------
-// POST /api/send-email — Envoyer le devis par email
-// ------------------------------------------------------------
+// ============================================================
+// POST /api/send-email
+// ============================================================
 app.post('/api/send-email', authenticateToken, async (req, res) => {
     try {
-        const { email, items, total, quoteNumber, issueDate, validDate, company } = req.body;
+        const { email, items, subtotal, vatAmount, total, vatRegime, vatRate, quoteNumber, issueDate, validDate, company, client } = req.body;
         if (!email || !items || items.length === 0) {
             return res.status(400).json({ error: 'Email et articles requis.' });
         }
-        const pdfBytes = await generateQuotePDF(items, total, quoteNumber, issueDate, validDate, company);
+        const pdfBytes = await generateQuotePDF(
+            items, subtotal, vatAmount, total, vatRegime, vatRate,
+            quoteNumber, issueDate, validDate, company, client
+        );
         const resend = new Resend(process.env.RESEND_API_KEY);
+
+        const vatLine = vatRegime === 'assujetti'
+            ? `<p>TVA (${vatRate}%) : <strong>${vatAmount.toFixed(2)} €</strong></p>`
+            : '';
 
         const htmlContent = `
             <h1>Devis ${quoteNumber}</h1>
-            <p>Bonjour,</p>
-            <p>Veuillez trouver ci-joint votre devis pour un montant total de <strong>${total.toFixed(2)} €</strong>.</p>
+            <p>Bonjour ${client?.name || ''},</p>
+            <p>Veuillez trouver ci-joint votre devis :</p>
+            <p>Total HT : <strong>${subtotal.toFixed(2)} €</strong></p>
+            ${vatLine}
+            <p>Total TTC : <strong>${total.toFixed(2)} €</strong></p>
             <p>Date d'émission : ${issueDate}</p>
             <p>Date de validité : ${validDate}</p>
             <br>
@@ -276,7 +313,6 @@ app.post('/api/send-email', authenticateToken, async (req, res) => {
 
         if (error) return res.status(500).json({ error: error.message });
 
-        // Mettre à jour le client_email dans la base
         await pool.query(
             'UPDATE quotes SET client_email = $1 WHERE user_id = $2 AND quote_number = $3',
             [email, req.user.id, quoteNumber]
@@ -289,9 +325,9 @@ app.post('/api/send-email', authenticateToken, async (req, res) => {
     }
 });
 
-// ------------------------------------------------------------
-// GET /api/dashboard — Statistiques de l'utilisateur
-// ------------------------------------------------------------
+// ============================================================
+// GET /api/dashboard
+// ============================================================
 app.get('/api/dashboard', authenticateToken, async (req, res) => {
     try {
         const result = await pool.query(
@@ -322,23 +358,23 @@ app.get('/api/dashboard', authenticateToken, async (req, res) => {
     }
 });
 
-// ------------------------------------------------------------
+// ============================================================
 // Route par défaut
-// ------------------------------------------------------------
+// ============================================================
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, '../frontend/index.html'));
 });
 
-// ------------------------------------------------------------
-// Démarrage : init DB puis serveur
-// ------------------------------------------------------------
+// ============================================================
+// Démarrage
+// ============================================================
 initDB()
     .then(() => {
         app.listen(port, () => {
-            console.log(`🚀 Serveur Pro lancé sur http://localhost:${port}`);
+            console.log(`Serveur Pro lancé sur http://localhost:${port}`);
         });
     })
     .catch(err => {
-        console.error('❌ Erreur init DB:', err);
+        console.error('Erreur init DB:', err);
         process.exit(1);
     });

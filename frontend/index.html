@@ -126,13 +126,12 @@
         #result table { width:100%; border-collapse:collapse; font-size:14px; }
         #result th { text-align:left; padding:10px; color:#94a3b8; background:#0b1120; font-size:12px; text-transform:uppercase; }
         #result td { padding:10px; border-bottom:1px solid #1e2a41; color:#e2e8f0; }
-        .total-box {
-            background:#0b1120; padding:16px 24px; border-radius:16px;
-            display:flex; justify-content:flex-end; align-items:center; gap:20px;
-            border:1px solid #f97316; border-right:6px solid #f97316; margin-top:16px;
-        }
-        .total-box .label { color:#94a3b8; font-weight:500; }
-        .total-box .amount { font-size:28px; font-weight:700; color:#fff; }
+
+        .totaux-box { background:#0b1120; border-radius:16px; padding:16px 24px; margin-top:16px; border:1px solid #1e2a41; }
+        .totaux-line { display:flex; justify-content:space-between; padding:8px 0; color:#94a3b8; font-size:14px; }
+        .totaux-line.total { border-top:2px solid #f97316; margin-top:8px; padding-top:16px; font-size:22px; font-weight:700; color:#fff; }
+        .totaux-line.total .amount { color:#f97316; }
+
         .actions { display:flex; gap:12px; margin-top:16px; flex-wrap:wrap; }
         .actions a {
             flex:1; text-align:center; padding:12px; border-radius:60px;
@@ -146,11 +145,11 @@
 
         .form-group { margin-bottom:16px; }
         .form-group label { display:block; color:#94a3b8; font-weight:500; font-size:13px; margin-bottom:4px; }
-        .form-group input {
+        .form-group input, .form-group select {
             width:100%; padding:10px 14px; border-radius:12px; background:#0b1120;
             border:1px solid #2a3a55; color:#e2e8f0; font-size:14px;
         }
-        .form-group input:focus { outline:2px solid #f97316; border-color:transparent; }
+        .form-group input:focus, .form-group select:focus { outline:2px solid #f97316; border-color:transparent; }
         .form-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
         .btn-save {
             background:#3b82f6; color:#fff; border:none; padding:12px 24px;
@@ -237,6 +236,30 @@
 
     <!-- ONGLET DEVIS -->
     <div id="tab-devis" class="tab-content active">
+
+        <!-- === NOUVEAU : Informations client === -->
+        <div class="card">
+            <div class="card-title">👤 Informations client</div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Nom / Raison sociale</label>
+                    <input type="text" id="clientName" placeholder="Dupont SARL" />
+                </div>
+                <div class="form-group">
+                    <label>N° TVA (optionnel, pros)</label>
+                    <input type="text" id="clientVat" placeholder="BE0123456789" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Adresse</label>
+                <input type="text" id="clientAddress" placeholder="Rue du Client 12, 1000 Bruxelles" />
+            </div>
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="clientEmailInput" placeholder="client@exemple.be" />
+            </div>
+        </div>
+
         <div class="card">
             <div class="drop-zone" id="dropZone">
                 <div class="icon">📄</div>
@@ -266,16 +289,10 @@
                         <tbody id="itemsBody"></tbody>
                     </table>
                 </div>
-                <div class="total-box">
-                    <span class="label">TOTAL TTC</span>
-                    <span class="amount" id="totalAmount">0,00 €</span>
-                </div>
-                <div style="margin-top:16px; display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
-                    <input type="email" id="clientEmail" placeholder="Email du client" style="flex:1; min-width:200px; padding:10px 14px; border-radius:60px; background:#0b1120; border:1px solid #2a3a55; color:#e2e8f0;" />
-                    <button class="btn-orange" id="sendEmailBtn" style="flex:0 0 auto; width:auto; padding:10px 24px; margin-top:0;">✉️ Envoyer</button>
-                </div>
+                <div class="totaux-box" id="totauxBox"></div>
                 <div class="actions">
                     <a href="#" id="downloadPdfBtn" class="primary">⬇ Télécharger le PDF</a>
+                    <a href="#" id="sendEmailBtn">✉️ Envoyer par email</a>
                     <a href="#" id="resetBtn">⟲ Nouveau devis</a>
                 </div>
             </div>
@@ -290,7 +307,7 @@
                 <div class="form-group"><label>Nom de l'entreprise *</label><input type="text" id="companyName" required /></div>
                 <div class="form-group"><label>Adresse</label><input type="text" id="companyAddress" /></div>
                 <div class="form-row">
-                    <div class="form-group"><label>SIRET</label><input type="text" id="companySiret" /></div>
+                    <div class="form-group"><label>SIRET / BCE</label><input type="text" id="companySiret" /></div>
                     <div class="form-group"><label>Numéro de TVA</label><input type="text" id="companyTva" /></div>
                 </div>
                 <div class="form-row">
@@ -298,7 +315,26 @@
                     <div class="form-group"><label>Email</label><input type="email" id="companyEmail" /></div>
                 </div>
                 <div class="form-group"><label>Site web</label><input type="text" id="companyWebsite" /></div>
-                <div class="form-group"><label>Logo (PNG ou JPEG)</label><input type="file" id="logoInput" accept="image/png,image/jpeg" /><div id="logoPreview" style="margin-top:8px;"></div></div>
+
+                <!-- === NOUVEAU : Section TVA === -->
+                <div class="card-title" style="margin-top:24px;">💰 TVA</div>
+                <div class="form-group">
+                    <label>Régime de TVA</label>
+                    <select id="vatRegime">
+                        <option value="franchise">Franchise (pas de TVA) — Auto-entrepreneur</option>
+                        <option value="assujetti">Assujetti (TVA applicable) — Société</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Taux de TVA par défaut (%)</label>
+                    <input type="number" id="vatRate" step="0.01" min="0" max="30" value="21" />
+                </div>
+
+                <div class="form-group" style="margin-top:16px;">
+                    <label>Logo (PNG ou JPEG)</label>
+                    <input type="file" id="logoInput" accept="image/png,image/jpeg" />
+                    <div id="logoPreview" style="margin-top:8px;"></div>
+                </div>
                 <button type="submit" class="btn-save">💾 Enregistrer les paramètres</button>
             </form>
         </div>
@@ -318,7 +354,7 @@
             <div class="card-title">📊 Vos statistiques</div>
             <div class="stats-grid">
                 <div class="stat-card"><div class="number" id="statTotalQuotes">0</div><div class="label">Devis générés</div></div>
-                <div class="stat-card"><div class="number" id="statTotalAmount">0,00 €</div><div class="label">Montant total</div></div>
+                <div class="stat-card"><div class="number" id="statTotalAmount">0,00 €</div><div class="label">Montant total TTC</div></div>
             </div>
             <div class="card-title" style="margin-top:20px;">🏆 Produits les plus demandés</div>
             <ul class="top-products" id="topProductsList"><li style="color:#64748b;">Aucune donnée.</li></ul>
@@ -337,14 +373,12 @@ function getUser() {
     try { return JSON.parse(localStorage.getItem('devis_user')); } catch(e) { return null; }
 }
 
-// Fonction fetch qui ajoute automatiquement le token
 async function apiFetch(url, options = {}) {
     const token = getToken();
     const headers = { ...(options.headers || {}) };
     if (token) headers['Authorization'] = 'Bearer ' + token;
     const response = await fetch(url, { ...options, headers });
     if (response.status === 401 || response.status === 403) {
-        // Token expiré ou invalide → déconnexion
         clearToken();
         showAuth();
         throw new Error('Session expirée. Veuillez vous reconnecter.');
@@ -424,7 +458,6 @@ function showApp() {
     loadSettings();
 }
 
-// Déconnexion
 document.getElementById('logoutBtn').addEventListener('click', () => {
     if (confirm('Se déconnecter ?')) {
         clearToken();
@@ -432,7 +465,6 @@ document.getElementById('logoutBtn').addEventListener('click', () => {
     }
 });
 
-// Au démarrage : vérifier si on a déjà un token
 if (getToken()) {
     showApp();
 } else {
@@ -467,6 +499,9 @@ async function loadSettings() {
         document.getElementById('companyPhone').value = data.phone || '';
         document.getElementById('companyEmail').value = data.email || '';
         document.getElementById('companyWebsite').value = data.website || '';
+        // === NOUVEAU : régime TVA + taux ===
+        document.getElementById('vatRegime').value = data.vatRegime || 'franchise';
+        document.getElementById('vatRate').value = data.vatRate || 21;
         if (data.logo) {
             document.getElementById('logoPreview').innerHTML = `<img src="${data.logo}" style="max-height:80px; border-radius:8px;" />`;
         }
@@ -513,6 +548,9 @@ document.getElementById('settingsForm').addEventListener('submit', async (e) => 
         phone: document.getElementById('companyPhone').value,
         email: document.getElementById('companyEmail').value,
         website: document.getElementById('companyWebsite').value,
+        // === NOUVEAU : TVA ===
+        vatRegime: document.getElementById('vatRegime').value,
+        vatRate: parseFloat(document.getElementById('vatRate').value) || 0,
         logo: logoBase64 || undefined
     };
     try {
@@ -536,13 +574,11 @@ const generateBtn = document.getElementById('generateBtn');
 const errorMsg = document.getElementById('errorMsg');
 const resultDiv = document.getElementById('result');
 const itemsBody = document.getElementById('itemsBody');
-const totalAmount = document.getElementById('totalAmount');
 const iaPanel = document.getElementById('ia-panel');
 const iaConsole = document.getElementById('ia-console');
 const downloadPdfBtn = document.getElementById('downloadPdfBtn');
 const resetBtn = document.getElementById('resetBtn');
 const sendEmailBtn = document.getElementById('sendEmailBtn');
-const clientEmailInput = document.getElementById('clientEmail');
 
 let selectedFile = null;
 let lastDevisData = null;
@@ -594,6 +630,11 @@ generateBtn.addEventListener('click', async () => {
 
     const fd = new FormData();
     fd.append('file', selectedFile);
+    // === NOUVEAU : envoi des infos client ===
+    fd.append('clientName', document.getElementById('clientName').value || '');
+    fd.append('clientAddress', document.getElementById('clientAddress').value || '');
+    fd.append('clientVat', document.getElementById('clientVat').value || '');
+    fd.append('clientEmail', document.getElementById('clientEmailInput').value || '');
 
     try {
         const response = await apiFetch('/api/generate-quote', { method: 'POST', body: fd });
@@ -627,7 +668,20 @@ function displayResult(data) {
         `;
         itemsBody.appendChild(tr);
     });
-    totalAmount.textContent = data.total.toFixed(2) + ' €';
+
+    // === NOUVEAU : bloc totaux avec HT / TVA / TTC ===
+    const box = document.getElementById('totauxBox');
+    let html = '';
+    if (data.vatRegime === 'assujetti') {
+        html += `<div class="totaux-line"><span>Total HT</span><span>${data.subtotal.toFixed(2)} €</span></div>`;
+        html += `<div class="totaux-line"><span>TVA (${data.vatRate}%)</span><span>${data.vatAmount.toFixed(2)} €</span></div>`;
+        html += `<div class="totaux-line total"><span>TOTAL TTC</span><span class="amount">${data.total.toFixed(2)} €</span></div>`;
+    } else {
+        html += `<div class="totaux-line total"><span>TOTAL</span><span class="amount">${data.total.toFixed(2)} €</span></div>`;
+        html += `<div style="font-size:11px;color:#64748b;margin-top:8px;">Régime particulier de franchise des petites entreprises — TVA non applicable.</div>`;
+    }
+    box.innerHTML = html;
+
     document.getElementById('quoteNumber').textContent = data.quoteNumber;
     document.getElementById('issueDate').textContent = data.issueDate;
     document.getElementById('validDate').textContent = data.validDate;
@@ -652,12 +706,13 @@ downloadPdfBtn.addEventListener('click', async (e) => {
     } catch(err) { showError(err.message); downloadPdfBtn.textContent = '⬇ Télécharger le PDF'; }
 });
 
-sendEmailBtn.addEventListener('click', async () => {
-    const email = clientEmailInput.value.trim();
-    if (!email) { alert('Saisissez un email.'); return; }
+sendEmailBtn.addEventListener('click', async (e) => {
+    e.preventDefault();
+    // Utilise l'email client du bloc infos client
+    const email = document.getElementById('clientEmailInput').value.trim();
+    if (!email) { alert('Renseignez l\'email du client dans les informations client.'); return; }
     if (!lastDevisData) { alert('Générez un devis d\'abord.'); return; }
     sendEmailBtn.textContent = '⏳ Envoi...';
-    sendEmailBtn.disabled = true;
     try {
         const res = await apiFetch('/api/send-email', {
             method: 'POST',
@@ -668,10 +723,11 @@ sendEmailBtn.addEventListener('click', async () => {
         if (res.ok) alert('✅ Envoyé à ' + email);
         else alert('❌ ' + (r.error || 'Erreur'));
     } catch(err) { alert(err.message); }
-    finally { sendEmailBtn.textContent = '✉️ Envoyer'; sendEmailBtn.disabled = false; }
+    finally { sendEmailBtn.textContent = '✉️ Envoyer par email'; }
 });
 
-resetBtn.addEventListener('click', () => {
+resetBtn.addEventListener('click', (e) => {
+    e.preventDefault();
     selectedFile = null;
     fileNameEl.textContent = '';
     generateBtn.disabled = true;
@@ -681,7 +737,10 @@ resetBtn.addEventListener('click', () => {
     lastDevisData = null;
     iaPanel.style.display = 'none';
     iaConsole.innerHTML = '';
-    clientEmailInput.value = '';
+    document.getElementById('clientName').value = '';
+    document.getElementById('clientAddress').value = '';
+    document.getElementById('clientVat').value = '';
+    document.getElementById('clientEmailInput').value = '';
 });
 
 // ================================================================
@@ -698,7 +757,7 @@ async function loadHistory() {
                 <div>
                     <span class="h-number">${item.quoteNumber}</span>
                     <span class="h-date">${item.issueDate}</span>
-                    ${item.clientEmail ? `<span class="h-date">→ ${item.clientEmail}</span>` : ''}
+                    ${item.clientName ? `<span class="h-date">→ ${item.clientName}</span>` : ''}
                 </div>
                 <div><span class="h-total">${item.total.toFixed(2)} €</span></div>
             </div>
