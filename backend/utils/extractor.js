@@ -1,19 +1,7 @@
 /*
- * ============================================================
  * extractor.js - AI extraction engine for quotes
- * ============================================================
- * This file calls multiple AI providers (Groq, KeylessAI, OpenRouter)
- * to extract items from a text. If all fail, it uses the local
- * catalog (price-db.json) as fallback.
- *
- * CHANGELOG (last update):
- *  - [FIX] Quantity regex: now limited to 1-3 digits + escapeRegex (was matching refs like "1001")
- *  - [FIX] Local fallback: no more fake default product (returns empty array instead)
- *  - [FIX] Groq models order: "openai/gpt-oss-20b" first (the other one no longer exists)
- *  - [STYLE] All variables/functions renamed to English for consistency
  */
 
-// Import product catalog from JSON file
 const { products } = require('../data/price-db.json');
 
 console.log(`Catalog loaded: ${products.length} products available.`);
@@ -28,7 +16,6 @@ let openRouterClient = null;
 try {
     const OpenAI = require('openai');
 
-    // Groq (primary)
     if (process.env.GROQ_API_KEY) {
         groqClient = new OpenAI({
             baseURL: 'https://api.groq.com/openai/v1',
@@ -39,7 +26,6 @@ try {
         console.log('GROQ_API_KEY missing.');
     }
 
-    // OpenRouter (optional fallback)
     if (process.env.OPENROUTER_API_KEY) {
         openRouterClient = new OpenAI({
             baseURL: 'https://openrouter.ai/api/v1',
@@ -51,43 +37,75 @@ try {
     console.log('OpenAI SDK not loaded.');
 }
 
-// Escape special regex characters
 function escapeRegex(str) {
     return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 // ============================================================
-// 2. EXTRACT JSON FROM A RAW RESPONSE
+// 2. ROBUST JSON EXTRACTION
 // ============================================================
+// Handles:
+//   - Plain array: [ {...} ]
+//   - Wrapped object: { "items": [ {...} ] }
+//   - Code fences: ```json ... ```
+//   - Trailing text after JSON
 
 function extractJSON(rawData) {
-    // Remove code markers (```json ... ```)
-    let cleaned = rawData.replace(/```json/g, '').replace(/```/g, '').trim();
-    // Find first '[' and last ']'
-    const start = cleaned.indexOf('[');
-    const end = cleaned.lastIndexOf(']');
-    if (start === -1 || end === -1 || end < start) {
-        throw new Error('No valid JSON found.');
+    // Remove code fences
+    let cleaned = String(rawData)
+        .replace(/```json/gi, '')
+        .replace(/```/g, '')
+        .trim();
+
+    // Try direct parse first
+    try {
+        const direct = JSON.parse(cleaned);
+        if (Array.isArray(direct)) return direct;
+        if (direct && Array.isArray(direct.items)) return direct.items;
+        if (direct && Array.isArray(direct.articles)) return direct.articles;
+        if (direct && Array.isArray(direct.products)) return direct.products;
+    } catch (e) { /* continue */ }
+
+    // Try to locate a JSON array
+    const arrStart = cleaned.indexOf('[');
+    const arrEnd = cleaned.lastIndexOf(']');
+    if (arrStart !== -1 && arrEnd !== -1 && arrEnd > arrStart) {
+        const candidate = cleaned.substring(arrStart, arrEnd + 1);
+        try {
+            const parsed = JSON.parse(candidate);
+            if (Array.isArray(parsed)) return parsed;
+        } catch (e) { /* continue */ }
     }
-    const jsonStr = cleaned.substring(start, end + 1);
-    return JSON.parse(jsonStr);
+
+    // Try to locate a JSON object
+    const objStart = cleaned.indexOf('{');
+    const objEnd = cleaned.lastIndexOf('}');
+    if (objStart !== -1 && objEnd !== -1 && objEnd > objStart) {
+        const candidate = cleaned.substring(objStart, objEnd + 1);
+        try {
+            const parsed = JSON.parse(candidate);
+            if (parsed && Array.isArray(parsed.items)) return parsed.items;
+            if (parsed && Array.isArray(parsed.articles)) return parsed.articles;
+            if (parsed && Array.isArray(parsed.products)) return parsed.products;
+            if (Array.isArray(parsed)) return parsed;
+        } catch (e) { /* continue */ }
+    }
+
+    console.warn('extractJSON: could not parse. Raw response:', cleaned.slice(0, 300));
+    throw new Error('No valid JSON found.');
 }
 
 // ============================================================
 // 3. AI PROVIDER CALLS
 // ============================================================
 
-// 3.1 - GROQ (with fallback across multiple valid models)
 async function callGroq(prompt) {
     if (!groqClient) throw new Error('Groq not initialized');
 
-    // Free models available on Groq (verified)
+    // Only models that are currently valid on Groq
     const models = [
         'openai/gpt-oss-20b',
-        'llama-3.3-70b-versatile',
-        'llama-3.1-70b-versatile',
-        'llama3-70b-8192',
-        'mixtral-8x7b-32768',
+        'openai/gpt-oss-120b',
     ];
 
     let lastError = null;
@@ -95,9 +113,16 @@ async function callGroq(prompt) {
         try {
             const response = await groqClient.chat.completions.create({
                 model: model,
-                messages: [{ role: 'user', content: prompt }],
-                temperature: 0.2,
+                messages: [
+                    {
+                        role: 'system',
+                        content: 'You are a JSON-only extraction assistant. You always reply with a valid JSON array, nothing else. No explanations, no markdown, no code fences.'
+                    },
+                    { role: 'user', content: prompt }
+                ],
+                temperature: 0.1,
                 max_tokens: 1200,
+                response_format: { type: 'json_object' },
             });
             const content = response.choices[0].message.content;
             console.log(`Groq responded with model: ${model}`);
@@ -110,12 +135,9 @@ async function callGroq(prompt) {
     throw lastError || new Error('All Groq models failed');
 }
 
-// 3.2 - KeylessAI (free, no key, but can be unstable)
 async function callKeylessAI(prompt) {
-    // 15-second timeout to avoid blocking
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 15000);
-
     try {
         const response = await fetch('https://keylessai.thryx.workers.dev/v1/chat/completions', {
             method: 'POST',
@@ -124,38 +146,33 @@ async function callKeylessAI(prompt) {
             body: JSON.stringify({
                 model: 'gpt-4o',
                 messages: [{ role: 'user', content: prompt }],
-                temperature: 0.2,
+                temperature: 0.1,
                 max_tokens: 1200,
             }),
         });
         clearTimeout(timeout);
-        if (!response.ok) {
-            throw new Error(`KeylessAI error: ${response.status}`);
-        }
+        if (!response.ok) throw new Error(`KeylessAI error: ${response.status}`);
         const data = await response.json();
-        const content = data.choices[0].message.content;
-        return extractJSON(content);
+        return extractJSON(data.choices[0].message.content);
     } catch (err) {
         clearTimeout(timeout);
         throw err;
     }
 }
 
-// 3.3 - OpenRouter (fallback if you have a key)
 async function callOpenRouter(prompt) {
     if (!openRouterClient) throw new Error('OpenRouter not initialized');
     const response = await openRouterClient.chat.completions.create({
         model: 'google/gemini-2.0-flash-lite-preview-02-05:free',
         messages: [{ role: 'user', content: prompt }],
-        temperature: 0.2,
+        temperature: 0.1,
         max_tokens: 1200,
     });
-    const content = response.choices[0].message.content;
-    return extractJSON(content);
+    return extractJSON(response.choices[0].message.content);
 }
 
 // ============================================================
-// 4. LOCAL FALLBACK (uses your JSON catalog)
+// 4. LOCAL FALLBACK
 // ============================================================
 
 function localFallback(text, logs) {
@@ -163,17 +180,12 @@ function localFallback(text, logs) {
     const results = [];
     const lowerText = text.toLowerCase();
 
-    // Loop through every product in the catalog
     products.forEach(product => {
         const name = product.name.toLowerCase();
         const ref = product.ref.toLowerCase();
 
-        // Check if name OR ref appears in the text
         if (lowerText.includes(name) || lowerText.includes(ref)) {
-            // Default quantity = 1
             let qty = 1;
-
-            // FIX: strict regex for quantity (1-3 digits, word boundary, escapes special chars)
             const safeName = escapeRegex(product.name);
             const regex = new RegExp(
                 `(\\b\\d{1,3})\\s+(?:x\\s+|unités?\\s+|pièces?\\s+|articles?\\s+)?${safeName}`,
@@ -184,7 +196,6 @@ function localFallback(text, logs) {
                 const parsed = parseInt(match[1]);
                 if (parsed >= 1 && parsed <= 999) qty = parsed;
             }
-
             results.push({
                 ref: product.ref,
                 name: product.name,
@@ -196,17 +207,15 @@ function localFallback(text, logs) {
         }
     });
 
-    // FIX: no more fake default product — return empty array instead
     if (results.length === 0) {
         logs.push('[Fallback] No product from the catalog found in the document.');
         return [];
     }
-
     return results;
 }
 
 // ============================================================
-// 5. PRODUCT MATCHING FUNCTION
+// 5. PRODUCT MATCHING
 // ============================================================
 
 function matchProducts(extractedItems, logs, providerName) {
@@ -216,67 +225,76 @@ function matchProducts(extractedItems, logs, providerName) {
     }
 
     logs.push(`${providerName} extracted ${extractedItems.length} items.`);
-    const results = extractedItems.map(item => {
-        // Search in local catalog
+    return extractedItems.map(item => {
+        // Safely resolve name/ref
+        const itemName = String(item.name || item.designation || item.label || '').trim();
+        const itemRef = String(item.ref || item.reference || item.sku || '').trim();
+
         const product = products.find(p =>
-            p.ref === item.ref ||
-            p.name.toLowerCase().includes(item.name.toLowerCase()) ||
-            item.name.toLowerCase().includes(p.name.toLowerCase())
+            (itemRef && p.ref === itemRef) ||
+            (itemName && p.name.toLowerCase().includes(itemName.toLowerCase())) ||
+            (itemName && itemName.toLowerCase().includes(p.name.toLowerCase()))
         );
 
         if (product) {
-            logs.push(`[Match] "${item.name}" -> ${product.ref} (${product.unitPrice}€/u)`);
+            logs.push(`[Match] "${itemName}" -> ${product.ref} (${product.unitPrice}€/u)`);
+            const q = Math.max(1, parseInt(item.qty) || 1);
             return {
                 ref: product.ref,
                 name: product.name,
-                qty: Math.max(1, parseInt(item.qty) || 1),
+                qty: q,
                 unitPrice: product.unitPrice,
-                total: Math.max(1, parseInt(item.qty) || 1) * product.unitPrice,
+                total: q * product.unitPrice,
             };
         } else {
-            // If not in catalog, use price suggested by AI
-            let unitPrice = item.unitPrice || item.price || 0;
-            if (unitPrice === 0 || isNaN(unitPrice)) {
-                unitPrice = 15.00; // Default price
-                logs.push(`[Default] "${item.name}" not found, price 15.00€/u`);
+            let unitPrice = parseFloat(item.unitPrice || item.price || 0);
+            if (!unitPrice || isNaN(unitPrice) || unitPrice <= 0) {
+                unitPrice = 15.00;
+                logs.push(`[Default] "${itemName || 'Unnamed'}" not found, price 15.00€/u`);
             } else {
-                logs.push(`[Document] "${item.name}" price read: ${unitPrice}€/u`);
+                logs.push(`[Document] "${itemName}" price read: ${unitPrice}€/u`);
             }
+            const q = Math.max(1, parseInt(item.qty) || 1);
             return {
-                ref: item.ref || 'EXT-' + String(Math.random()).slice(2, 6),
-                name: item.name || 'Unnamed item',
-                qty: Math.max(1, parseInt(item.qty) || 1),
-                unitPrice: parseFloat(unitPrice),
-                total: Math.max(1, parseInt(item.qty) || 1) * parseFloat(unitPrice),
+                ref: itemRef || 'EXT-' + String(Math.random()).slice(2, 6),
+                name: itemName || 'Unnamed item',
+                qty: q,
+                unitPrice,
+                total: q * unitPrice,
             };
         }
     });
-    return results;
 }
 
 // ============================================================
-// 6. MAIN ORCHESTRATOR (called by server.js)
+// 6. MAIN ORCHESTRATOR
 // ============================================================
 
 async function extractItemsFromText(text) {
     const logs = [];
 
-    // Prompt sent to the AI
-    const prompt = `
-    You are an expert assistant at extracting quote data.
-    Here is the text of a customer request:
-    """${text.slice(0, 3000)}"""
-    
-    Extract the requested items in strict JSON format.
-    Format: [{"ref":"string","name":"string","qty":number,"unitPrice":number}]
-    
-    Rules:
-    - If a unit price is mentioned in the text, use it.
-    - If no price is mentioned, set "unitPrice": 0.
-    - If no reference is given, invent a ref starting with "EXT".
-    - Reply only with JSON, no additional text.`;
+    const prompt = `Extract all requested items from the following customer request text.
 
-    // List of providers (order: Groq -> KeylessAI -> OpenRouter)
+TEXT:
+"""
+${text.slice(0, 3000)}
+"""
+
+Return a JSON OBJECT with a single key "items" that contains an ARRAY of item objects.
+Each item must have exactly these keys:
+- "ref": string (use the product reference if visible, otherwise generate one starting with "EXT")
+- "name": string (the product name or description)
+- "qty": number (quantity, minimum 1)
+- "unitPrice": number (unit price if mentioned, otherwise 0)
+
+Example output:
+{"items":[{"ref":"REF-1001","name":"Ampoule LED 10W","qty":5,"unitPrice":12.5}]}
+
+RULES:
+- Reply with JSON ONLY. No text before or after.
+- No markdown, no code fences.
+- If no items can be extracted, reply: {"items":[]}`;
+
     const providers = [
         { name: 'Groq', fn: callGroq, available: !!groqClient },
         { name: 'KeylessAI', fn: callKeylessAI, available: true },
@@ -285,7 +303,6 @@ async function extractItemsFromText(text) {
 
     let finalItems = null;
 
-    // Try each provider
     for (const provider of providers) {
         if (!provider.available) continue;
         try {
@@ -296,19 +313,19 @@ async function extractItemsFromText(text) {
                 finalItems = matched;
                 logs.push(`[${provider.name}] Success!`);
                 break;
+            } else {
+                logs.push(`[${provider.name}] No items matched, trying next provider.`);
             }
         } catch (err) {
             logs.push(`[${provider.name}] Failed: ${err.message}`);
         }
     }
 
-    // If no provider worked, use local fallback (your JSON catalog)
     if (!finalItems) {
         logs.push('All providers failed, switching to local fallback.');
         finalItems = localFallback(text, logs);
     }
 
-    // Compute total
     const total = finalItems.reduce((sum, item) => sum + item.total, 0);
     logs.push(`Total: ${total.toFixed(2)} €`);
 
