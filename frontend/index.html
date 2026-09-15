@@ -693,17 +693,26 @@ downloadPdfBtn.addEventListener('click', async (e) => {
     if (!lastDevisData) return;
     try {
         downloadPdfBtn.textContent = '⏳ Génération...';
-        const url = '/api/download-pdf?data=' + encodeURIComponent(JSON.stringify(lastDevisData));
-        const response = await apiFetch(url);
+        const response = await apiFetch('/api/download-pdf', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(lastDevisData)
+        });
         if (!response.ok) throw new Error('Erreur téléchargement');
         const blob = await response.blob();
         const u = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
-        a.href = u; a.download = `devis_${lastDevisData.quoteNumber}.pdf`;
-        document.body.appendChild(a); a.click(); a.remove();
+        a.href = u;
+        a.download = `devis_${lastDevisData.quoteNumber}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
         window.URL.revokeObjectURL(u);
         downloadPdfBtn.textContent = '⬇ Télécharger le PDF';
-    } catch(err) { showError(err.message); downloadPdfBtn.textContent = '⬇ Télécharger le PDF'; }
+    } catch (err) {
+        showError(err.message);
+        downloadPdfBtn.textContent = '⬇ Télécharger le PDF';
+    }
 });
 
 sendEmailBtn.addEventListener('click', async (e) => {

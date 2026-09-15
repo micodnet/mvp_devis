@@ -244,12 +244,9 @@ app.post('/api/generate-quote', authenticateToken, upload.single('file'), async 
 // ============================================================
 // GET /api/download-pdf
 // ============================================================
-app.get('/api/download-pdf', authenticateToken, async (req, res) => {
+app.post('/api/download-pdf', authenticateToken, async (req, res) => {
     try {
-        const dataParam = req.query.data;
-        if (!dataParam) return res.status(400).send('Données manquantes');
-        const data = JSON.parse(dataParam);
-        const { items, subtotal, vatAmount, total, vatRegime, vatRate, quoteNumber, issueDate, validDate, company, client } = data;
+        const { items, subtotal, vatAmount, total, vatRegime, vatRate, quoteNumber, issueDate, validDate, company, client } = req.body;
 
         if (!items || items.length === 0) return res.status(400).send('Aucun article');
 
@@ -266,7 +263,6 @@ app.get('/api/download-pdf', authenticateToken, async (req, res) => {
         res.status(500).send('Erreur génération PDF');
     }
 });
-
 // ============================================================
 // POST /api/send-email
 // ============================================================
