@@ -17,6 +17,8 @@ const { generateQuotePDF } = require('./utils/pdf-generator');
 const app = express();
 const port = process.env.PORT || 3000;
 
+app.set('trust proxy', 1); // Trust Render's proxy (needed for req.protocol = https)
+
 // Middleware
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
