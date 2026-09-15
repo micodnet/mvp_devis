@@ -13,11 +13,16 @@ const authRoutes = require('./routes/auth');
 const { extractTextFromFile } = require('./utils/parser');
 const { extractItemsFromText } = require('./utils/extractor');
 const { generateQuotePDF } = require('./utils/pdf-generator');
+const { checkAndIncrementQuota } = require('./utils/quota');
+const { router: stripeRoutes, stripeWebhook } = require('./routes/stripe');
 
 const app = express();
 const port = process.env.PORT || 3000;
 
 app.set('trust proxy', 1); // Trust Render's proxy (needed for req.protocol = https)
+
+// Webhook Stripe AVANT express.json() : il a besoin du body brut pour vérifier la signature
+app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), stripeWebhook);
 
 // Middleware
 app.use(cors());
@@ -26,6 +31,7 @@ app.use(express.static(path.join(__dirname, '../frontend')));
 
 // Routes publiques
 app.use('/api/auth', authRoutes);
+app.use('/api/stripe', stripeRoutes);
 
 // Multer
 const storage = multer.diskStorage({
@@ -135,6 +141,15 @@ app.get('/api/history', authenticateToken, async (req, res) => {
 app.post('/api/generate-quote', authenticateToken, upload.single('file'), async (req, res) => {
     const logs = [];
     try {
+        // Vérifier le quota AVANT de traiter le fichier
+        const quota = await checkAndIncrementQuota(req.user.id);
+        if (!quota.allowed) {
+            if (req.file && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
+            return res.status(429).json({
+                error: quota.message,
+                quota: { plan: quota.plan, limit: quota.limit, used: quota.used }
+            });
+        }
         if (!req.file) return res.status(400).json({ error: 'Aucun fichier envoyé' });
         const filePath = req.file.path;
         const mimeType = req.file.mimetype;

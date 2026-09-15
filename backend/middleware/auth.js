@@ -1,4 +1,3 @@
-// backend/middleware/auth.js
 // ------------------------------------------------------------
 // Middleware d'authentification par JWT
 // Vérifie le token envoyé dans le header Authorization
