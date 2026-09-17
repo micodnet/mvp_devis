@@ -155,21 +155,55 @@ router.post('/import', authenticateToken, upload.single('file'), async (req, res
         }
 
         // Détection des colonnes via la première ligne (headers)
-        const headers = rows[0].map(h => String(h).toLowerCase().trim());
+        // const headers = rows[0].map(h => String(h).toLowerCase().trim());
+        // const findCol = (...keys) => {
+        //     for (const key of keys) {
+        //         const idx = headers.findIndex(h => h.includes(key));
+        //         if (idx !== -1) return idx;
+        //     }
+        //     return -1;
+        // };
+
+        // const idxName = findCol('name', 'nom', 'designation', 'désignation', 'produit');
+        // const idxRef = findCol('ref', 'réf', 'reference', 'référence', 'sku');
+        // const idxPrice = findCol('prix', 'price', 'pu', 'unit_price', 'tarif', 'montant');
+        // const idxUnit = findCol('unite', 'unité', 'unit');
+        // const idxCategory = findCol('categorie', 'catégorie', 'category');
+        // const idxDesc = findCol('description', 'desc');
+
+        // Normalise un header : enlève accents, espaces, caractères spéciaux
+        const normalizeHeader = (str) => String(str || '')
+            .toLowerCase()
+            .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // enlève les accents
+            .replace(/[^a-z0-9]/g, '')                        // garde uniquement lettres + chiffres
+            .trim();
+            
+        // Détection des colonnes via la première ligne (headers)
+        const headers = rows[0].map(h => normalizeHeader(h));
+
         const findCol = (...keys) => {
             for (const key of keys) {
-                const idx = headers.findIndex(h => h.includes(key));
+                const keyNorm = normalizeHeader(key);
+                if (!keyNorm) continue;
+                const idx = headers.findIndex(h => h === keyNorm);   // match exact prioritaire
+                if (idx !== -1) return idx;
+            }
+            // 2ème passe : recherche partielle
+            for (const key of keys) {
+                const keyNorm = normalizeHeader(key);
+                if (!keyNorm) continue;
+                const idx = headers.findIndex(h => h.includes(keyNorm));
                 if (idx !== -1) return idx;
             }
             return -1;
         };
 
-        const idxName = findCol('name', 'nom', 'designation', 'désignation', 'produit');
-        const idxRef = findCol('ref', 'réf', 'reference', 'référence', 'sku');
-        const idxPrice = findCol('prix', 'price', 'pu', 'unit_price', 'tarif', 'montant');
-        const idxUnit = findCol('unite', 'unité', 'unit');
-        const idxCategory = findCol('categorie', 'catégorie', 'category');
-        const idxDesc = findCol('description', 'desc');
+        const idxName = findCol('name', 'nom', 'designation', 'désignation', 'produit', 'libelle', 'label', 'title', 'titre');
+        const idxRef = findCol('ref', 'reference', 'référence', 'réf', 'sku', 'code', 'article', 'code article', 'codearticle');
+        const idxPrice = findCol('prix', 'price', 'pu', 'unitprice', 'unit_price', 'tarif', 'montant', 'priceht', 'prixht', 'prix unitaire', 'prixunitaire');
+        const idxUnit = findCol('unite', 'unité', 'unit', 'unite de mesure', 'uom');
+        const idxCategory = findCol('categorie', 'catégorie', 'category', 'famille', 'type', 'groupe', 'rubrique');
+        const idxDesc = findCol('description', 'desc', 'detail', 'détail', 'commentaire');
 
         if (idxName === -1 || idxPrice === -1) {
             return res.status(400).json({
