@@ -1,10 +1,9 @@
 /*
  * extractor.js - AI extraction engine for quotes
  */
-
-const { products } = require('../data/price-db.json');
-
-console.log(`Catalog loaded: ${products.length} products available.`);
+// Le catalogue n'est plus lu en dur : il est passé en paramètre depuis server.js
+// const { products } = require('../data/price-db.json');
+// console.log(`Catalog loaded: ${products.length} products available.`);
 
 // ============================================================
 // 1. AI PROVIDERS INITIALIZATION
@@ -175,7 +174,7 @@ async function callOpenRouter(prompt) {
 // 4. LOCAL FALLBACK
 // ============================================================
 
-function localFallback(text, logs) {
+function localFallback(text, logs, products) {
     logs.push('[Fallback] Searching local catalog (price-db.json).');
     const results = [];
     const lowerText = text.toLowerCase();
@@ -218,7 +217,7 @@ function localFallback(text, logs) {
 // 5. PRODUCT MATCHING
 // ============================================================
 
-function matchProducts(extractedItems, logs, providerName) {
+function matchProducts(extractedItems, logs, providerName, products) {
     if (!Array.isArray(extractedItems) || extractedItems.length === 0) {
         logs.push(`${providerName} returned no items.`);
         return null;
@@ -270,7 +269,7 @@ function matchProducts(extractedItems, logs, providerName) {
 // 6. MAIN ORCHESTRATOR
 // ============================================================
 
-async function extractItemsFromText(text) {
+async function extractItemsFromText(text, products = []) {
     const logs = [];
 
     const prompt = `Extract all requested items from the following customer request text.
@@ -308,7 +307,7 @@ RULES:
         try {
             logs.push(`[${provider.name}] Attempt...`);
             const extracted = await provider.fn(prompt);
-            const matched = matchProducts(extracted, logs, provider.name);
+            const matched = matchProducts(extracted, logs, provider.name, products);
             if (matched && matched.length > 0) {
                 finalItems = matched;
                 logs.push(`[${provider.name}] Success!`);
@@ -323,7 +322,7 @@ RULES:
 
     if (!finalItems) {
         logs.push('All providers failed, switching to local fallback.');
-        finalItems = localFallback(text, logs);
+        finalItems = localFallback(text, logs, products);
     }
 
     const total = finalItems.reduce((sum, item) => sum + item.total, 0);

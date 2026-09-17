@@ -8,20 +8,21 @@ const { Resend } = require('resend');
 
 const { pool, initDB } = require('./db');
 const { authenticateToken } = require('./middleware/auth');
-const authRoutes = require('./routes/auth');
 
 const { extractTextFromFile } = require('./utils/parser');
 const { extractItemsFromText } = require('./utils/extractor');
 const { generateQuotePDF } = require('./utils/pdf-generator');
 const { checkAndIncrementQuota } = require('./utils/quota');
+const authRoutes = require('./routes/auth');
 const { router: stripeRoutes, stripeWebhook } = require('./routes/stripe');
+const productsRoutes = require('./routes/products');
 
 const app = express();
 const port = process.env.PORT || 3000;
 
 app.set('trust proxy', 1); // Trust Render's proxy (needed for req.protocol = https)
 
-// Webhook Stripe AVANT express.json() : il a besoin du body brut pour vérifier la signature
+// Webhook Stripe: a besoin du body brut pour vérifier la signature
 app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), stripeWebhook);
 
 // Middleware
@@ -32,6 +33,7 @@ app.use(express.static(path.join(__dirname, '../frontend')));
 // Routes publiques
 app.use('/api/auth', authRoutes);
 app.use('/api/stripe', stripeRoutes);
+app.use('/api/products', productsRoutes);
 
 // Multer
 const storage = multer.diskStorage({
@@ -167,7 +169,18 @@ app.post('/api/generate-quote', authenticateToken, upload.single('file'), async 
         }
         logs.push(`Texte extrait (${text.length} caractères).`);
 
-        const result = await extractItemsFromText(text);
+        // Charge le catalogue produits de CET utilisateur
+        const productsResult = await pool.query(
+            'SELECT ref, name, unit_price FROM products WHERE user_id = $1',
+            [req.user.id]
+        );
+        const userProducts = productsResult.rows.map(p => ({
+            ref: p.ref,
+            name: p.name,
+            unitPrice: parseFloat(p.unit_price),
+        }));
+
+        const result = await extractItemsFromText(text, userProducts);
         const items = result.items;
         const iaLogs = result.logs || [];
         fs.unlinkSync(filePath);
