@@ -1,6 +1,6 @@
 const { PDFDocument, rgb, StandardFonts } = require('pdf-lib');
 
-async function generateQuotePDF(items, subtotal, vatAmount, total, vatRegime, vatRate, quoteNumber, issueDate, validDate, company, client) {
+async function generateQuotePDF(items, subtotal, vatAmount, total, vatRegime, vatRate, quoteNumber, issueDate, validDate, company, client, signature = null) {
     const pdfDoc = await PDFDocument.create();
     const page = pdfDoc.addPage([595, 842]); // A4
     const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
@@ -426,6 +426,81 @@ async function generateQuotePDF(items, subtotal, vatAmount, total, vatRegime, va
         x: marginLeft, y: footerY - 26, size: 7, font: font, color: lightGray,
     });
 
+    // ==========================================================
+    // BLOC SIGNATURE (si le devis est signé)
+    // ==========================================================
+    if (signature && signature.signedAt) {
+        const signY = footerY + 110;
+
+        // Titre
+        page.drawText('SIGNATURE DU CLIENT', {
+            x: marginLeft, y: signY + 20, size: 8, font: boldFont, color: darkGray
+        });
+
+        // Cadre
+        page.drawRectangle({
+            x: marginLeft, y: signY - 60,
+            width: 250, height: 75,
+            color: rgb(0.98, 0.99, 1),
+            borderColor: rgb(0.85, 0.88, 0.92),
+            borderWidth: 0.5
+        });
+
+        // Contenu
+        const sigLines = [];
+        sigLines.push(`Signé par : ${signature.signedBy || 'N/A'}`);
+        const signedDate = new Date(signature.signedAt).toLocaleString('fr-FR');
+        sigLines.push(`Le : ${signedDate}`);
+        if (signature.ip) sigLines.push(`IP : ${signature.ip}`);
+        sigLines.push(`Méthode : ${signature.method === 'draw' ? 'Signature manuscrite' : 'Acceptation électronique'}`);
+
+        let sigYPos = signY + 5;
+        sigLines.forEach(line => {
+            page.drawText(line, {
+                x: marginLeft + 10, y: sigYPos, size: 8, font: font, color: darkGray
+            });
+            sigYPos -= 11;
+        });
+
+        // Si signature manuscrite, dessiner l'image
+        if (signature.method === 'draw' && signature.data) {
+            try {
+                const sigBase64 = signature.data.replace(/^data:image\/\w+;base64,/, '');
+                const sigBuffer = Buffer.from(sigBase64, 'base64');
+                if (sigBuffer.length > 0) {
+                    const sigImage = await pdfDoc.embedPng(sigBuffer);
+                    const sigDims = sigImage.scaleToFit(220, 60);
+                    page.drawImage(sigImage, {
+                        x: marginLeft + 260,
+                        y: signY - 50,
+                        width: sigDims.width,
+                        height: sigDims.height
+                    });
+                }
+            } catch (e) {
+                console.warn('Signature non lisible:', e.message);
+            }
+        }
+
+        // Marqueur "Accepté" à droite
+        if (signature.method === 'checkbox') {
+            page.drawRectangle({
+                x: marginLeft + 260, y: signY - 50,
+                width: 220, height: 60,
+                color: rgb(0.88, 0.97, 0.9),
+                borderColor: rgb(0.13, 0.77, 0.37),
+                borderWidth: 1
+            });
+            page.drawText('✓ DEVIS ACCEPTÉ', {
+                x: marginLeft + 285, y: signY - 15,
+                size: 14, font: boldFont, color: rgb(0.09, 0.6, 0.27)
+            });
+            page.drawText('Acceptation électronique', {
+                x: marginLeft + 300, y: signY - 35,
+                size: 9, font: font, color: rgb(0.09, 0.6, 0.27)
+            });
+        }
+    }
     const pageText = 'Page 1 / 1';
     const pageTextWidth = font.widthOfTextAtSize(pageText, 7);
     page.drawText(pageText, {

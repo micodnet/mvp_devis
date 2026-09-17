@@ -80,7 +80,8 @@ app.get('/api/settings', authenticateToken, async (req, res) => {
             website: s.website,
             logo: s.logo,
             vatRegime: s.vat_regime || 'franchise',
-            vatRate: parseFloat(s.vat_rate) || 21
+            vatRate: parseFloat(s.vat_rate) || 21,
+            signatureMethod: s.signature_method || 'none'
         });
     } catch (err) {
         console.error(err);
@@ -92,11 +93,11 @@ app.get('/api/settings', authenticateToken, async (req, res) => {
 // POST /api/settings
 // ============================================================
 app.post('/api/settings', authenticateToken, async (req, res) => {
-    const { companyName, address, siret, tva, phone, email, website, logo, vatRegime, vatRate } = req.body;
+    const { companyName, address, siret, tva, phone, email, website, logo, vatRegime, vatRate, signatureMethod } = req.body;
     try {
         await pool.query(`
-            INSERT INTO settings (user_id, company_name, address, siret, tva, phone, email, website, logo, vat_regime, vat_rate, updated_at)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW())
+            INSERT INTO settings (user_id, company_name, address, siret, tva, phone, email, website, logo, vat_regime, vat_rate, signature_method, updated_at)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, NOW())
             ON CONFLICT (user_id) DO UPDATE SET
                 company_name = EXCLUDED.company_name,
                 address = EXCLUDED.address,
@@ -108,8 +109,9 @@ app.post('/api/settings', authenticateToken, async (req, res) => {
                 logo = COALESCE(EXCLUDED.logo, settings.logo),
                 vat_regime = EXCLUDED.vat_regime,
                 vat_rate = EXCLUDED.vat_rate,
+                signature_method = EXCLUDED.signature_method,
                 updated_at = NOW()
-        `, [req.user.id, companyName, address, siret, tva, phone, email, website, logo, vatRegime || 'franchise', vatRate || 21]);
+        `, [req.user.id, companyName, address, siret, tva, phone, email, website, logo, vatRegime || 'franchise', vatRate || 21, signatureMethod || 'none']);
         res.json({ success: true });
     } catch (err) {
         console.error(err);
@@ -298,16 +300,19 @@ app.post('/api/generate-quote', authenticateToken, upload.single('file'), async 
 // ============================================================
 // GET /api/download-pdf
 // ============================================================
-app.post('/api/download-pdf', authenticateToken, async (req, res) => {
+app.get('/api/download-pdf', authenticateToken, async (req, res) => {
     try {
-        const { items, subtotal, vatAmount, total, vatRegime, vatRate, quoteNumber, issueDate, validDate, company, client } = req.body;
+        const dataParam = req.query.data;
+        if (!dataParam) return res.status(400).send('Données manquantes');
+        const data = JSON.parse(dataParam);
+        const { items, subtotal, vatAmount, total, vatRegime, vatRate, quoteNumber, issueDate, validDate, company, client, signature } = data;
 
         if (!items || items.length === 0) return res.status(400).send('Aucun article');
 
         const pdfBytes = await generateQuotePDF(
             items, subtotal, vatAmount, total,
             vatRegime, vatRate, quoteNumber, issueDate, validDate,
-            company, client
+            company, client, signature
         );
         res.setHeader('Content-Type', 'application/pdf');
         res.setHeader('Content-Disposition', `attachment; filename=devis_${quoteNumber}.pdf`);
@@ -322,13 +327,13 @@ app.post('/api/download-pdf', authenticateToken, async (req, res) => {
 // ============================================================
 app.post('/api/send-email', authenticateToken, async (req, res) => {
     try {
-        const { email, items, subtotal, vatAmount, total, vatRegime, vatRate, quoteNumber, issueDate, validDate, company, client } = req.body;
+        const { email, items, subtotal, vatAmount, total, vatRegime, vatRate, quoteNumber, issueDate, validDate, company, client, signature } = req.body;
         if (!email || !items || items.length === 0) {
             return res.status(400).json({ error: 'Email et articles requis.' });
         }
         const pdfBytes = await generateQuotePDF(
             items, subtotal, vatAmount, total, vatRegime, vatRate,
-            quoteNumber, issueDate, validDate, company, client
+            quoteNumber, issueDate, validDate, company, client, signature
         );
         const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -378,6 +383,66 @@ app.post('/api/send-email', authenticateToken, async (req, res) => {
 // ============================================================
 // GET /api/dashboard
 // ==================
+// ============================================================
+// POST /api/quotes/:id/sign — Enregistrer la signature d'un devis
+// ============================================================
+app.post('/api/quotes/:id/sign', authenticateToken, async (req, res) => {
+    const quoteId = parseInt(req.params.id);
+    if (!quoteId) return res.status(400).json({ error: 'ID invalide.' });
+
+    const { method, signedBy, signatureData, accepted } = req.body;
+
+    if (!['checkbox', 'draw'].includes(method)) {
+        return res.status(400).json({ error: 'Méthode de signature invalide.' });
+    }
+    if (!signedBy || !signedBy.trim()) {
+        return res.status(400).json({ error: 'Le nom du signataire est requis.' });
+    }
+    if (method === 'checkbox' && !accepted) {
+        return res.status(400).json({ error: 'Vous devez accepter les conditions.' });
+    }
+    if (method === 'draw' && (!signatureData || signatureData.length < 100)) {
+        return res.status(400).json({ error: 'La signature est vide.' });
+    }
+
+    try {
+        // Récupérer l'IP
+        const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket.remoteAddress || 'unknown';
+
+        const result = await pool.query(`
+            UPDATE quotes
+            SET signature_method = $1,
+                signature_data = $2,
+                signature_signed_at = NOW(),
+                signature_signed_by = $3,
+                signature_ip = $4,
+                status = 'accepted',
+                updated_at = NOW()
+            WHERE id = $5 AND user_id = $6
+            RETURNING id, quote_number, signature_signed_at, status
+        `, [
+            method,
+            method === 'draw' ? signatureData : null,
+            signedBy.trim(),
+            ip,
+            quoteId,
+            req.user.id
+        ]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Devis non trouvé.' });
+        }
+
+        res.json({
+            success: true,
+            quote: result.rows[0]
+        });
+    } catch (err) {
+        console.error('Erreur signature:', err);
+        res.status(500).json({ error: 'Erreur serveur.' });
+    }
+});
+
 // ============================================================
 // GET /api/export-data — Export RGPD (toutes les données de l'utilisateur)
 // ============================================================

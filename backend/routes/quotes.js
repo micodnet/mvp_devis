@@ -35,6 +35,13 @@ router.get('/:id', authenticateToken, async (req, res) => {
             clientAddress: q.client_address,
             clientVat: q.client_vat,
             clientEmail: q.client_email,
+            signature: {
+                method: q.signature_method,
+                data: q.signature_data,
+                signedAt: q.signature_signed_at,
+                signedBy: q.signature_signed_by,
+                ip: q.signature_ip
+            }
         });
     } catch (err) {
         console.error(err);
