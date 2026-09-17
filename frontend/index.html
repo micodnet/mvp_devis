@@ -124,9 +124,83 @@
         .feature h3 { color:#fff; font-size:17px; font-weight:700; margin-bottom:8px; }
         .feature p { color:#94a3b8; font-size:14px; line-height:1.6; }
 
+        .pricing-section { margin-top:100px; padding:0 20px; }
+        .pricing-header { text-align:center; margin-bottom:50px; }
+        .pricing-header h2 {
+            font-size:38px; font-weight:800; color:#fff;
+            letter-spacing:-1px; margin-bottom:12px;
+        }
+        .pricing-header h2 span {
+            background:linear-gradient(135deg,#f97316,#fb923c);
+            -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+        }
+        .pricing-header p { font-size:16px; color:#94a3b8; }
+
+        .pricing-grid {
+            display:grid;
+            grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+            gap:20px;
+            max-width:1100px;
+            margin:0 auto;
+        }
+        .pricing-card {
+            background:#111b2e;
+            border:1px solid #1e2a41;
+            border-radius:20px;
+            padding:28px 24px;
+            position:relative;
+            transition:0.25s;
+            display:flex;
+            flex-direction:column;
+        }
+        .pricing-card:hover { transform:translateY(-6px); border-color:#2a3a55; }
+        .pricing-card.featured {
+            border-color:#f97316;
+            background:linear-gradient(180deg,#161f32,#111b2e);
+            box-shadow:0 20px 50px rgba(249,115,22,0.15);
+        }
+        .pricing-card .popular-badge {
+            position:absolute; top:-12px; left:50%; transform:translateX(-50%);
+            background:#f97316; color:#0b1120; font-size:11px; font-weight:700;
+            padding:4px 14px; border-radius:40px; letter-spacing:0.5px;
+            text-transform:uppercase;
+        }
+        .pricing-card .plan-name {
+            font-size:14px; font-weight:700; color:#f97316;
+            text-transform:uppercase; letter-spacing:1px; margin-bottom:12px;
+        }
+        .pricing-card .plan-price {
+            font-size:38px; font-weight:800; color:#fff;
+            line-height:1; margin-bottom:4px;
+        }
+        .pricing-card .plan-price .currency { font-size:20px; font-weight:600; vertical-align:top; }
+        .pricing-card .plan-price .period { font-size:14px; font-weight:500; color:#64748b; }
+        .pricing-card .plan-desc {
+            font-size:13px; color:#94a3b8; margin:12px 0 20px;
+            line-height:1.5; min-height:40px;
+        }
+        .pricing-card ul { list-style:none; margin-bottom:24px; flex-grow:1; }
+        .pricing-card ul li {
+            font-size:13px; color:#cbd5e1; padding:6px 0;
+            display:flex; gap:8px; align-items:flex-start;
+        }
+        .pricing-card ul li::before {
+            content:'✓'; color:#22c55e; font-weight:700; flex-shrink:0;
+        }
+        .pricing-card .plan-cta {
+            width:100%; padding:12px 20px; border-radius:60px; border:none;
+            font-weight:700; font-size:14px; cursor:pointer; transition:0.2s;
+            background:#1a253b; color:#e2e8f0; border:1px solid #2a3a55;
+        }
+        .pricing-card .plan-cta:hover { background:#24324b; border-color:#3b82f6; }
+        .pricing-card.featured .plan-cta {
+            background:#f97316; color:#0b1120; border-color:#f97316;
+        }
+        .pricing-card.featured .plan-cta:hover { background:#ea580c; }
+
         .landing-footer {
             text-align:center; padding:60px 20px 30px; color:#475569;
-            font-size:13px; border-top:1px solid #1e2a41; margin-top:60px;
+            font-size:13px; border-top:1px solid #1e2a41; margin-top:80px;
         }
         .landing-footer a { color:#94a3b8; text-decoration:none; }
         .landing-footer a:hover { color:#f97316; }
@@ -136,6 +210,7 @@
             .hero p { font-size:16px; }
             .preview-flow { flex-direction:column; }
             .preview-arrow { transform:rotate(90deg); }
+            .pricing-header h2 { font-size:28px; }
         }
 
         /* ============ AUTH SCREEN ============ */
@@ -166,9 +241,7 @@
             text-align:center; margin-top:16px; color:#94a3b8; font-size:13px;
         }
         #authScreen .toggle a { color:#f97316; cursor:pointer; font-weight:600; text-decoration:none; }
-        #authScreen .forgot-link {
-            text-align:right; margin-top:-4px; margin-bottom:10px;
-        }
+        #authScreen .forgot-link { text-align:right; margin-top:-4px; margin-bottom:10px; }
         #authScreen .forgot-link a {
             color:#64748b; cursor:pointer; font-size:12px; text-decoration:none;
         }
@@ -203,6 +276,14 @@
         .logo-area .sub { color:#94a3b8; font-size:12px; }
         .user-area { display:flex; align-items:center; gap:12px; color:#94a3b8; font-size:13px; }
         .user-area .email { color:#e2e8f0; font-weight:500; }
+        .user-area .plan-badge {
+            background:rgba(249,115,22,0.15); border:1px solid rgba(249,115,22,0.3);
+            color:#f97316; padding:4px 12px; border-radius:40px;
+            font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px;
+        }
+        .user-area .plan-badge.free {
+            background:#1a253b; border-color:#2a3a55; color:#94a3b8;
+        }
         .user-area .logout {
             background:#1a253b; border:1px solid #2a3a55; color:#e2e8f0;
             padding:6px 14px; border-radius:60px; cursor:pointer; font-size:12px;
@@ -210,7 +291,7 @@
         }
         .user-area .logout:hover { background:#3f1e24; border-color:#7f1d1d; color:#f87171; }
 
-        .tabs { display:flex; gap:6px; background:#0b1120; padding:4px; border-radius:60px; margin-top:12px; }
+        .tabs { display:flex; gap:6px; background:#0b1120; padding:4px; border-radius:60px; margin-top:12px; flex-wrap:wrap; }
         .tab-btn {
             background:transparent; border:none; padding:8px 20px; border-radius:40px;
             color:#94a3b8; font-weight:600; font-size:14px; cursor:pointer; transition:0.2s;
@@ -223,6 +304,26 @@
 
         .card { background:#111b2e; border-radius:20px; padding:24px; border:1px solid #1e2a41; margin-bottom:20px; }
         .card-title { font-size:18px; font-weight:600; color:#e2e8f0; margin-bottom:16px; }
+
+        .quota-banner {
+            background:linear-gradient(135deg,#1a253b,#1e2a41);
+            border:1px solid #2a3a55; border-radius:16px;
+            padding:14px 20px; display:flex; justify-content:space-between;
+            align-items:center; margin-bottom:16px; font-size:13px;
+            flex-wrap:wrap; gap:10px;
+        }
+        .quota-banner.warning {
+            background:linear-gradient(135deg,#2a1a14,#1f1220);
+            border-color:#7c2d12;
+        }
+        .quota-banner .quota-text { color:#cbd5e1; }
+        .quota-banner .quota-text strong { color:#f97316; }
+        .quota-banner .quota-btn {
+            background:#f97316; color:#0b1120; border:none;
+            padding:8px 18px; border-radius:60px; font-weight:600; font-size:12px;
+            cursor:pointer; transition:0.2s;
+        }
+        .quota-banner .quota-btn:hover { background:#ea580c; }
 
         .drop-zone {
             border:2px dashed #2a3a55; border-radius:20px; padding:32px; text-align:center;
@@ -305,16 +406,228 @@
         }
         .top-products .product-qty { color:#94a3b8; }
 
+        /* ============ CATALOGUE ============ */
+        .catalog-header {
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            flex-wrap:wrap;
+            gap:12px;
+            margin-bottom:20px;
+        }
+        .catalog-header h2 {
+            font-size:20px;
+            font-weight:700;
+            color:#fff;
+        }
+        .catalog-header .catalog-actions {
+            display:flex;
+            gap:10px;
+            flex-wrap:wrap;
+        }
+        .btn-secondary {
+            background:#1a253b;
+            border:1px solid #2a3a55;
+            color:#e2e8f0;
+            padding:10px 20px;
+            border-radius:60px;
+            font-weight:600;
+            font-size:13px;
+            cursor:pointer;
+            transition:0.2s;
+        }
+        .btn-secondary:hover { background:#24324b; border-color:#3b82f6; }
+        .btn-primary-sm {
+            background:#f97316;
+            border:none;
+            color:#0b1120;
+            padding:10px 20px;
+            border-radius:60px;
+            font-weight:700;
+            font-size:13px;
+            cursor:pointer;
+            transition:0.2s;
+        }
+        .btn-primary-sm:hover { background:#ea580c; }
+
+        .catalog-search {
+            width:100%;
+            padding:12px 18px;
+            border-radius:60px;
+            background:#0b1120;
+            border:1px solid #2a3a55;
+            color:#e2e8f0;
+            font-size:14px;
+            margin-bottom:16px;
+        }
+        .catalog-search:focus { outline:2px solid #f97316; border-color:transparent; }
+
+        .catalog-table {
+            width:100%;
+            border-collapse:collapse;
+            font-size:14px;
+        }
+        .catalog-table th {
+            text-align:left;
+            padding:12px 10px;
+            color:#94a3b8;
+            background:#0b1120;
+            font-size:11px;
+            text-transform:uppercase;
+            letter-spacing:0.4px;
+            font-weight:600;
+        }
+        .catalog-table td {
+            padding:12px 10px;
+            border-bottom:1px solid #1e2a41;
+            color:#e2e8f0;
+        }
+        .catalog-table tr:hover td {
+            background:#141e33;
+        }
+        .catalog-table .product-ref {
+            font-size:11px;
+            background:#1a253b;
+            padding:2px 10px;
+            border-radius:40px;
+            color:#94a3b8;
+            border:1px solid #2a3a55;
+            display:inline-block;
+        }
+        .catalog-table .product-price {
+            font-weight:600;
+            color:#f97316;
+        }
+        .catalog-table .row-actions {
+            display:flex;
+            gap:6px;
+            justify-content:flex-end;
+        }
+        .catalog-table .row-actions button {
+            background:#1a253b;
+            border:1px solid #2a3a55;
+            color:#e2e8f0;
+            padding:6px 12px;
+            border-radius:40px;
+            font-size:12px;
+            cursor:pointer;
+            transition:0.2s;
+        }
+        .catalog-table .row-actions button:hover {
+            background:#24324b;
+            border-color:#3b82f6;
+        }
+        .catalog-table .row-actions button.delete:hover {
+            background:#3f1e24;
+            border-color:#7f1d1d;
+            color:#f87171;
+        }
+
+        .catalog-empty {
+            text-align:center;
+            padding:60px 20px;
+            color:#64748b;
+        }
+        .catalog-empty .big-icon {
+            font-size:56px;
+            margin-bottom:12px;
+            opacity:0.4;
+        }
+        .catalog-empty h3 {
+            color:#e2e8f0;
+            font-size:18px;
+            margin-bottom:8px;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position:fixed;
+            inset:0;
+            background:rgba(11,17,32,0.85);
+            -webkit-backdrop-filter: blur(6px);
+            backdrop-filter:blur(6px);
+            z-index:1000;
+            display:none;
+            align-items:center;
+            justify-content:center;
+            padding:20px;
+        }
+        .modal-overlay.show { display:flex; }
+        .modal {
+            background:#161f32;
+            border:1px solid #2a3a55;
+            border-radius:20px;
+            padding:28px;
+            max-width:500px;
+            width:100%;
+            max-height:90vh;
+            overflow-y:auto;
+            box-shadow:0 40px 80px rgba(0,0,0,0.6);
+        }
+        .modal h3 {
+            color:#fff;
+            font-size:20px;
+            margin-bottom:20px;
+            font-weight:700;
+        }
+        .modal-actions {
+            display:flex;
+            gap:12px;
+            justify-content:flex-end;
+            margin-top:20px;
+            flex-wrap:wrap;
+        }
+        .btn-cancel {
+            background:#1a253b;
+            border:1px solid #2a3a55;
+            color:#e2e8f0;
+            padding:10px 20px;
+            border-radius:60px;
+            font-weight:600;
+            font-size:14px;
+            cursor:pointer;
+        }
+        .btn-cancel:hover { background:#24324b; }
+        .btn-confirm {
+            background:#f97316;
+            border:none;
+            color:#0b1120;
+            padding:10px 24px;
+            border-radius:60px;
+            font-weight:700;
+            font-size:14px;
+            cursor:pointer;
+        }
+        .btn-confirm:hover { background:#ea580c; }
+        .btn-confirm:disabled { opacity:0.5; cursor:not-allowed; }
+
         @media (max-width:768px) {
             .header { flex-direction:column; align-items:stretch; }
             .tabs { overflow-x:auto; }
             .form-row { grid-template-columns:1fr; }
+            .catalog-header { flex-direction:column; align-items:stretch; }
+            .catalog-table { font-size:12px; }
+            .catalog-table th:nth-child(4),
+            .catalog-table td:nth-child(4) { display:none; }
         }
         .error-msg {
             color:#f87171; background:#1f1220; padding:12px 16px; border-radius:12px;
             border:1px solid #3f1e24; margin-top:12px; display:none;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
+
+        #toast {
+            position:fixed; bottom:30px; left:50%;
+            transform:translateX(-50%) translateY(100px);
+            background:#161f32; color:#e2e8f0;
+            padding:14px 24px; border-radius:60px;
+            border:1px solid #2a3a55; font-weight:600; font-size:14px;
+            box-shadow:0 20px 40px rgba(0,0,0,0.5);
+            opacity:0; transition:0.3s; z-index:2000; pointer-events:none;
+        }
+        #toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+        #toast.success { border-color:#22c55e; color:#4ade80; }
+        #toast.error { border-color:#f87171; color:#f87171; }
     </style>
 </head>
 <body>
@@ -406,8 +719,67 @@
                         <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
                     </svg>
                 </div>
-                <h3>Données isolées</h3>
-                <p>Chaque compte est totalement isolé. Vos devis, votre catalogue, vos paramètres, votre logo : rien n'est partagé avec les autres utilisateurs.</p>
+                <h3>Votre catalogue</h3>
+                <p>Importez votre catalogue produits en CSV ou Excel. L'IA associe automatiquement les demandes clients à vos références et vos prix.</p>
+            </div>
+        </div>
+
+        <div class="pricing-section">
+            <div class="pricing-header">
+                <h2>Des tarifs <span>simples</span> et transparents</h2>
+                <p>Commencez gratuitement. Passez à un plan supérieur quand vous en avez besoin.</p>
+            </div>
+            <div class="pricing-grid">
+                <div class="pricing-card">
+                    <div class="plan-name">Free</div>
+                    <div class="plan-price">0<span class="currency">€</span><span class="period">/mois</span></div>
+                    <div class="plan-desc">Pour tester l'outil et découvrir la puissance de l'IA.</div>
+                    <ul>
+                        <li>3 devis par mois</li>
+                        <li>1 utilisateur</li>
+                        <li>Catalogue produits</li>
+                        <li>PDF avec votre logo</li>
+                    </ul>
+                    <button class="plan-cta" data-plan="free">Commencer gratuitement</button>
+                </div>
+                <div class="pricing-card featured">
+                    <div class="popular-badge">Populaire</div>
+                    <div class="plan-name">Starter</div>
+                    <div class="plan-price">19<span class="currency">€</span><span class="period">/mois</span></div>
+                    <div class="plan-desc">Idéal pour les indépendants et artisans avec une activité modérée.</div>
+                    <ul>
+                        <li>50 devis par mois</li>
+                        <li>Catalogue produits</li>
+                        <li>Envoi par email</li>
+                        <li>Coordonnées client</li>
+                        <li>TVA (franchise/assujetti)</li>
+                    </ul>
+                    <button class="plan-cta" data-plan="starter">Choisir Starter</button>
+                </div>
+                <div class="pricing-card">
+                    <div class="plan-name">Pro</div>
+                    <div class="plan-price">49<span class="currency">€</span><span class="period">/mois</span></div>
+                    <div class="plan-desc">Pour les TPE/PME avec une activité commerciale soutenue.</div>
+                    <ul>
+                        <li>200 devis par mois</li>
+                        <li>Catalogue produits</li>
+                        <li>Statistiques avancées</li>
+                        <li>Support prioritaire</li>
+                    </ul>
+                    <button class="plan-cta" data-plan="pro">Choisir Pro</button>
+                </div>
+                <div class="pricing-card">
+                    <div class="plan-name">Entreprise</div>
+                    <div class="plan-price">99<span class="currency">€</span><span class="period">/mois</span></div>
+                    <div class="plan-desc">Pour les équipes commerciales et les besoins spécifiques.</div>
+                    <ul>
+                        <li>Devis illimités</li>
+                        <li>Catalogue produits</li>
+                        <li>Multi-utilisateurs (bientôt)</li>
+                        <li>Support dédié</li>
+                    </ul>
+                    <button class="plan-cta" data-plan="entreprise">Choisir Entreprise</button>
+                </div>
             </div>
         </div>
     </section>
@@ -417,10 +789,8 @@
     </footer>
 </div>
 
-<!-- ==================== AUTH (login/signup/forgot) ==================== -->
+<!-- ==================== AUTH ==================== -->
 <div id="authScreen">
-
-    <!-- VUE 1 : LOGIN / SIGNUP -->
     <div id="authViewLogin">
         <h1>Devis <span>Express</span> Pro</h1>
         <div class="sub">Connectez-vous ou créez votre compte</div>
@@ -448,7 +818,6 @@
         </div>
     </div>
 
-    <!-- VUE 2 : MOT DE PASSE OUBLIÉ -->
     <div id="authViewForgot" style="display:none;">
         <h1>Mot de passe <span>oublié</span></h1>
         <div class="sub">Entrez votre email, nous vous enverrons un lien de réinitialisation.</div>
@@ -466,7 +835,6 @@
         </div>
     </div>
 
-    <!-- VUE 3 : RESET (avec token dans l'URL) -->
     <div id="authViewReset" style="display:none;">
         <h1>Nouveau <span>mot de passe</span></h1>
         <div class="sub">Choisissez un nouveau mot de passe (min. 6 caractères).</div>
@@ -487,7 +855,6 @@
             <a id="backToLoginFromReset">← Retour à la connexion</a>
         </div>
     </div>
-
 </div>
 
 <!-- ==================== APP ==================== -->
@@ -498,6 +865,7 @@
             <div class="sub">⚡ IA + Gestion complète</div>
         </div>
         <div class="user-area">
+            <span class="plan-badge free" id="planBadge">Free</span>
             <span class="email" id="userEmail"></span>
             <button class="logout" id="logoutBtn">Déconnexion</button>
         </div>
@@ -505,12 +873,19 @@
 
     <div class="tabs">
         <button class="tab-btn active" data-tab="tab-devis">📄 Devis</button>
+        <button class="tab-btn" data-tab="tab-catalogue">📦 Catalogue</button>
         <button class="tab-btn" data-tab="tab-settings">⚙️ Paramètres</button>
         <button class="tab-btn" data-tab="tab-history">📜 Historique</button>
         <button class="tab-btn" data-tab="tab-dashboard">📊 Dashboard</button>
+        <button class="tab-btn" data-tab="tab-subscription">💳 Abonnement</button>
     </div>
 
     <div id="tab-devis" class="tab-content active">
+        <div class="quota-banner" id="quotaBanner">
+            <span class="quota-text" id="quotaText">Chargement du quota...</span>
+            <button class="quota-btn" id="quotaUpgradeBtn" style="display:none;">Améliorer mon plan</button>
+        </div>
+
         <div class="card">
             <div class="card-title">👤 Informations client</div>
             <div class="form-row">
@@ -556,6 +931,25 @@
                     <a href="#" id="sendEmailBtn">✉️ Envoyer par email</a>
                     <a href="#" id="resetBtn">⟲ Nouveau devis</a>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== CATALOGUE ========== -->
+    <div id="tab-catalogue" class="tab-content">
+        <div class="card">
+            <div class="catalog-header">
+                <h2>📦 Mon catalogue produits</h2>
+                <div class="catalog-actions">
+                    <button class="btn-secondary" id="importCatalogBtn">📥 Importer (CSV/Excel)</button>
+                    <button class="btn-primary-sm" id="addProductBtn">+ Ajouter un produit</button>
+                </div>
+            </div>
+
+            <input type="text" id="catalogSearch" class="catalog-search" placeholder="🔍 Rechercher un produit (nom, référence, catégorie)..." />
+
+            <div id="catalogContent">
+                <p style="color:#64748b; text-align:center; padding:40px;">Chargement...</p>
             </div>
         </div>
     </div>
@@ -617,11 +1011,99 @@
             <ul class="top-products" id="topProductsList"><li style="color:#64748b;">Aucune donnée.</li></ul>
         </div>
     </div>
+
+    <div id="tab-subscription" class="tab-content">
+        <div class="subscription-current" id="subscriptionBox" style="background:linear-gradient(135deg,#0b1120,#1a253b);border:1px solid #2a3a55;border-radius:20px;padding:28px;">
+            <p style="color:#64748b;">Chargement...</p>
+        </div>
+
+        <div class="upgrade-section" id="upgradeSection" style="display:none;margin-top:24px;">
+            <h3 style="color:#fff;font-size:16px;margin-bottom:16px;font-weight:700;">🚀 Passer à un plan supérieur</h3>
+            <div class="pricing-grid">
+                <div class="pricing-card">
+                    <div class="plan-name">Starter</div>
+                    <div class="plan-price">19<span class="currency">€</span><span class="period">/mois</span></div>
+                    <div class="plan-desc">50 devis par mois, envoi par email, TVA.</div>
+                    <button class="plan-cta" data-plan="starter">Choisir Starter</button>
+                </div>
+                <div class="pricing-card featured">
+                    <div class="popular-badge">Populaire</div>
+                    <div class="plan-name">Pro</div>
+                    <div class="plan-price">49<span class="currency">€</span><span class="period">/mois</span></div>
+                    <div class="plan-desc">200 devis par mois, stats avancées, support prioritaire.</div>
+                    <button class="plan-cta" data-plan="pro">Choisir Pro</button>
+                </div>
+                <div class="pricing-card">
+                    <div class="plan-name">Entreprise</div>
+                    <div class="plan-price">99<span class="currency">€</span><span class="period">/mois</span></div>
+                    <div class="plan-desc">Devis illimités, multi-utilisateurs, API.</div>
+                    <button class="plan-cta" data-plan="entreprise">Choisir Entreprise</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+<!-- Modal produit -->
+<div class="modal-overlay" id="productModal">
+    <div class="modal">
+        <h3 id="productModalTitle">Ajouter un produit</h3>
+        <input type="hidden" id="productId" />
+        <div class="form-row">
+            <div class="form-group"><label>Référence</label><input type="text" id="productRef" placeholder="REF-001" /></div>
+            <div class="form-group"><label>Unité</label><input type="text" id="productUnit" placeholder="u, kg, m²" value="u" /></div>
+        </div>
+        <div class="form-group"><label>Nom du produit *</label><input type="text" id="productName" required placeholder="Ampoule LED 10W" /></div>
+        <div class="form-group"><label>Description</label><input type="text" id="productDescription" placeholder="Description courte (optionnel)" /></div>
+        <div class="form-row">
+            <div class="form-group"><label>Prix unitaire HT (€) *</label><input type="number" id="productPrice" step="0.01" min="0" required placeholder="12.50" /></div>
+            <div class="form-group"><label>Catégorie</label><input type="text" id="productCategory" placeholder="Éclairage" /></div>
+        </div>
+        <div class="modal-actions">
+            <button class="btn-cancel" id="cancelProductBtn">Annuler</button>
+            <button class="btn-confirm" id="saveProductBtn">Enregistrer</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal import -->
+<div class="modal-overlay" id="importModal">
+    <div class="modal">
+        <h3>📥 Importer un catalogue</h3>
+        <p style="color:#94a3b8;font-size:13px;margin-bottom:18px;line-height:1.6;">
+            Déposez un fichier <strong>CSV</strong> ou <strong>Excel</strong> (.xlsx, .xls).<br>
+            Le fichier doit contenir au minimum une colonne <strong>nom</strong> (ou <em>designation</em>) et une colonne <strong>prix</strong>.
+        </p>
+        <div class="drop-zone" id="importDropZone" style="padding:24px;">
+            <div class="icon" style="font-size:32px;">📁</div>
+            <p>Déposez votre fichier ici</p>
+            <span>ou cliquez pour parcourir</span>
+            <input type="file" id="importFileInput" style="display:none;" accept=".csv,.xlsx,.xls" />
+            <div id="importFileName" style="margin-top:8px;color:#3b82f6;font-weight:500;"></div>
+        </div>
+        <div style="background:#0b1120;border:1px solid #1e2a41;border-radius:12px;padding:14px;margin-top:16px;">
+            <p style="color:#94a3b8;font-size:12px;line-height:1.7;margin:0;">
+                <strong style="color:#f97316;">Colonnes reconnues automatiquement :</strong><br>
+                • <strong>Nom</strong> : name, nom, designation, produit<br>
+                • <strong>Référence</strong> : ref, référence, sku<br>
+                • <strong>Prix</strong> : prix, price, pu, tarif<br>
+                • <strong>Unité</strong> : unite, unité, unit<br>
+                • <strong>Catégorie</strong> : categorie, catégorie<br>
+                • <strong>Description</strong> : description, desc
+            </p>
+        </div>
+        <div class="modal-actions">
+            <button class="btn-cancel" id="cancelImportBtn">Annuler</button>
+            <button class="btn-confirm" id="confirmImportBtn" disabled>Importer</button>
+        </div>
+    </div>
+</div>
+
+<div id="toast"></div>
 
 <script>
 // ================================================================
-// 1. TOKEN MANAGEMENT
+// 1. TOKEN & UTILS
 // ================================================================
 function getToken() { return localStorage.getItem('devis_token'); }
 function setToken(t) { localStorage.setItem('devis_token', t); }
@@ -643,8 +1125,15 @@ async function apiFetch(url, options = {}) {
     return response;
 }
 
+function showToast(message, type = 'info') {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.className = 'show ' + type;
+    setTimeout(() => { toast.className = ''; }, 3500);
+}
+
 // ================================================================
-// 2. NAVIGATION (landing / auth / app)
+// 2. NAVIGATION
 // ================================================================
 const landingScreen = document.getElementById('landingScreen');
 const authScreen = document.getElementById('authScreen');
@@ -681,6 +1170,8 @@ function showApp() {
     const user = getUser();
     if (user) document.getElementById('userEmail').textContent = user.email;
     loadSettings();
+    loadQuota();
+    loadSubscriptionBadge();
     window.scrollTo(0, 0);
 }
 
@@ -698,8 +1189,20 @@ document.getElementById('backToLoginFromReset').addEventListener('click', () => 
     showAuth(false, 'login');
 });
 
+document.querySelectorAll('.pricing-card .plan-cta').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const plan = btn.dataset.plan;
+        if (plan === 'free') {
+            if (getToken()) showApp(); else showAuth(true);
+        } else {
+            if (getToken()) startCheckout(plan);
+            else { localStorage.setItem('pendingPlan', plan); showAuth(true); }
+        }
+    });
+});
+
 // ================================================================
-// 3. AUTH (login/signup)
+// 3. AUTH
 // ================================================================
 const authForm = document.getElementById('authForm');
 const authEmail = document.getElementById('authEmail');
@@ -726,21 +1229,16 @@ function updateAuthUI() {
     authError.style.display = 'none';
 }
 
-toggleAuth.addEventListener('click', () => {
-    isSignup = !isSignup;
-    updateAuthUI();
-});
+toggleAuth.addEventListener('click', () => { isSignup = !isSignup; updateAuthUI(); });
 
 authForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     authError.style.display = 'none';
     const email = authEmail.value.trim();
     const password = authPassword.value;
-
     const endpoint = isSignup ? '/api/auth/signup' : '/api/auth/login';
     authSubmitBtn.disabled = true;
     authSubmitBtn.textContent = 'Chargement...';
-
     try {
         const res = await fetch(endpoint, {
             method: 'POST',
@@ -749,12 +1247,18 @@ authForm.addEventListener('submit', async (e) => {
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Erreur inconnue');
-
         setToken(data.token);
         localStorage.setItem('devis_user', JSON.stringify(data.user));
         authEmail.value = '';
         authPassword.value = '';
-        showApp();
+        const pendingPlan = localStorage.getItem('pendingPlan');
+        if (pendingPlan && pendingPlan !== 'free') {
+            localStorage.removeItem('pendingPlan');
+            showApp();
+            setTimeout(() => startCheckout(pendingPlan), 500);
+        } else {
+            showApp();
+        }
     } catch (err) {
         authError.textContent = '❌ ' + err.message;
         authError.style.display = 'block';
@@ -765,10 +1269,7 @@ authForm.addEventListener('submit', async (e) => {
 });
 
 document.getElementById('logoutBtn').addEventListener('click', () => {
-    if (confirm('Se déconnecter ?')) {
-        clearToken();
-        showLanding();
-    }
+    if (confirm('Se déconnecter ?')) { clearToken(); showLanding(); }
 });
 
 // ================================================================
@@ -786,7 +1287,6 @@ forgotForm.addEventListener('submit', async (e) => {
     forgotSuccess.style.display = 'none';
     forgotSubmitBtn.disabled = true;
     forgotSubmitBtn.textContent = 'Envoi...';
-
     try {
         const res = await fetch('/api/auth/forgot-password', {
             method: 'POST',
@@ -795,8 +1295,7 @@ forgotForm.addEventListener('submit', async (e) => {
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Erreur inconnue');
-
-        forgotSuccess.textContent = '✅ ' + (data.message || 'Email envoyé. Vérifiez votre boîte de réception.');
+        forgotSuccess.textContent = '✅ ' + (data.message || 'Email envoyé.');
         forgotSuccess.style.display = 'block';
         forgotEmail.value = '';
     } catch (err) {
@@ -824,21 +1323,18 @@ resetForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     resetError.style.display = 'none';
     resetSuccess.style.display = 'none';
-
     if (resetPassword.value !== resetPasswordConfirm.value) {
         resetError.textContent = '❌ Les mots de passe ne correspondent pas.';
         resetError.style.display = 'block';
         return;
     }
     if (!resetToken) {
-        resetError.textContent = '❌ Lien invalide. Refaire une demande.';
+        resetError.textContent = '❌ Lien invalide.';
         resetError.style.display = 'block';
         return;
     }
-
     resetSubmitBtn.disabled = true;
     resetSubmitBtn.textContent = 'Enregistrement...';
-
     try {
         const res = await fetch('/api/auth/reset-password', {
             method: 'POST',
@@ -847,12 +1343,10 @@ resetForm.addEventListener('submit', async (e) => {
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Erreur inconnue');
-
-        resetSuccess.textContent = '✅ Mot de passe modifié ! Redirection vers la connexion...';
+        resetSuccess.textContent = '✅ Mot de passe modifié ! Redirection...';
         resetSuccess.style.display = 'block';
         resetPassword.value = '';
         resetPasswordConfirm.value = '';
-
         setTimeout(() => {
             window.history.replaceState({}, document.title, window.location.pathname);
             showAuth(false, 'login');
@@ -867,24 +1361,28 @@ resetForm.addEventListener('submit', async (e) => {
 });
 
 // ================================================================
-// 6. STARTUP ROUTING
+// 6. STARTUP
 // ================================================================
 (function startup() {
     const params = new URLSearchParams(window.location.search);
     const token = params.get('reset');
-
-    if (token) {
-        // User arrived from a reset email link
-        resetToken = token;
-        showAuth(false, 'reset');
+    if (token) { resetToken = token; showAuth(false, 'reset'); return; }
+    const checkout = params.get('checkout');
+    if (checkout === 'success' && getToken()) {
+        showApp();
+        showToast('🎉 Abonnement activé !', 'success');
+        setTimeout(() => window.history.replaceState({}, document.title, window.location.pathname), 100);
+        setTimeout(() => { loadQuota(); loadSubscriptionBadge(); }, 1000);
         return;
     }
-
-    if (getToken()) {
+    if (checkout === 'cancel') {
         showApp();
-    } else {
-        showLanding();
+        showToast('Paiement annulé.', 'error');
+        setTimeout(() => window.history.replaceState({}, document.title, window.location.pathname), 100);
+        return;
     }
+    if (getToken()) showApp();
+    else showLanding();
 })();
 
 // ================================================================
@@ -898,11 +1396,134 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
         document.getElementById(btn.dataset.tab).classList.add('active');
         if (btn.dataset.tab === 'tab-history') loadHistory();
         if (btn.dataset.tab === 'tab-dashboard') loadDashboard();
+        if (btn.dataset.tab === 'tab-subscription') loadSubscription();
+        if (btn.dataset.tab === 'tab-catalogue') loadCatalog();
     });
 });
 
 // ================================================================
-// 8. SETTINGS
+// 8. QUOTA & BADGE
+// ================================================================
+async function loadQuota() {
+    try {
+        const res = await apiFetch('/api/stripe/subscription');
+        const data = await res.json();
+        const text = document.getElementById('quotaText');
+        const upgradeBtn = document.getElementById('quotaUpgradeBtn');
+        const banner = document.getElementById('quotaBanner');
+        const names = { free: 'Free', starter: 'Starter', pro: 'Pro', entreprise: 'Entreprise' };
+        const limits = { free: 3, starter: 50, pro: 200, entreprise: 'illimité' };
+        const limit = limits[data.plan] ?? 3;
+        if (limit === 'illimité') {
+            text.innerHTML = `Plan <strong>${names[data.plan]}</strong> — devis illimités 🎉`;
+            banner.classList.remove('warning');
+            upgradeBtn.style.display = 'none';
+        } else {
+            text.innerHTML = `Plan <strong>${names[data.plan]}</strong> — ${limit} devis par mois.`;
+            if (data.plan === 'free') { upgradeBtn.style.display = 'inline-block'; banner.classList.add('warning'); }
+            else { upgradeBtn.style.display = 'none'; banner.classList.remove('warning'); }
+        }
+    } catch(e) { console.warn(e); }
+}
+
+async function loadSubscriptionBadge() {
+    try {
+        const res = await apiFetch('/api/stripe/subscription');
+        const data = await res.json();
+        const badge = document.getElementById('planBadge');
+        const names = { free: 'Free', starter: 'Starter', pro: 'Pro', entreprise: 'Entreprise' };
+        badge.textContent = names[data.plan] || 'Free';
+        badge.className = 'plan-badge' + (data.plan === 'free' ? ' free' : '');
+    } catch(e) { console.warn(e); }
+}
+
+document.getElementById('quotaUpgradeBtn').addEventListener('click', () => {
+    document.querySelector('[data-tab="tab-subscription"]').click();
+});
+
+// ================================================================
+// 9. SUBSCRIPTION TAB
+// ================================================================
+async function loadSubscription() {
+    try {
+        const res = await apiFetch('/api/stripe/subscription');
+        const data = await res.json();
+        const box = document.getElementById('subscriptionBox');
+        const upgradeSection = document.getElementById('upgradeSection');
+        const names = { free: 'Free', starter: 'Starter', pro: 'Pro', entreprise: 'Entreprise' };
+        const planName = names[data.plan] || 'Free';
+        let statusLabel = '', statusClass = '';
+        if (data.status === 'active') { statusLabel = '● Actif'; statusClass = 'active'; }
+        else if (data.status === 'trialing') { statusLabel = '● Essai'; statusClass = 'active'; }
+        else if (data.status === 'past_due') { statusLabel = '⚠ Retard'; statusClass = 'past_due'; }
+        else { statusLabel = '○ Inactif'; statusClass = 'inactive'; }
+        let endDateStr = '—';
+        if (data.endDate) endDateStr = new Date(data.endDate).toLocaleDateString('fr-FR');
+        const limits = { free: 3, starter: 50, pro: 200, entreprise: 'illimité' };
+        const limit = limits[data.plan] || 3;
+        box.innerHTML = `
+            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;margin-bottom:20px;">
+                <div style="font-size:26px;font-weight:800;color:#fff;letter-spacing:-0.5px;">Plan <span style="color:#f97316;">${planName}</span></div>
+                <div style="font-size:13px;padding:6px 16px;border-radius:40px;font-weight:600;${statusClass === 'active' ? 'background:rgba(34,197,94,0.15);color:#22c55e;border:1px solid rgba(34,197,94,0.3);' : 'background:rgba(249,115,22,0.15);color:#f97316;border:1px solid rgba(249,115,22,0.3);'}">${statusLabel}</div>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;">
+                <div style="background:#0b1120;padding:14px 18px;border-radius:12px;border:1px solid #1e2a41;">
+                    <div style="color:#64748b;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;margin-bottom:6px;">Limite mensuelle</div>
+                    <div style="color:#e2e8f0;font-size:15px;font-weight:600;">${limit === 'illimité' ? 'Illimité' : limit + ' devis'}</div>
+                </div>
+                <div style="background:#0b1120;padding:14px 18px;border-radius:12px;border:1px solid #1e2a41;">
+                    <div style="color:#64748b;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;margin-bottom:6px;">Statut</div>
+                    <div style="color:#e2e8f0;font-size:15px;font-weight:600;">${data.status || 'inactive'}</div>
+                </div>
+                <div style="background:#0b1120;padding:14px 18px;border-radius:12px;border:1px solid #1e2a41;">
+                    <div style="color:#64748b;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;margin-bottom:6px;">Fin de période</div>
+                    <div style="color:#e2e8f0;font-size:15px;font-weight:600;">${endDateStr}</div>
+                </div>
+            </div>
+            <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:20px;">
+                ${data.plan !== 'free' ? '<button class="btn-secondary" id="portalBtn">Gérer mon abonnement</button>' : ''}
+            </div>
+        `;
+        const portalBtn = document.getElementById('portalBtn');
+        if (portalBtn) portalBtn.addEventListener('click', openCustomerPortal);
+        upgradeSection.style.display = data.plan === 'free' ? 'block' : 'none';
+        upgradeSection.querySelectorAll('.plan-cta').forEach(btn => {
+            btn.addEventListener('click', () => startCheckout(btn.dataset.plan));
+        });
+    } catch(e) {
+        document.getElementById('subscriptionBox').innerHTML = '<p style="color:#f87171;">Erreur.</p>';
+    }
+}
+
+async function startCheckout(plan) {
+    if (!plan || plan === 'free') return;
+    try {
+        showToast('Redirection vers Stripe...', 'info');
+        const res = await apiFetch('/api/stripe/create-checkout-session', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ plan })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Erreur');
+        window.location.href = data.url;
+    } catch (err) { showToast('Erreur : ' + err.message, 'error'); }
+}
+
+async function openCustomerPortal() {
+    try {
+        const res = await apiFetch('/api/stripe/create-portal-session', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Erreur');
+        window.location.href = data.url;
+    } catch (err) { showToast('Erreur : ' + err.message, 'error'); }
+}
+
+// ================================================================
+// 10. SETTINGS
 // ================================================================
 async function loadSettings() {
     try {
@@ -953,7 +1574,7 @@ document.getElementById('settingsForm').addEventListener('submit', async (e) => 
     let logoBase64 = null;
     if (logoFile) {
         try { logoBase64 = await resizeImage(logoFile, 200, 200); }
-        catch(err) { alert('Erreur logo : ' + err.message); return; }
+        catch(err) { showToast('Erreur logo : ' + err.message, 'error'); return; }
     }
     const settings = {
         companyName: document.getElementById('companyName').value,
@@ -973,13 +1594,243 @@ document.getElementById('settingsForm').addEventListener('submit', async (e) => 
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(settings)
         });
-        if (res.ok) { alert('✅ Paramètres enregistrés !'); loadSettings(); }
-        else alert('❌ Erreur enregistrement.');
-    } catch(err) { alert(err.message); }
+        if (res.ok) { showToast('✅ Paramètres enregistrés !', 'success'); loadSettings(); }
+        else showToast('❌ Erreur.', 'error');
+    } catch(err) { showToast(err.message, 'error'); }
 });
 
 // ================================================================
-// 9. QUOTES
+// 11. CATALOGUE
+// ================================================================
+let catalogProducts = [];
+
+async function loadCatalog() {
+    const content = document.getElementById('catalogContent');
+    content.innerHTML = '<p style="color:#64748b; text-align:center; padding:40px;">Chargement...</p>';
+    try {
+        const res = await apiFetch('/api/products');
+        catalogProducts = await res.json();
+        renderCatalog();
+    } catch(err) {
+        content.innerHTML = '<p style="color:#f87171; text-align:center; padding:40px;">Erreur de chargement.</p>';
+    }
+}
+
+function renderCatalog() {
+    const content = document.getElementById('catalogContent');
+    const search = (document.getElementById('catalogSearch').value || '').toLowerCase().trim();
+
+    let filtered = catalogProducts;
+    if (search) {
+        filtered = catalogProducts.filter(p =>
+            (p.name || '').toLowerCase().includes(search) ||
+            (p.ref || '').toLowerCase().includes(search) ||
+            (p.category || '').toLowerCase().includes(search)
+        );
+    }
+
+    if (catalogProducts.length === 0) {
+        content.innerHTML = `
+            <div class="catalog-empty">
+                <div class="big-icon">📦</div>
+                <h3>Votre catalogue est vide</h3>
+                <p>Ajoutez vos premiers produits manuellement ou importez votre catalogue existant (CSV/Excel).</p>
+                <div style="margin-top:20px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+                    <button class="btn-secondary" onclick="document.getElementById('importCatalogBtn').click()">📥 Importer un fichier</button>
+                    <button class="btn-primary-sm" onclick="document.getElementById('addProductBtn').click()">+ Ajouter un produit</button>
+                </div>
+            </div>
+        `;
+        return;
+    }
+
+    if (filtered.length === 0) {
+        content.innerHTML = `<p style="color:#64748b; text-align:center; padding:40px;">Aucun produit ne correspond à "${search}".</p>`;
+        return;
+    }
+
+    let html = `
+        <table class="catalog-table">
+            <thead>
+                <tr>
+                    <th style="width:120px;">Référence</th>
+                    <th>Nom</th>
+                    <th style="width:140px;">Catégorie</th>
+                    <th style="width:100px;text-align:right;">Prix HT</th>
+                    <th style="width:80px;text-align:center;">Unité</th>
+                    <th style="width:180px;text-align:right;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+    filtered.forEach(p => {
+        html += `
+            <tr>
+                <td>${p.ref ? `<span class="product-ref">${escapeHtml(p.ref)}</span>` : '<span style="color:#475569;">—</span>'}</td>
+                <td><strong>${escapeHtml(p.name)}</strong>${p.description ? `<br><span style="color:#64748b;font-size:12px;">${escapeHtml(p.description)}</span>` : ''}</td>
+                <td>${p.category ? escapeHtml(p.category) : '<span style="color:#475569;">—</span>'}</td>
+                <td style="text-align:right;" class="product-price">${p.unitPrice.toFixed(2)} €</td>
+                <td style="text-align:center;color:#94a3b8;">${escapeHtml(p.unit || 'u')}</td>
+                <td>
+                    <div class="row-actions">
+                        <button onclick="editProduct(${p.id})">Modifier</button>
+                        <button class="delete" onclick="deleteProduct(${p.id})">Supprimer</button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    });
+    html += '</tbody></table>';
+    html += `<p style="color:#64748b;font-size:13px;margin-top:16px;text-align:right;">${filtered.length} produit${filtered.length > 1 ? 's' : ''} affiché${filtered.length > 1 ? 's' : ''}${search ? ` (sur ${catalogProducts.length})` : ''}</p>`;
+    content.innerHTML = html;
+}
+
+function escapeHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+document.getElementById('catalogSearch').addEventListener('input', renderCatalog);
+
+// Modal produit
+const productModal = document.getElementById('productModal');
+
+function openProductModal(mode = 'add', product = null) {
+    document.getElementById('productModalTitle').textContent = mode === 'add' ? 'Ajouter un produit' : 'Modifier le produit';
+    document.getElementById('productId').value = product ? product.id : '';
+    document.getElementById('productRef').value = product ? (product.ref || '') : '';
+    document.getElementById('productName').value = product ? product.name : '';
+    document.getElementById('productDescription').value = product ? (product.description || '') : '';
+    document.getElementById('productUnit').value = product ? (product.unit || 'u') : 'u';
+    document.getElementById('productPrice').value = product ? product.unitPrice : '';
+    document.getElementById('productCategory').value = product ? (product.category || '') : '';
+    productModal.classList.add('show');
+}
+
+function closeProductModal() { productModal.classList.remove('show'); }
+
+document.getElementById('addProductBtn').addEventListener('click', () => openProductModal('add'));
+document.getElementById('cancelProductBtn').addEventListener('click', closeProductModal);
+productModal.addEventListener('click', (e) => { if (e.target === productModal) closeProductModal(); });
+
+document.getElementById('saveProductBtn').addEventListener('click', async () => {
+    const id = document.getElementById('productId').value;
+    const data = {
+        ref: document.getElementById('productRef').value.trim(),
+        name: document.getElementById('productName').value.trim(),
+        description: document.getElementById('productDescription').value.trim(),
+        unit: document.getElementById('productUnit').value.trim() || 'u',
+        unitPrice: parseFloat(document.getElementById('productPrice').value),
+        category: document.getElementById('productCategory').value.trim()
+    };
+    if (!data.name) { showToast('Le nom est requis.', 'error'); return; }
+    if (isNaN(data.unitPrice) || data.unitPrice < 0) { showToast('Prix invalide.', 'error'); return; }
+
+    const btn = document.getElementById('saveProductBtn');
+    btn.disabled = true;
+    btn.textContent = 'Enregistrement...';
+
+    try {
+        const url = id ? `/api/products/${id}` : '/api/products';
+        const method = id ? 'PUT' : 'POST';
+        const res = await apiFetch(url, {
+            method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        const result = await res.json();
+        if (!res.ok) throw new Error(result.error || 'Erreur');
+        showToast(id ? '✅ Produit modifié !' : '✅ Produit ajouté !', 'success');
+        closeProductModal();
+        loadCatalog();
+    } catch (err) {
+        showToast('Erreur : ' + err.message, 'error');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = 'Enregistrer';
+    }
+});
+
+window.editProduct = function(id) {
+    const p = catalogProducts.find(x => x.id === id);
+    if (p) openProductModal('edit', p);
+};
+
+window.deleteProduct = async function(id) {
+    if (!confirm('Supprimer ce produit ?')) return;
+    try {
+        const res = await apiFetch(`/api/products/${id}`, { method: 'DELETE' });
+        if (!res.ok) throw new Error('Erreur');
+        showToast('🗑 Produit supprimé.', 'success');
+        loadCatalog();
+    } catch (err) {
+        showToast('Erreur : ' + err.message, 'error');
+    }
+};
+
+// Import
+const importModal = document.getElementById('importModal');
+const importDropZone = document.getElementById('importDropZone');
+const importFileInput = document.getElementById('importFileInput');
+const importFileName = document.getElementById('importFileName');
+const confirmImportBtn = document.getElementById('confirmImportBtn');
+
+let importFile = null;
+
+document.getElementById('importCatalogBtn').addEventListener('click', () => {
+    importFile = null;
+    importFileName.textContent = '';
+    confirmImportBtn.disabled = true;
+    importModal.classList.add('show');
+});
+document.getElementById('cancelImportBtn').addEventListener('click', () => importModal.classList.remove('show'));
+importModal.addEventListener('click', (e) => { if (e.target === importModal) importModal.classList.remove('show'); });
+
+importDropZone.addEventListener('click', () => importFileInput.click());
+importDropZone.addEventListener('dragover', (e) => { e.preventDefault(); importDropZone.classList.add('dragover'); });
+importDropZone.addEventListener('dragleave', () => importDropZone.classList.remove('dragover'));
+importDropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    importDropZone.classList.remove('dragover');
+    if (e.dataTransfer.files.length) handleImportFile(e.dataTransfer.files[0]);
+});
+importFileInput.addEventListener('change', (e) => { if (e.target.files.length) handleImportFile(e.target.files[0]); });
+
+function handleImportFile(file) {
+    const validExt = ['csv', 'xlsx', 'xls'];
+    const ext = file.name.split('.').pop().toLowerCase();
+    if (!validExt.includes(ext)) {
+        showToast('Format non supporté. Utilisez CSV ou Excel.', 'error');
+        return;
+    }
+    importFile = file;
+    importFileName.textContent = `📎 ${file.name}`;
+    confirmImportBtn.disabled = false;
+}
+
+confirmImportBtn.addEventListener('click', async () => {
+    if (!importFile) return;
+    confirmImportBtn.disabled = true;
+    confirmImportBtn.textContent = 'Import en cours...';
+    const fd = new FormData();
+    fd.append('file', importFile);
+    try {
+        const res = await apiFetch('/api/products/import', { method: 'POST', body: fd });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Erreur');
+        showToast(`✅ ${data.imported} produits importés !`, 'success');
+        importModal.classList.remove('show');
+        loadCatalog();
+    } catch (err) {
+        showToast('Erreur : ' + err.message, 'error');
+    } finally {
+        confirmImportBtn.disabled = false;
+        confirmImportBtn.textContent = 'Importer';
+    }
+});
+
+// ================================================================
+// 12. QUOTES
 // ================================================================
 const dropZone = document.getElementById('dropZone');
 const fileInput = document.getElementById('fileInput');
@@ -1026,10 +1877,7 @@ function handleFile(file) {
     iaConsole.innerHTML = '';
 }
 
-function showError(msg) {
-    errorMsg.textContent = '⛔ ' + msg;
-    errorMsg.style.display = 'block';
-}
+function showError(msg) { errorMsg.textContent = '⛔ ' + msg; errorMsg.style.display = 'block'; }
 
 generateBtn.addEventListener('click', async () => {
     if (!selectedFile) return;
@@ -1051,6 +1899,13 @@ generateBtn.addEventListener('click', async () => {
 
     try {
         const response = await apiFetch('/api/generate-quote', { method: 'POST', body: fd });
+        if (response.status === 429) {
+            const err = await response.json();
+            showError(err.error);
+            addLog('⛔ Quota atteint');
+            document.querySelector('[data-tab="tab-subscription"]').click();
+            return;
+        }
         if (!response.ok) {
             const err = await response.json();
             throw new Error(err.error || 'Erreur serveur');
@@ -1059,6 +1914,7 @@ generateBtn.addEventListener('click', async () => {
         if (data.logs) data.logs.forEach(l => addLog(l));
         lastDevisData = data;
         displayResult(data);
+        loadQuota();
     } catch(err) {
         showError(err.message);
         addLog(`❌ ${err.message}`);
@@ -1081,7 +1937,6 @@ function displayResult(data) {
         `;
         itemsBody.appendChild(tr);
     });
-
     const box = document.getElementById('totauxBox');
     let html = '';
     if (data.vatRegime === 'assujetti') {
@@ -1093,7 +1948,6 @@ function displayResult(data) {
         html += `<div style="font-size:11px;color:#64748b;margin-top:8px;">Régime particulier de franchise des petites entreprises — TVA non applicable.</div>`;
     }
     box.innerHTML = html;
-
     document.getElementById('quoteNumber').textContent = data.quoteNumber;
     document.getElementById('issueDate').textContent = data.issueDate;
     document.getElementById('validDate').textContent = data.validDate;
@@ -1116,9 +1970,7 @@ downloadPdfBtn.addEventListener('click', async (e) => {
         const a = document.createElement('a');
         a.href = u;
         a.download = `devis_${lastDevisData.quoteNumber}.pdf`;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
+        document.body.appendChild(a); a.click(); a.remove();
         window.URL.revokeObjectURL(u);
         downloadPdfBtn.textContent = '⬇ Télécharger le PDF';
     } catch(err) {
@@ -1130,8 +1982,8 @@ downloadPdfBtn.addEventListener('click', async (e) => {
 sendEmailBtn.addEventListener('click', async (e) => {
     e.preventDefault();
     const email = document.getElementById('clientEmailInput').value.trim();
-    if (!email) { alert('Renseignez l\'email du client dans les informations client.'); return; }
-    if (!lastDevisData) { alert('Générez un devis d\'abord.'); return; }
+    if (!email) { showToast('Renseignez l\'email du client.', 'error'); return; }
+    if (!lastDevisData) { showToast('Générez un devis d\'abord.', 'error'); return; }
     sendEmailBtn.textContent = '⏳ Envoi...';
     try {
         const res = await apiFetch('/api/send-email', {
@@ -1140,9 +1992,9 @@ sendEmailBtn.addEventListener('click', async (e) => {
             body: JSON.stringify({ ...lastDevisData, email })
         });
         const r = await res.json();
-        if (res.ok) alert('✅ Envoyé à ' + email);
-        else alert('❌ ' + (r.error || 'Erreur'));
-    } catch(err) { alert(err.message); }
+        if (res.ok) showToast('✅ Envoyé à ' + email, 'success');
+        else showToast('❌ ' + (r.error || 'Erreur'), 'error');
+    } catch(err) { showToast(err.message, 'error'); }
     finally { sendEmailBtn.textContent = '✉️ Envoyer par email'; }
 });
 
@@ -1164,7 +2016,7 @@ resetBtn.addEventListener('click', (e) => {
 });
 
 // ================================================================
-// 10. HISTORY
+// 13. HISTORY
 // ================================================================
 async function loadHistory() {
     try {
@@ -1182,11 +2034,11 @@ async function loadHistory() {
                 <div><span class="h-total">${item.total.toFixed(2)} €</span></div>
             </div>
         `).join('');
-    } catch(err) { document.getElementById('historyList').innerHTML = '<p style="color:#f87171;">Erreur de chargement.</p>'; }
+    } catch(err) { document.getElementById('historyList').innerHTML = '<p style="color:#f87171;">Erreur.</p>'; }
 }
 
 // ================================================================
-// 11. DASHBOARD
+// 14. DASHBOARD
 // ================================================================
 async function loadDashboard() {
     try {
