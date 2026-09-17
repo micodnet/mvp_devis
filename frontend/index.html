@@ -737,6 +737,13 @@
                 <button type="submit" class="btn-save">💾 Enregistrer</button>
             </form>
         </div>
+        <div class="card">
+            <div class="card-title">📥 Portabilité de vos données (RGPD)</div>
+            <p style="color:#94a3b8;font-size:13px;margin-bottom:16px;line-height:1.6;">
+                Conformément à l'article 20 du RGPD, vous pouvez télécharger l'intégralité de vos données (compte, paramètres, clients, produits, devis) dans un fichier JSON lisible.
+            </p>
+            <button class="btn-secondary" id="exportDataBtn">📥 Télécharger mes données (JSON)</button>
+        </div>
     </div>
 
     <!-- ABONNEMENT -->
@@ -2050,7 +2057,30 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ================================================================
-// 14. DASHBOARD
+// 14. EXPORT RGPD
+// ================================================================
+document.getElementById('exportDataBtn')?.addEventListener('click', async () => {
+    try {
+        showToast('Génération de l\'export...', 'info');
+        const res = await apiFetch('/api/export-data');
+        if (!res.ok) throw new Error('Erreur export');
+        const blob = await res.blob();
+        const u = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = u;
+        a.download = `export-rgpd-${new Date().toISOString().slice(0,10)}.json`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(u);
+        showToast('✅ Export téléchargé !', 'success');
+    } catch(err) {
+        showToast('Erreur : ' + err.message, 'error');
+    }
+});
+
+// ================================================================
+// 15. DASHBOARD
 // ================================================================
 async function loadDashboard() {
     checkOnboarding();
@@ -2080,7 +2110,7 @@ async function loadDashboard() {
     } catch(e) { console.warn(e); }
 }
 // ================================================================
-// 15. GRAPHIQUES
+// 16. GRAPHIQUES
 // ================================================================
 let revenueChartInstance = null;
 let statusChartInstance = null;

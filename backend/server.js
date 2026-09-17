@@ -377,7 +377,82 @@ app.post('/api/send-email', authenticateToken, async (req, res) => {
 
 // ============================================================
 // GET /api/dashboard
+// ==================
 // ============================================================
+// GET /api/export-data — Export RGPD (toutes les données de l'utilisateur)
+// ============================================================
+app.get('/api/export-data', authenticateToken, async (req, res) => {
+    try {
+        const userId = req.user.id;
+
+        // Récupérer toutes les données
+        const [userResult, settingsResult, clientsResult, productsResult, quotesResult] = await Promise.all([
+            pool.query('SELECT email, created_at FROM users WHERE id = $1', [userId]),
+            pool.query('SELECT * FROM settings WHERE user_id = $1', [userId]),
+            pool.query('SELECT * FROM clients WHERE user_id = $1 ORDER BY name', [userId]),
+            pool.query('SELECT * FROM products WHERE user_id = $1 ORDER BY name', [userId]),
+            pool.query('SELECT * FROM quotes WHERE user_id = $1 ORDER BY created_at DESC', [userId])
+        ]);
+
+        const exportData = {
+            export_info: {
+                generated_at: new Date().toISOString(),
+                user_email: userResult.rows[0]?.email || null,
+                rgpd_article: 'Article 20 - Droit à la portabilité des données',
+                format_version: '1.0'
+            },
+            account: {
+                email: userResult.rows[0]?.email,
+                created_at: userResult.rows[0]?.created_at
+            },
+            company_settings: settingsResult.rows[0] || null,
+            clients: clientsResult.rows.map(c => ({
+                name: c.name,
+                contact_name: c.contact_name,
+                email: c.email,
+                phone: c.phone,
+                address: c.address,
+                vat_number: c.vat_number,
+                notes: c.notes,
+                created_at: c.created_at
+            })),
+            products: productsResult.rows.map(p => ({
+                ref: p.ref,
+                name: p.name,
+                description: p.description,
+                unit: p.unit,
+                unit_price: parseFloat(p.unit_price),
+                category: p.category,
+                created_at: p.created_at
+            })),
+            quotes: quotesResult.rows.map(q => ({
+                quote_number: q.quote_number,
+                issue_date: q.issue_date,
+                valid_date: q.valid_date,
+                status: q.status,
+                subtotal: parseFloat(q.subtotal) || 0,
+                vat_amount: parseFloat(q.vat_amount) || 0,
+                total: parseFloat(q.total),
+                vat_regime: q.vat_regime,
+                items: q.items,
+                client_name: q.client_name,
+                client_address: q.client_address,
+                client_vat: q.client_vat,
+                client_email: q.client_email,
+                created_at: q.created_at
+            }))
+        };
+
+        // Envoyer en JSON téléchargeable
+        res.setHeader('Content-Type', 'application/json');
+        res.setHeader('Content-Disposition', `attachment; filename=export-rgpd-${new Date().toISOString().slice(0,10)}.json`);
+        res.send(JSON.stringify(exportData, null, 2));
+    } catch (err) {
+        console.error('Erreur export RGPD:', err);
+        res.status(500).json({ error: 'Erreur lors de l\'export.' });
+    }
+});
+
 // ============================================================
 // GET /api/dashboard/charts — Données pour les graphiques
 // ============================================================
