@@ -16,6 +16,7 @@ const { checkAndIncrementQuota } = require('./utils/quota');
 const authRoutes = require('./routes/auth');
 const { router: stripeRoutes, stripeWebhook } = require('./routes/stripe');
 const productsRoutes = require('./routes/products');
+const clientsRoutes = require('./routes/clients');
 
 // ⚙️ INTERRUPTEUR DE QUOTA — Mets à `false` pour désactiver les limites pendant les tests
 const ENABLE_QUOTA_LIMITS = false;
@@ -37,6 +38,7 @@ app.use(express.static(path.join(__dirname, '../frontend')));
 app.use('/api/auth', authRoutes);
 app.use('/api/stripe', stripeRoutes);
 app.use('/api/products', productsRoutes);
+app.use('/api/clients', clientsRoutes);
 
 // Multer
 const storage = multer.diskStorage({
@@ -130,7 +132,9 @@ app.get('/api/history', authenticateToken, async (req, res) => {
             vatAmount: parseFloat(r.vat_amount) || 0,
             total: parseFloat(r.total),
             items: r.items,
+            clientId: r.client_id,
             clientName: r.client_name,
+            clientAddress: r.client_address,
             clientEmail: r.client_email
         }));
         res.json(history);
@@ -161,6 +165,7 @@ app.post('/api/generate-quote', authenticateToken, upload.single('file'), async 
         const filePath = req.file.path;
         const mimeType = req.file.mimetype;
 
+        const clientId = req.body.clientId ? parseInt(req.body.clientId) : null;
         const clientName = req.body.clientName || '';
         const clientAddress = req.body.clientAddress || '';
         const clientVat = req.body.clientVat || '';
@@ -256,10 +261,10 @@ app.post('/api/generate-quote', authenticateToken, upload.single('file'), async 
 
         // ---- Insertion du devis en base ----
         await pool.query(`
-            INSERT INTO quotes (user_id, quote_number, issue_date, valid_date, subtotal, vat_amount, total, vat_regime, items, client_name, client_address, client_vat, client_email)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+            INSERT INTO quotes (user_id, quote_number, issue_date, valid_date, subtotal, vat_amount, total, vat_regime, items, client_id, client_name, client_address, client_vat, client_email)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
         `, [req.user.id, quoteNumber, issueDate, validDate, subtotal, vatAmount, total, vatRegime,
-            JSON.stringify(items), clientName, clientAddress, clientVat, clientEmail]);
+            JSON.stringify(items), clientId, clientName, clientAddress, clientVat, clientEmail]);
 
         res.json({
             items, subtotal, vatAmount, total,
