@@ -17,6 +17,9 @@ const authRoutes = require('./routes/auth');
 const { router: stripeRoutes, stripeWebhook } = require('./routes/stripe');
 const productsRoutes = require('./routes/products');
 
+// ⚙️ INTERRUPTEUR DE QUOTA — Mets à `false` pour désactiver les limites pendant les tests
+const ENABLE_QUOTA_LIMITS = false;
+
 const app = express();
 const port = process.env.PORT || 3000;
 
@@ -143,14 +146,16 @@ app.get('/api/history', authenticateToken, async (req, res) => {
 app.post('/api/generate-quote', authenticateToken, upload.single('file'), async (req, res) => {
     const logs = [];
     try {
-        // Vérifier le quota AVANT de traiter le fichier
-        const quota = await checkAndIncrementQuota(req.user.id);
-        if (!quota.allowed) {
-            if (req.file && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
-            return res.status(429).json({
-                error: quota.message,
-                quota: { plan: quota.plan, limit: quota.limit, used: quota.used }
-            });
+        // 1. Vérifier le quota AVANT de traiter le fichier // mettre quota a true en haut du fichier pour etre traiter 
+        if (ENABLE_QUOTA_LIMITS) {
+            const quota = await checkAndIncrementQuota(req.user.id);
+            if (!quota.allowed) {
+                if (req.file && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
+                return res.status(429).json({
+                    error: quota.message,
+                    quota: { plan: quota.plan, limit: quota.limit, used: quota.used }
+                });
+            }
         }
         if (!req.file) return res.status(400).json({ error: 'Aucun fichier envoyé' });
         const filePath = req.file.path;
