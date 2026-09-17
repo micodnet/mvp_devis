@@ -17,6 +17,7 @@ const authRoutes = require('./routes/auth');
 const { router: stripeRoutes, stripeWebhook } = require('./routes/stripe');
 const productsRoutes = require('./routes/products');
 const clientsRoutes = require('./routes/clients');
+const quotesRoutes = require('./routes/quotes');
 
 // ⚙️ INTERRUPTEUR DE QUOTA — Mets à `false` pour désactiver les limites pendant les tests
 const ENABLE_QUOTA_LIMITS = false;
@@ -39,6 +40,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/stripe', stripeRoutes);
 app.use('/api/products', productsRoutes);
 app.use('/api/clients', clientsRoutes);
+app.use('/api/quotes', quotesRoutes);
 
 // Multer
 const storage = multer.diskStorage({
@@ -125,12 +127,15 @@ app.get('/api/history', authenticateToken, async (req, res) => {
             [req.user.id]
         );
         const history = result.rows.map(r => ({
+            id: r.id,
             quoteNumber: r.quote_number,
             issueDate: r.issue_date,
             validDate: r.valid_date,
             subtotal: parseFloat(r.subtotal) || 0,
             vatAmount: parseFloat(r.vat_amount) || 0,
             total: parseFloat(r.total),
+            vatRegime: r.vat_regime,
+            status: r.status || 'draft',
             items: r.items,
             clientId: r.client_id,
             clientName: r.client_name,
@@ -261,14 +266,23 @@ app.post('/api/generate-quote', authenticateToken, upload.single('file'), async 
 
         // ---- Insertion du devis en base ----
         await pool.query(`
-            INSERT INTO quotes (user_id, quote_number, issue_date, valid_date, subtotal, vat_amount, total, vat_regime, items, client_id, client_name, client_address, client_vat, client_email)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+            INSERT INTO quotes (user_id, quote_number, issue_date, valid_date, subtotal, vat_amount, total, vat_regime, status, items, client_id, client_name, client_address, client_vat, client_email)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'draft', $9, $10, $11, $12, $13, $14)
         `, [req.user.id, quoteNumber, issueDate, validDate, subtotal, vatAmount, total, vatRegime,
             JSON.stringify(items), clientId, clientName, clientAddress, clientVat, clientEmail]);
 
+        // Récupérer l'id du devis qu'on vient d'insérer
+        const insertedQuote = await pool.query(
+            'SELECT id FROM quotes WHERE user_id = $1 AND quote_number = $2',
+            [req.user.id, quoteNumber]
+        );
+        const quoteId = insertedQuote.rows[0]?.id || null;
+
         res.json({
+            id: quoteId,
             items, subtotal, vatAmount, total,
             vatRegime, vatRate,
+            status: 'draft',
             logs: [...logs, ...iaLogs],
             quoteNumber, issueDate, validDate,
             company,
@@ -364,6 +378,67 @@ app.post('/api/send-email', authenticateToken, async (req, res) => {
 // ============================================================
 // GET /api/dashboard
 // ============================================================
+// ============================================================
+// GET /api/dashboard/charts — Données pour les graphiques
+// ============================================================
+app.get('/api/dashboard/charts', authenticateToken, async (req, res) => {
+    try {
+        // 1. Chiffre d'affaires par mois (12 derniers mois)
+        const monthlyResult = await pool.query(`
+            SELECT 
+                TO_CHAR(issue_date, 'YYYY-MM') as month,
+                SUM(total) as revenue,
+                COUNT(*) as count
+            FROM quotes
+            WHERE user_id = $1
+              AND issue_date >= NOW() - INTERVAL '12 months'
+            GROUP BY TO_CHAR(issue_date, 'YYYY-MM')
+            ORDER BY month ASC
+        `, [req.user.id]);
+
+        // Générer les 12 derniers mois (même si vides)
+        const months = [];
+        const revenueByMonth = {};
+        const countByMonth = {};
+        monthlyResult.rows.forEach(r => {
+            revenueByMonth[r.month] = parseFloat(r.revenue) || 0;
+            countByMonth[r.month] = parseInt(r.count) || 0;
+        });
+
+        const now = new Date();
+        for (let i = 11; i >= 0; i--) {
+            const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+            const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+            months.push({
+                month: key,
+                label: d.toLocaleDateString('fr-FR', { month: 'short', year: '2-digit' }),
+                revenue: revenueByMonth[key] || 0,
+                count: countByMonth[key] || 0
+            });
+        }
+
+        // 2. Répartition par statut
+        const statusResult = await pool.query(`
+            SELECT 
+                COALESCE(status, 'draft') as status,
+                COUNT(*) as count
+            FROM quotes
+            WHERE user_id = $1
+            GROUP BY COALESCE(status, 'draft')
+        `, [req.user.id]);
+
+        const statuses = { draft: 0, sent: 0, accepted: 0, refused: 0 };
+        statusResult.rows.forEach(r => {
+            statuses[r.status] = parseInt(r.count) || 0;
+        });
+
+        res.json({ months, statuses });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Erreur serveur.' });
+    }
+});
+
 app.get('/api/dashboard', authenticateToken, async (req, res) => {
     try {
         const result = await pool.query(

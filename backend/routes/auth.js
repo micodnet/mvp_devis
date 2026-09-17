@@ -54,6 +54,12 @@ router.post('/signup', async (req, res) => {
             { expiresIn: '30d' }
         );
 
+        // Envoyer l'email de bienvenue (asynchrone, ne bloque pas la réponse)
+        // ⚠ commenter pour les tests, à décommenter en prod 
+        sendWelcomeEmail(req, user.email).catch(err => {
+            console.error('Erreur envoi email de bienvenue:', err.message);
+        });
+
         res.status(201).json({ token, user: { id: user.id, email: user.email } });
     } catch (err) {
         console.error('Erreur signup:', err);
@@ -136,7 +142,7 @@ router.post('/forgot-password', async (req, res) => {
         if (process.env.RESEND_API_KEY) {
             try {
                 const resend = new Resend(process.env.RESEND_API_KEY);
-                await resend.emails.send({
+                const { error } = await resend.emails.send({
                     from: process.env.RESEND_FROM_EMAIL || 'Devis Express Pro <noreply@votreentreprise.com>',
                     to: [user.email],
                     subject: 'Réinitialisation de votre mot de passe',
@@ -157,6 +163,10 @@ router.post('/forgot-password', async (req, res) => {
                         </div>
                     `
                 });
+                if (error) {
+                    console.error(`❌ Erreur envoi welcome email à ${email}:`, error.message);
+                    return;
+                }
             } catch (emailErr) {
                 console.error('Erreur envoi email reset:', emailErr);
                 // Don't fail the request if email fails — the token is stored anyway
@@ -212,5 +222,60 @@ router.post('/reset-password', async (req, res) => {
         res.status(500).json({ error: 'Erreur serveur.' });
     }
 });
+
+// ------------------------------------------------------------
+// Envoie l'email de bienvenue à un nouvel utilisateur
+// ------------------------------------------------------------
+async function sendWelcomeEmail(req, email) {
+    if (!process.env.RESEND_API_KEY) {
+        console.warn('RESEND_API_KEY absente — email de bienvenue non envoyé.');
+        return;
+    }
+
+    const baseUrl = `${req.protocol}://${req.get('host')}`;
+
+    try {
+        const resend = new Resend(process.env.RESEND_API_KEY);
+        const { error } = await resend.emails.send({
+            from: process.env.RESEND_FROM_EMAIL || 'Devis Express Pro <noreply@votreentreprise.com>',
+            to: [email],
+            subject: '🎉 Bienvenue sur Devis Express Pro',
+            html: `
+                <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#ffffff;color:#0b1120;">
+                    <h1 style="color:#0b1120;font-size:26px;margin-bottom:16px;">Bienvenue sur Devis Express Pro 🎉</h1>
+                    <p style="font-size:15px;line-height:1.6;color:#334155;">
+                        Votre compte est prêt. Vous pouvez dès maintenant générer vos premiers devis en quelques secondes grâce à l'IA.
+                    </p>
+                    <h2 style="color:#0b1120;font-size:18px;margin-top:28px;margin-bottom:12px;">🚀 Vos 3 premières étapes</h2>
+                    <ol style="font-size:15px;line-height:1.8;color:#334155;padding-left:20px;">
+                        <li><strong>Configurez votre entreprise</strong> — nom, adresse, numéro de TVA, logo.<br>
+                            <a href="${baseUrl}/" style="color:#f97316;">Aller aux paramètres →</a></li>
+                        <li><strong>Ajoutez vos produits</strong> — un par un ou via un import CSV/Excel.<br>
+                            <a href="${baseUrl}/" style="color:#f97316;">Ouvrir le catalogue →</a></li>
+                        <li><strong>Générez votre premier devis</strong> — déposez une demande client, l'IA fait le reste.<br>
+                            <a href="${baseUrl}/" style="color:#f97316;">Générer un devis →</a></li>
+                    </ol>
+                    <div style="background:#f1f5f9;border-left:4px solid #f97316;padding:14px 18px;border-radius:8px;margin-top:24px;font-size:14px;color:#334155;">
+                        <strong>💡 Astuce :</strong> commencez par ajouter un client dans votre carnet pour ne plus avoir à retaper ses coordonnées à chaque devis.
+                    </div>
+                    <p style="text-align:center;margin-top:32px;">
+                        <a href="${baseUrl}/" style="background:#f97316;color:#ffffff;padding:14px 32px;border-radius:60px;text-decoration:none;font-weight:bold;font-size:15px;display:inline-block;">Accéder à mon compte</a>
+                    </p>
+                    <p style="color:#94a3b8;font-size:12px;margin-top:32px;text-align:center;">
+                        Vous recevez cet email car vous venez de créer un compte sur Devis Express Pro.<br>
+                        Si vous n'êtes pas à l'origine de cette inscription, ignorez cet email.
+                    </p>
+                </div>
+            `
+        });
+        if (error) {
+            console.error(`❌ Erreur envoi welcome email à ${email}:`, error.message);
+            return;
+        }
+        console.log(`📧 Email de bienvenue envoyé à ${email}`);
+    } catch (err) {
+        console.error('Erreur envoi welcome email:', err.message);
+    }
+}
 
 module.exports = router;
