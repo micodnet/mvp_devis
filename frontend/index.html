@@ -167,14 +167,15 @@
         .history-filter:hover { background:#1a253b; color:#e2e8f0; }
         .history-filter.active { background:#f97316; color:#0b1120; border-color:#f97316; }
         .history-filter .count { opacity:0.7; margin-left:6px; font-size:11px; }
-        .quote-row { display:grid; grid-template-columns:1.3fr 1fr 1fr 90px 130px 190px; gap:12px; padding:14px 8px; border-bottom:1px solid #1e2a41; align-items:center; font-size:14px; color:#e2e8f0; }
+        .quote-row { display:grid; grid-template-columns:1.2fr 1fr 1fr 100px auto; gap:10px; padding:14px 8px; border-bottom:1px solid #1e2a41; align-items:center; font-size:14px; color:#e2e8f0; }
+        .quote-row > div:last-child { display: none; }
         .quote-row.header { color:#64748b; font-size:11px; text-transform:uppercase; letter-spacing:0.4px; font-weight:600; padding:8px; border-bottom:1px solid #2a3a55; }
         .quote-row:hover:not(.header) { background:#141e33; }
         .quote-number { font-weight:600; color:#f97316; }
         .quote-client { color:#cbd5e1; }
         .quote-total { font-weight:600; text-align:right; }
-        .quote-actions { display:flex; gap:6px; justify-content:flex-end; }
-        .quote-actions button { background:#1a253b; border:1px solid #2a3a55; color:#e2e8f0; padding:5px 10px; border-radius:40px; font-size:11px; cursor:pointer; transition:0.2s; }
+        .quote-actions { display:flex; gap:6px; justify-content:flex-end; flex-wrap:nowrap; white-space:nowrap; }
+        .quote-actions button { background:#1a253b; border:1px solid #2a3a55; color:#e2e8f0; padding:5px 12px; border-radius:40px; font-size:11px; cursor:pointer; transition:0.2s; white-space:nowrap; flex-shrink:0; }
         .quote-actions button:hover { background:#24324b; border-color:#3b82f6; }
         .quote-actions button.danger:hover { background:#3f1e24; border-color:#7f1d1d; color:#f87171; }
         .status-badge { display:inline-flex; align-items:center; gap:6px; font-size:11px; font-weight:700; padding:4px 12px; border-radius:40px; text-transform:uppercase; letter-spacing:0.3px; }
@@ -404,6 +405,11 @@
             font-size:12px; color:#94a3b8;
         }
         .sig-info-box .sig-detail strong { color:#e2e8f0; min-width:80px; }
+
+                /* SIGNATURE CLIENT */
+        .signature-badge { display:inline-flex; align-items:center; gap:5px; font-size:10px; font-weight:700; padding:3px 10px; border-radius:40px; text-transform:uppercase; letter-spacing:0.3px; background:rgba(34,197,94,0.15); color:#22c55e; border:1px solid rgba(34,197,94,0.3); margin-left:6px; }
+        .sent-badge { display:inline-flex; align-items:center; gap:5px; font-size:10px; font-weight:700; padding:3px 10px; border-radius:40px; text-transform:uppercase; letter-spacing:0.3px; background:rgba(59,130,246,0.15); color:#3b82f6; border:1px solid rgba(59,130,246,0.3); margin-left:6px; }
+        .viewed-badge { display:inline-flex; align-items:center; gap:5px; font-size:10px; font-weight:700; padding:3px 10px; border-radius:40px; text-transform:uppercase; letter-spacing:0.3px; background:rgba(249,115,22,0.15); color:#f97316; border:1px solid rgba(249,115,22,0.3); margin-left:6px; }
     </style>
 </head>
 <body>
@@ -902,6 +908,7 @@
         </div>
     </div>
 </div>
+<!--
 <div class="modal-overlay" id="signatureModal">
     <div class="modal">
         <h3>✍️ Signer le devis</h3>
@@ -916,7 +923,7 @@
         </div>
 
         <!-- Méthode : case à cocher -->
-        <div id="signMethodCheckbox">
+        <!--<div id="signMethodCheckbox">
             <label class="checkbox-accept">
                 <input type="checkbox" id="signAcceptCheckbox" />
                 <div class="text">
@@ -924,10 +931,10 @@
                     Cette acceptation électronique vaut signature conformément à l'article 25 du règlement eIDAS.
                 </div>
             </label>
-        </div>
+        </div>-->
 
         <!-- Méthode : dessin -->
-        <div id="signMethodDraw" style="display:none;">
+        <!-- <div id="signMethodDraw" style="display:none;">
             <label style="display:block;color:#94a3b8;font-weight:500;font-size:13px;margin-bottom:4px;">Signez ci-dessous (souris, doigt ou stylet)</label>
             <div class="sig-canvas-wrap">
                 <canvas id="sigCanvas"></canvas>
@@ -946,7 +953,7 @@
             <button class="btn-confirm" id="saveSignBtn">Signer le devis</button>
         </div>
     </div>
-</div>
+</div>-->
 <div class="modal-overlay" id="editQuoteModal">
     <div class="modal modal-wide">
         <h3 id="editQuoteTitle">Modifier le devis</h3>
@@ -1854,8 +1861,22 @@ function renderHistory() {
         const status = q.status || 'draft';
         const statusLabel = STATUS_LABELS[status] || 'Brouillon';
         const isSigned = q.signature && q.signature.signedAt;
-        const signedBadge = isSigned ? `<span class="signature-badge">✍️ Signé</span>` : '';
-        const signBtn = !isSigned ? `<button onclick="openSignatureModal(${q.id})">Signer</button>` : '';
+        const isSent = q.sentToClientAt;
+        const isViewed = q.clientViewedAt;
+
+        let badges = `<span class="status-badge ${status}">${statusLabel}</span>`;
+        if (isSigned) badges += `<span class="signature-badge">✍️ Signé</span>`;
+        else if (isViewed) badges += `<span class="viewed-badge">👁 Vu</span>`;
+        else if (isSent) badges += `<span class="sent-badge">📤 Envoyé</span>`;
+
+        // Bouton "Envoyer au client" si pas encore envoyé et pas signé
+        const sendBtn = !isSent && !isSigned
+            ? `<button onclick="sendToClient(${q.id})">Envoyer</button>`
+            : '';
+        // Bouton "Copier le lien" si déjà envoyé
+        const copyBtn = isSent && !isSigned && q.publicToken
+            ? `<button onclick="copyPublicLink('${q.publicToken}')">Copier lien</button>`
+            : '';
 
         html += `<div class="quote-row">
             <div>
@@ -1864,16 +1885,15 @@ function renderHistory() {
             </div>
             <div class="quote-client">${q.clientName ? escapeHtml(q.clientName) : '<span style="color:#475569;">Aucun client</span>'}</div>
             <div class="quote-total">${q.total.toFixed(2)} €</div>
-            <div><span class="status-badge ${status}">${statusLabel}</span>${signedBadge}</div>
+            <div>${badges}</div>
             <div class="quote-actions">
-                ${signBtn}
-                <button onclick="changeStatus(${q.id}, '${status}')">Statut</button>
+                ${sendBtn}
+                ${copyBtn}
                 <button onclick="editQuote(${q.id})">Modifier</button>
                 <button onclick="duplicateQuote(${q.id})">Dupliquer</button>
                 <button onclick="downloadQuotePdf(${q.id})">PDF</button>
                 <button class="danger" onclick="deleteQuote(${q.id})">✕</button>
             </div>
-            <div></div>
         </div>`;
     });
 
@@ -1948,188 +1968,78 @@ window.downloadQuotePdf = async function(id) {
 };
 
 // ================================================================
-// 11.5. SIGNATURE ÉLECTRONIQUE
+// 11.5. ENVOI AU CLIENT + SIGNATURE
 // ================================================================
-const signatureModal = document.getElementById('signatureModal');
-let sigCanvasCtx = null;
-let sigIsDrawing = false;
-let sigHasSignature = false;
-let sigCurrentMethod = 'checkbox';
-
-// Initialiser le canvas au chargement
-function initSigCanvas() {
-    const canvas = document.getElementById('sigCanvas');
-    if (!canvas) return;
-    // Fixer la résolution interne du canvas (matching display size)
-    const rect = canvas.getBoundingClientRect();
-    canvas.width = rect.width || 500;
-    canvas.height = 180;
-    sigCanvasCtx = canvas.getContext('2d');
-    sigCanvasCtx.strokeStyle = '#0b1120';
-    sigCanvasCtx.lineWidth = 2.5;
-    sigCanvasCtx.lineCap = 'round';
-    sigCanvasCtx.lineJoin = 'round';
-    sigCanvasCtx.fillStyle = '#ffffff';
-    sigCanvasCtx.fillRect(0, 0, canvas.width, canvas.height);
-    sigHasSignature = false;
-}
-
-function getCanvasCoords(e, canvas) {
-    const rect = canvas.getBoundingClientRect();
-    const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
-    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-    return {
-        x: (clientX - rect.left) * scaleX,
-        y: (clientY - rect.top) * scaleY
-    };
-}
-
-window.openSignatureModal = async function(id) {
+window.sendToClient = async function(id) {
+    // Récupérer le devis pour vérifier l'email
     try {
-        // Récupérer le devis + les paramètres
-        const [quoteRes, settingsRes] = await Promise.all([
-            apiFetch(`/api/quotes/${id}`),
-            apiFetch('/api/settings')
-        ]);
+        const quoteRes = await apiFetch(`/api/quotes/${id}`);
         const quote = await quoteRes.json();
-        const settings = await settingsRes.json();
         if (!quoteRes.ok) throw new Error(quote.error || 'Erreur');
 
-        // Si déjà signé, bloquer
-        if (quote.signature && quote.signature.signedAt) {
-            const d = new Date(quote.signature.signedAt).toLocaleString('fr-FR');
-            showToast(`Ce devis a déjà été signé par ${quote.signature.signedBy} le ${d}`, 'info');
-            return;
+        let email = quote.clientEmail || '';
+        if (!email) {
+            email = prompt('Aucun email dans ce devis. Saisissez l\'email du client :', '');
+            if (!email) return;
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                showToast('Email invalide.', 'error');
+                return;
+            }
+        } else {
+            if (!confirm(`Envoyer ce devis à ${email} ?`)) return;
         }
 
-        // Setup
-        document.getElementById('signQuoteId').value = quote.id;
-        document.getElementById('signQuoteNumber').value = quote.quoteNumber;
-        document.getElementById('signQuoteNumDisplay').textContent = quote.quoteNumber;
-        document.getElementById('signSignedBy').value = quote.clientName || '';
-        document.getElementById('signAcceptCheckbox').checked = false;
+        showToast('Envoi en cours...', 'info');
+        const res = await apiFetch(`/api/quotes/${id}/send-to-client`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Erreur');
 
-        // Choisir la méthode par défaut
-        const defaultMethod = settings.signatureMethod || 'checkbox';
-        sigCurrentMethod = defaultMethod === 'draw' ? 'draw' : 'checkbox';
-        setSignatureMethod(sigCurrentMethod);
-
-        // Réinitialiser le canvas
-        setTimeout(initSigCanvas, 100);
-
-        signatureModal.classList.add('show');
-    } catch(err) {
+        showToast('✅ Devis envoyé au client !', 'success');
+        // Afficher le lien copiable au cas où
+        const publicUrl = data.publicUrl;
+        if (confirm(`Devis envoyé à ${email}.\n\nVoulez-vous copier le lien public pour le partager manuellement ?\n\n${publicUrl}`)) {
+            copyToClipboard(publicUrl);
+        }
+        loadHistory();
+    } catch (err) {
         showToast('Erreur : ' + err.message, 'error');
     }
 };
 
-function setSignatureMethod(method) {
-    sigCurrentMethod = method;
-    document.getElementById('signMethodCheckbox').style.display = method === 'checkbox' ? 'block' : 'none';
-    document.getElementById('signMethodDraw').style.display = method === 'draw' ? 'block' : 'none';
-    if (method === 'draw') {
-        setTimeout(initSigCanvas, 50);
+window.copyPublicLink = function(token) {
+    const url = `${window.location.origin}/sign.html?token=${token}`;
+    copyToClipboard(url);
+};
+
+function copyToClipboard(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).then(() => {
+            showToast('✅ Lien copié dans le presse-papier', 'success');
+        }).catch(() => fallbackCopy(text));
+    } else {
+        fallbackCopy(text);
     }
 }
 
-// Dessin sur le canvas
-document.addEventListener('DOMContentLoaded', () => {
-    const canvas = document.getElementById('sigCanvas');
-    if (!canvas) return;
-
-    function startDraw(e) {
-        e.preventDefault();
-        sigIsDrawing = true;
-        sigHasSignature = true;
-        const coords = getCanvasCoords(e, canvas);
-        sigCanvasCtx.beginPath();
-        sigCanvasCtx.moveTo(coords.x, coords.y);
-    }
-    function draw(e) {
-        if (!sigIsDrawing) return;
-        e.preventDefault();
-        const coords = getCanvasCoords(e, canvas);
-        sigCanvasCtx.lineTo(coords.x, coords.y);
-        sigCanvasCtx.stroke();
-    }
-    function stopDraw(e) {
-        if (sigIsDrawing) e.preventDefault();
-        sigIsDrawing = false;
-    }
-
-    canvas.addEventListener('mousedown', startDraw);
-    canvas.addEventListener('mousemove', draw);
-    canvas.addEventListener('mouseup', stopDraw);
-    canvas.addEventListener('mouseleave', stopDraw);
-
-    canvas.addEventListener('touchstart', startDraw, { passive: false });
-    canvas.addEventListener('touchmove', draw, { passive: false });
-    canvas.addEventListener('touchend', stopDraw, { passive: false });
-});
-
-document.getElementById('sigClearBtn')?.addEventListener('click', () => {
-    if (!sigCanvasCtx) return;
-    const canvas = document.getElementById('sigCanvas');
-    sigCanvasCtx.fillStyle = '#ffffff';
-    sigCanvasCtx.fillRect(0, 0, canvas.width, canvas.height);
-    sigHasSignature = false;
-});
-
-document.getElementById('cancelSignBtn')?.addEventListener('click', () => {
-    signatureModal.classList.remove('show');
-});
-
-signatureModal?.addEventListener('click', (e) => {
-    if (e.target === signatureModal) signatureModal.classList.remove('show');
-});
-
-document.getElementById('saveSignBtn')?.addEventListener('click', async () => {
-    const id = document.getElementById('signQuoteId').value;
-    const signedBy = document.getElementById('signSignedBy').value.trim();
-    if (!signedBy) { showToast('Le nom du signataire est requis.', 'error'); return; }
-
-    const payload = {
-        method: sigCurrentMethod,
-        signedBy: signedBy
-    };
-
-    if (sigCurrentMethod === 'checkbox') {
-        if (!document.getElementById('signAcceptCheckbox').checked) {
-            showToast('Vous devez cocher la case d\'acceptation.', 'error');
-            return;
-        }
-        payload.accepted = true;
-    } else {
-        // Vérifier qu'il y a un dessin
-        if (!sigHasSignature) {
-            showToast('Veuillez signer dans le cadre.', 'error');
-            return;
-        }
-        const canvas = document.getElementById('sigCanvas');
-        payload.signatureData = canvas.toDataURL('image/png');
-    }
-
-    const btn = document.getElementById('saveSignBtn');
-    btn.disabled = true; btn.textContent = 'Signature en cours...';
+function fallbackCopy(text) {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.left = '-9999px';
+    document.body.appendChild(ta);
+    ta.select();
     try {
-        const res = await apiFetch(`/api/quotes/${id}/sign`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'Erreur');
-        showToast('✅ Devis signé et accepté !', 'success');
-        signatureModal.classList.remove('show');
-        loadHistory();
-    } catch (err) {
-        showToast('Erreur : ' + err.message, 'error');
-    } finally {
-        btn.disabled = false; btn.textContent = 'Signer le devis';
+        document.execCommand('copy');
+        showToast('✅ Lien copié', 'success');
+    } catch (e) {
+        showToast('Impossible de copier — lien : ' + text, 'info');
     }
-});
+    ta.remove();
+}
 
 // ================================================================
 // 12. MODAL ÉDITION DEVIS

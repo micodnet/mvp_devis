@@ -142,7 +142,15 @@ app.get('/api/history', authenticateToken, async (req, res) => {
             clientId: r.client_id,
             clientName: r.client_name,
             clientAddress: r.client_address,
-            clientEmail: r.client_email
+            clientEmail: r.client_email,
+            publicToken: r.public_token,
+            sentToClientAt: r.sent_to_client_at,
+            clientViewedAt: r.client_viewed_at,
+            signature: r.signature_signed_at ? {
+                method: r.signature_method,
+                signedAt: r.signature_signed_at,
+                signedBy: r.signature_signed_by
+            } : null
         }));
         res.json(history);
     } catch (err) {
@@ -440,6 +448,306 @@ app.post('/api/quotes/:id/sign', authenticateToken, async (req, res) => {
     } catch (err) {
         console.error('Erreur signature:', err);
         res.status(500).json({ error: 'Erreur serveur.' });
+    }
+});
+
+// ============================================================
+// POST /api/quotes/:id/send-to-client
+// Génère un token public et envoie le lien au client par email
+// ============================================================
+app.post('/api/quotes/:id/send-to-client', authenticateToken, async (req, res) => {
+    const quoteId = parseInt(req.params.id);
+    if (!quoteId) return res.status(400).json({ error: 'ID invalide.' });
+
+    try {
+        // Récupérer le devis
+        const quoteResult = await pool.query(
+            'SELECT * FROM quotes WHERE id = $1 AND user_id = $2',
+            [quoteId, req.user.id]
+        );
+        if (quoteResult.rows.length === 0) return res.status(404).json({ error: 'Devis non trouvé.' });
+        const quote = quoteResult.rows[0];
+
+        // Récupérer les paramètres entreprise
+        const settingsResult = await pool.query(
+            'SELECT * FROM settings WHERE user_id = $1',
+            [req.user.id]
+        );
+        const settings = settingsResult.rows[0] || {};
+
+        // Email du client
+        const clientEmail = quote.client_email || (req.body.email || '');
+        if (!clientEmail) {
+            return res.status(400).json({ error: 'Aucun email client. Ajoutez-en un ou sélectionnez un client avec email.' });
+        }
+
+        // Générer ou réutiliser le token
+        let token = quote.public_token;
+        if (!token) {
+            token = crypto.randomBytes(32).toString('hex');
+        }
+
+        // Mettre à jour le devis
+        await pool.query(`
+            UPDATE quotes
+            SET public_token = $1,
+                sent_to_client_at = NOW(),
+                status = CASE WHEN status = 'draft' THEN 'sent' ELSE status END,
+                updated_at = NOW()
+            WHERE id = $2 AND user_id = $3
+        `, [token, quoteId, req.user.id]);
+
+        // URL publique
+        const baseUrl = `${req.protocol}://${req.get('host')}`;
+        const publicUrl = `${baseUrl}/sign.html?token=${token}`;
+
+        // Envoyer l'email
+        if (process.env.RESEND_API_KEY) {
+            try {
+                const resend = new Resend(process.env.RESEND_API_KEY);
+                const clientName = quote.client_name || 'Bonjour';
+                const companyName = settings.company_name || 'Notre entreprise';
+                const total = parseFloat(quote.total).toFixed(2);
+
+                await resend.emails.send({
+                    from: process.env.RESEND_FROM_EMAIL || 'Devis Express Pro <noreply@votreentreprise.com>',
+                    to: [clientEmail],
+                    subject: `Votre devis ${quote.quote_number} — ${companyName}`,
+                    html: `
+                        <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#ffffff;color:#0b1120;">
+                            <h1 style="color:#0b1120;font-size:24px;margin-bottom:16px;">Votre devis ${quote.quote_number}</h1>
+                            <p style="font-size:15px;line-height:1.6;color:#334155;">
+                                Bonjour ${clientName},
+                            </p>
+                            <p style="font-size:15px;line-height:1.6;color:#334155;">
+                                Veuillez trouver ci-dessous votre devis émis par <strong>${companyName}</strong> pour un montant de <strong>${total} €</strong>.
+                            </p>
+                            <p style="font-size:15px;line-height:1.6;color:#334155;">
+                                Cliquez sur le bouton ci-dessous pour consulter le devis en détail et l'accepter en ligne :
+                            </p>
+                            <p style="text-align:center;margin:32px 0;">
+                                <a href="${publicUrl}" style="background:#f97316;color:#ffffff;padding:14px 32px;border-radius:60px;text-decoration:none;font-weight:bold;font-size:15px;display:inline-block;">Voir et signer le devis</a>
+                            </p>
+                            <p style="font-size:13px;color:#64748b;line-height:1.6;">
+                                Date d'émission : ${new Date(quote.issue_date).toLocaleDateString('fr-FR')}<br>
+                                Valable jusqu'au : ${new Date(quote.valid_date).toLocaleDateString('fr-FR')}
+                            </p>
+                            <hr style="border:none;border-top:1px solid #e2e8f0;margin:24px 0;">
+                            <p style="font-size:12px;color:#94a3b8;">
+                                Si le bouton ne fonctionne pas, copiez-collez ce lien dans votre navigateur :<br>
+                                <span style="word-break:break-all;color:#f97316;">${publicUrl}</span>
+                            </p>
+                        </div>
+                    `
+                });
+            } catch (emailErr) {
+                console.error('Erreur envoi email devis:', emailErr);
+                // On ne bloque pas : le token est créé, on peut renvoyer le lien manuellement
+            }
+        } else {
+            console.warn('RESEND_API_KEY absente — email non envoyé. Lien:', publicUrl);
+        }
+
+        res.json({ success: true, publicUrl, token });
+    } catch (err) {
+        console.error('Erreur send-to-client:', err);
+        res.status(500).json({ error: 'Erreur serveur.' });
+    }
+});
+
+// ============================================================
+// ROUTES PUBLIQUES (pas d'authentification)
+// ============================================================
+
+// GET /api/public/quotes/:token — Récupérer un devis par son token
+app.get('/api/public/quotes/:token', async (req, res) => {
+    try {
+        const { token } = req.params;
+        if (!token || token.length < 32) return res.status(400).json({ error: 'Token invalide.' });
+
+        const result = await pool.query(`
+            SELECT q.*, u.id as owner_id
+            FROM quotes q
+            JOIN users u ON u.id = q.user_id
+            WHERE q.public_token = $1
+        `, [token]);
+
+        if (result.rows.length === 0) return res.status(404).json({ error: 'Devis introuvable.' });
+        const q = result.rows[0];
+
+        // Charger les paramètres du propriétaire pour afficher le header du devis
+        const settingsResult = await pool.query('SELECT * FROM settings WHERE user_id = $1', [q.owner_id]);
+        const s = settingsResult.rows[0] || {};
+
+        // Marquer comme vu (seulement la première fois)
+        if (!q.client_viewed_at) {
+            await pool.query('UPDATE quotes SET client_viewed_at = NOW() WHERE id = $1', [q.id]);
+        }
+
+        res.json({
+            quote: {
+                quoteNumber: q.quote_number,
+                issueDate: q.issue_date,
+                validDate: q.valid_date,
+                status: q.status,
+                subtotal: parseFloat(q.subtotal) || 0,
+                vatAmount: parseFloat(q.vat_amount) || 0,
+                total: parseFloat(q.total),
+                vatRegime: q.vat_regime,
+                items: q.items,
+                clientName: q.client_name,
+                clientAddress: q.client_address,
+                clientVat: q.client_vat,
+                clientEmail: q.client_email,
+                signature: q.signature_signed_at ? {
+                    method: q.signature_method,
+                    data: q.signature_data,
+                    signedAt: q.signature_signed_at,
+                    signedBy: q.signature_signed_by
+                } : null
+            },
+            company: {
+                companyName: s.company_name,
+                address: s.address,
+                siret: s.siret,
+                tva: s.tva,
+                phone: s.phone,
+                email: s.email,
+                website: s.website,
+                logo: s.logo,
+                vatRegime: s.vat_regime,
+                vatRate: parseFloat(s.vat_rate) || 21,
+                signatureMethod: s.signature_method || 'checkbox'
+            }
+        });
+    } catch (err) {
+        console.error('Erreur public quote:', err);
+        res.status(500).json({ error: 'Erreur serveur.' });
+    }
+});
+
+// POST /api/public/quotes/:token/sign — Signature par le client (sans auth)
+app.post('/api/public/quotes/:token/sign', async (req, res) => {
+    try {
+        const { token } = req.params;
+        const { method, signedBy, signatureData, accepted } = req.body;
+
+        if (!['checkbox', 'draw'].includes(method)) {
+            return res.status(400).json({ error: 'Méthode invalide.' });
+        }
+        if (!signedBy || !signedBy.trim()) {
+            return res.status(400).json({ error: 'Nom du signataire requis.' });
+        }
+        if (method === 'checkbox' && !accepted) {
+            return res.status(400).json({ error: 'Vous devez accepter les conditions.' });
+        }
+        if (method === 'draw' && (!signatureData || signatureData.length < 100)) {
+            return res.status(400).json({ error: 'Signature vide.' });
+        }
+
+        // Vérifier que le devis existe et n'est pas déjà signé
+        const checkResult = await pool.query(
+            'SELECT id, signature_signed_at FROM quotes WHERE public_token = $1',
+            [token]
+        );
+        if (checkResult.rows.length === 0) return res.status(404).json({ error: 'Devis introuvable.' });
+        if (checkResult.rows[0].signature_signed_at) {
+            return res.status(400).json({ error: 'Ce devis a déjà été signé.' });
+        }
+
+        const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket.remoteAddress || 'unknown';
+
+        await pool.query(`
+            UPDATE quotes
+            SET signature_method = $1,
+                signature_data = $2,
+                signature_signed_at = NOW(),
+                signature_signed_by = $3,
+                signature_ip = $4,
+                status = 'accepted',
+                updated_at = NOW()
+            WHERE public_token = $5
+        `, [
+            method,
+            method === 'draw' ? signatureData : null,
+            signedBy.trim(),
+            ip,
+            token
+        ]);
+
+        res.json({ success: true });
+    } catch (err) {
+        console.error('Erreur public sign:', err);
+        res.status(500).json({ error: 'Erreur serveur.' });
+    }
+});
+
+// GET /api/public/quotes/:token/pdf — Télécharger le PDF du devis (sans auth)
+app.get('/api/public/quotes/:token/pdf', async (req, res) => {
+    try {
+        const { token } = req.params;
+        const result = await pool.query(`
+            SELECT q.*, u.id as owner_id
+            FROM quotes q
+            JOIN users u ON u.id = q.user_id
+            WHERE q.public_token = $1
+        `, [token]);
+
+        if (result.rows.length === 0) return res.status(404).send('Devis introuvable.');
+        const q = result.rows[0];
+
+        const settingsResult = await pool.query('SELECT * FROM settings WHERE user_id = $1', [q.owner_id]);
+        const s = settingsResult.rows[0] || {};
+
+        const company = {
+            companyName: s.company_name,
+            address: s.address,
+            siret: s.siret,
+            tva: s.tva,
+            phone: s.phone,
+            email: s.email,
+            website: s.website,
+            logo: s.logo,
+            vatRegime: s.vat_regime,
+            vatRate: parseFloat(s.vat_rate) || 21
+        };
+
+        const client = {
+            name: q.client_name,
+            address: q.client_address,
+            vat: q.client_vat,
+            email: q.client_email
+        };
+
+        const signature = q.signature_signed_at ? {
+            method: q.signature_method,
+            data: q.signature_data,
+            signedAt: q.signature_signed_at,
+            signedBy: q.signature_signed_by,
+            ip: q.signature_ip
+        } : null;
+
+        const pdfBytes = await generateQuotePDF(
+            q.items,
+            parseFloat(q.subtotal) || 0,
+            parseFloat(q.vat_amount) || 0,
+            parseFloat(q.total),
+            q.vat_regime,
+            parseFloat(s.vat_rate) || 21,
+            q.quote_number,
+            q.issue_date,
+            q.valid_date,
+            company,
+            client,
+            signature
+        );
+
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename=devis_${q.quote_number}.pdf`);
+        res.send(Buffer.from(pdfBytes));
+    } catch (err) {
+        console.error('Erreur public pdf:', err);
+        res.status(500).send('Erreur PDF.');
     }
 });
 
