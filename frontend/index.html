@@ -172,7 +172,7 @@
         .quote-row:hover:not(.header) { background:#141e33; }
         .quote-number { font-weight:600; color:#f97316; }
         .quote-client { color:#cbd5e1; }
-        .quote-total { font-weight:600; text-align:center; }
+        .quote-total { font-weight:600; text-align:left; }
         .quote-actions { display:flex; gap:6px; justify-content:flex-end; flex-wrap:nowrap; white-space:nowrap; }
         .quote-actions button { background:#1a253b; border:1px solid #2a3a55; color:#e2e8f0; padding:5px 12px; border-radius:40px; font-size:11px; cursor:pointer; transition:0.2s; white-space:nowrap; flex-shrink:0; }
         .quote-actions button:hover { background:#24324b; border-color:#3b82f6; }
@@ -485,6 +485,47 @@
                 <h3>Carnet clients</h3>
                 <p>Enregistrez vos clients une fois pour toutes. Sélectionnez-les en un clic et générez un devis en quelques secondes.</p>
             </div>
+            <div class="feature">
+                <div class="icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div>
+                <h3>Ce qui est possible actuellement</h3>
+                <p>
+                    -Authentification complète (login, signup, reset password)<br />
+                    -Devis IA (extraction, matching catalogue, PDF, email)<br />
+                    -4 statuts (brouillon/envoyé/accepté/refusé) + édition + duplication<br />
+                    -Catalogue produits (CRUD + import CSV/Excel)<br />
+                    -Carnet clients (CRUD + sélecteur)<br />
+                    -Historique filtrable + recherche<br />
+                    -Dashboard avec graphiques (CA mensuel + répartition statuts)<br />
+                    -Onboarding (checklist + email de bienvenue)<br />
+                    -Stripe (4 plans + quota + portail client)<br />
+                    -Pages légales (mentions, CGU, confidentialité)<br />
+                    -Responsive mobile
+                </p>
+            </div>
+            <div class="feature">
+                <div class="icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div>
+                <h3>Ce qui est prévu d'ajouter</h3>
+                <p>
+                    -Facturation Peppol<br />
+                    -service multi-langues<br />
+                    -service multi-utilisateurs<br />
+                    -Catalogue services (CRUD + import CSV/Excel)<br />
+                    -Signature électronique<br />
+                    -Prise de devis par photo<br />
+                    -Dashboard avec améliorations ()
+                </p>
+            </div>
+            <div class="feature">
+                <div class="icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div>
+                <h3>Remerciements</h3>
+                <p>
+                    Je remercie personnellement<br />
+                    toutes les personnes qui auront<br />
+                    de pret ou de loin contribuer au<br />
+                    bon développement de celle ci et pour<br />
+                    vos retours très précieux.
+                </p>
+            </div>
         </div>
 
         <div class="pricing-section">
@@ -550,6 +591,15 @@
         <form id="authForm">
             <div class="form-group"><label>Email</label><input type="email" id="authEmail" required placeholder="vous@entreprise.com" /></div>
             <div class="form-group"><label>Mot de passe</label><input type="password" id="authPassword" required placeholder="••••••••" minlength="6" /></div>
+            <div class="form-group" id="termsGroup" style="display:none;">
+                <label class="checkbox-accept" style="margin:0;">
+                    <input type="checkbox" id="termsCheckbox" style="margin-top:0;" />
+                    <div class="text">
+                        J'accepte les <a href="/cgu.html" target="_blank" style="color:#f97316;">CGU/CGV</a>
+                        et la <a href="/confidentialite.html" target="_blank" style="color:#f97316;">politique de confidentialité</a>.
+                    </div>
+                </label>
+            </div>
             <div class="forgot-link" id="forgotLinkWrap"><a id="forgotLink">Mot de passe oublié ?</a></div>
             <button type="submit" id="authSubmitBtn">Se connecter</button>
         </form>
@@ -619,6 +669,7 @@
             <span class="quota-text" id="quotaText">Chargement du quota...</span>
             <button class="quota-btn" id="quotaUpgradeBtn" style="display:none;">Améliorer mon plan</button>
         </div>
+        <p>(illimité pour la periode de test de 30 jours): la fonction d'abonnement n'est pas prise en charge actuellement</p>
         <div class="card">
             <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:16px;">
                 <div class="card-title" style="margin:0;">👤 Client</div>
@@ -831,6 +882,13 @@
             </p>
             <button class="btn-secondary" id="exportDataBtn">📥 Télécharger mes données (JSON)</button>
         </div>
+        <div class="card" style="border-color:rgba(248,113,113,0.3);">
+            <div class="card-title" style="color:#f87171;">⚠️ Zone de danger</div>
+            <p style="color:#94a3b8;font-size:13px;margin-bottom:16px;line-height:1.6;">
+                La suppression de votre compte est <strong style="color:#f87171;">définitive et irréversible</strong>. Toutes vos données (paramètres, clients, produits, devis) seront effacées. Votre abonnement Stripe sera automatiquement annulé.
+            </p>
+            <button class="btn-secondary" id="deleteAccountBtn" style="border-color:rgba(248,113,113,0.5); color:#f87171;">🗑 Supprimer mon compte</button>
+        </div>
     </div>
 
     <!-- ABONNEMENT -->
@@ -1017,7 +1075,32 @@
         </div>
     </div>
 </div>
+<!-- Modal suppression de compte -->
+<div class="modal-overlay" id="deleteAccountModal">
+    <div class="modal">
+        <h3 style="color:#f87171;">🗑 Supprimer mon compte</h3>
+        <p style="color:#cbd5e1;font-size:13px;line-height:1.6;margin-bottom:16px;">
+            Cette action est <strong>irréversible</strong>. Toutes vos données seront supprimées définitivement.
+        </p>
+        <p style="color:#cbd5e1;font-size:13px;line-height:1.6;margin-bottom:16px;">
+            Pour confirmer, saisissez votre mot de passe et tapez <strong style="color:#f87171;">SUPPRIMER</strong> ci-dessous.
+        </p>
 
+        <div class="form-group">
+            <label>Votre mot de passe</label>
+            <input type="password" id="deletePassword" placeholder="••••••••" />
+        </div>
+        <div class="form-group">
+            <label>Tapez "SUPPRIMER" pour confirmer</label>
+            <input type="text" id="deleteConfirmText" placeholder="SUPPRIMER" />
+        </div>
+
+        <div class="modal-actions">
+            <button class="btn-cancel" id="cancelDeleteBtn">Annuler</button>
+            <button class="btn-confirm" id="confirmDeleteBtn" style="background:#f87171;color:#fff;">Supprimer définitivement</button>
+        </div>
+    </div>
+</div>
 <div id="toast"></div>
 
 <script>
@@ -1104,16 +1187,20 @@ const toggleText = document.getElementById('toggleText');
 let isSignup = false;
 
 function updateAuthUI() {
+    const termsGroup = document.getElementById('termsGroup');
     if (isSignup) {
         authSubmitBtn.textContent = 'Créer mon compte';
         toggleText.textContent = 'Déjà un compte ?';
         toggleAuth.textContent = 'Se connecter';
         document.getElementById('forgotLinkWrap').style.display = 'none';
+        termsGroup.style.display = 'block';
     } else {
         authSubmitBtn.textContent = 'Se connecter';
         toggleText.textContent = 'Pas encore de compte ?';
         toggleAuth.textContent = 'Créer un compte';
         document.getElementById('forgotLinkWrap').style.display = 'block';
+        termsGroup.style.display = 'none';
+        document.getElementById('termsCheckbox').checked = false;
     }
     authError.style.display = 'none';
 }
@@ -1128,7 +1215,18 @@ authForm.addEventListener('submit', async (e) => {
     authSubmitBtn.disabled = true;
     authSubmitBtn.textContent = 'Chargement...';
     try {
-        const res = await fetch(endpoint, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ email, password }) });
+        const payload = { email, password };
+        if (isSignup) {
+            payload.termsAccepted = document.getElementById('termsCheckbox').checked;
+            if (!payload.termsAccepted) {
+                authError.textContent = '❌ Vous devez accepter les CGU et la politique de confidentialité.';
+                authError.style.display = 'block';
+                authSubmitBtn.disabled = false;
+                updateAuthUI();
+                return;
+            }
+        }
+        const res = await fetch(endpoint, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Erreur');
         setToken(data.token); localStorage.setItem('devis_user', JSON.stringify(data.user));
@@ -2554,6 +2652,63 @@ document.getElementById('exportDataBtn')?.addEventListener('click', async () => 
         showToast('✅ Export téléchargé !', 'success');
     } catch(err) {
         showToast('Erreur : ' + err.message, 'error');
+    }
+});
+
+// ================================================================
+// 14.5. SUPPRESSION DE COMPTE (RGPD)
+// ================================================================
+const deleteAccountModal = document.getElementById('deleteAccountModal');
+
+document.getElementById('deleteAccountBtn')?.addEventListener('click', () => {
+    document.getElementById('deletePassword').value = '';
+    document.getElementById('deleteConfirmText').value = '';
+    deleteAccountModal.classList.add('show');
+});
+
+document.getElementById('cancelDeleteBtn')?.addEventListener('click', () => {
+    deleteAccountModal.classList.remove('show');
+});
+
+deleteAccountModal?.addEventListener('click', (e) => {
+    if (e.target === deleteAccountModal) deleteAccountModal.classList.remove('show');
+});
+
+document.getElementById('confirmDeleteBtn')?.addEventListener('click', async () => {
+    const password = document.getElementById('deletePassword').value;
+    const confirmText = document.getElementById('deleteConfirmText').value.trim();
+
+    if (!password) {
+        showToast('Mot de passe requis.', 'error');
+        return;
+    }
+    if (confirmText !== 'SUPPRIMER') {
+        showToast('Tapez exactement "SUPPRIMER" pour confirmer.', 'error');
+        return;
+    }
+
+    const btn = document.getElementById('confirmDeleteBtn');
+    btn.disabled = true;
+    btn.textContent = 'Suppression en cours...';
+
+    try {
+        const res = await apiFetch('/api/account', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ password, confirm: 'DELETE_MY_ACCOUNT' })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Erreur');
+
+        showToast('✅ Compte supprimé. À bientôt !', 'success');
+        setTimeout(() => {
+            clearToken();
+            showLanding();
+        }, 1500);
+    } catch (err) {
+        showToast('Erreur : ' + err.message, 'error');
+        btn.disabled = false;
+        btn.textContent = 'Supprimer définitivement';
     }
 });
 

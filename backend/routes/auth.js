@@ -22,7 +22,7 @@ function getAppUrl(req) {
 // POST /api/auth/signup
 // ------------------------------------------------------------
 router.post('/signup', async (req, res) => {
-    const { email, password } = req.body;
+    const { email, password, termsAccpeted } = req.body;
 
     if (!email || !password) {
         return res.status(400).json({ error: 'Email et mot de passe requis.' });
@@ -30,7 +30,9 @@ router.post('/signup', async (req, res) => {
     if (password.length < 6) {
         return res.status(400).json({ error: 'Le mot de passe doit contenir au moins 6 caractères.' });
     }
-
+    if (!termsAccepted) {
+        return res.status(400).json({ error: 'Vous devez accepter les CGU et la politique de confidentialité.' });
+    }
     try {
         const existing = await pool.query('SELECT id FROM users WHERE email = $1', [email]);
         if (existing.rows.length > 0) {
@@ -40,7 +42,7 @@ router.post('/signup', async (req, res) => {
         const passwordHash = await bcrypt.hash(password, 10);
 
         const result = await pool.query(
-            'INSERT INTO users (email, password_hash) VALUES ($1, $2) RETURNING id, email',
+            'INSERT INTO users (email, password_hash, terms_accepted_at) VALUES ($1, $2, NOW()) RETURNING id, email',
             [email, passwordHash]
         );
         const user = result.rows[0];

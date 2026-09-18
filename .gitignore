@@ -23,6 +23,7 @@ backend/history.json
 backend/counter.json
 backend/uploads/
 backend/temp/
+backend/backups/
 
 # ============================================================
 # Fichiers générés

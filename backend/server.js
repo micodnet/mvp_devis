@@ -19,6 +19,7 @@ const { router: stripeRoutes, stripeWebhook } = require('./routes/stripe');
 const productsRoutes = require('./routes/products');
 const clientsRoutes = require('./routes/clients');
 const quotesRoutes = require('./routes/quotes');
+const adminRoutes = require('./routes/admin');
 
 // ⚙️ INTERRUPTEUR DE QUOTA — Mets à `false` pour désactiver les limites pendant les tests
 const ENABLE_QUOTA_LIMITS = false;
@@ -42,6 +43,7 @@ app.use('/api/stripe', stripeRoutes);
 app.use('/api/products', productsRoutes);
 app.use('/api/clients', clientsRoutes);
 app.use('/api/quotes', quotesRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Multer
 const storage = multer.diskStorage({
@@ -749,6 +751,71 @@ app.get('/api/public/quotes/:token/pdf', async (req, res) => {
     } catch (err) {
         console.error('Erreur public pdf:', err);
         res.status(500).send('Erreur PDF.');
+    }
+});
+
+// ============================================================
+// DELETE /api/account — Suppression définitive du compte (RGPD Art. 17)
+// ============================================================
+app.delete('/api/account', authenticateToken, async (req, res) => {
+    const { password, confirm } = req.body;
+
+    if (confirm !== 'DELETE_MY_ACCOUNT') {
+        return res.status(400).json({ error: 'Confirmation manquante.' });
+    }
+    if (!password) {
+        return res.status(400).json({ error: 'Mot de passe requis pour confirmer.' });
+    }
+
+    try {
+        // 1. Vérifier le mot de passe
+        const userResult = await pool.query(
+            'SELECT id, password_hash, email FROM users WHERE id = $1',
+            [req.user.id]
+        );
+        if (userResult.rows.length === 0) {
+            return res.status(404).json({ error: 'Utilisateur introuvable.' });
+        }
+        const user = userResult.rows[0];
+
+        const bcrypt = require('bcrypt');
+        const validPassword = await bcrypt.compare(password, user.password_hash);
+        if (!validPassword) {
+            return res.status(401).json({ error: 'Mot de passe incorrect.' });
+        }
+
+        // 2. Annuler l'abonnement Stripe si actif
+        if (user.stripe_customer_id) {
+            try {
+                const Stripe = require('stripe');
+                const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+
+                // Récupérer les abonnements actifs
+                const subscriptions = await stripe.subscriptions.list({
+                    customer: user.stripe_customer_id,
+                    status: 'active',
+                    limit: 5
+                });
+
+                // Annuler chaque abonnement actif
+                for (const sub of subscriptions.data) {
+                    await stripe.subscriptions.cancel(sub.id);
+                    console.log(`🔴 Abonnement Stripe annulé : ${sub.id}`);
+                }
+            } catch (stripeErr) {
+                console.error('⚠️ Erreur annulation Stripe (on continue):', stripeErr.message);
+                // On continue la suppression même si Stripe échoue
+            }
+        }
+
+        // 3. Supprimer l'utilisateur (CASCADE supprime tout : settings, clients, products, quotes, etc.)
+        await pool.query('DELETE FROM users WHERE id = $1', [req.user.id]);
+
+        console.log(`🗑 Compte supprimé (RGPD) : ${user.email}`);
+        res.json({ success: true, message: 'Compte et données supprimés définitivement.' });
+    } catch (err) {
+        console.error('Erreur suppression compte:', err);
+        res.status(500).json({ error: 'Erreur lors de la suppression.' });
     }
 });
 
