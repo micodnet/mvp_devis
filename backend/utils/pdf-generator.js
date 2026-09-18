@@ -491,7 +491,7 @@ async function generateQuotePDF(items, subtotal, vatAmount, total, vatRegime, va
                 borderColor: rgb(0.13, 0.77, 0.37),
                 borderWidth: 1
             });
-            page.drawText('✓ DEVIS ACCEPTÉ', {
+            page.drawText('DEVIS ACCEPTÉ', {
                 x: marginLeft + 285, y: signY - 15,
                 size: 14, font: boldFont, color: rgb(0.09, 0.6, 0.27)
             });
