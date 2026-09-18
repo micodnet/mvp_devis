@@ -22,7 +22,7 @@ function getAppUrl(req) {
 // POST /api/auth/signup
 // ------------------------------------------------------------
 router.post('/signup', async (req, res) => {
-    const { email, password, termsAccpeted } = req.body;
+    const { email, password, termsAccepted } = req.body;
 
     if (!email || !password) {
         return res.status(400).json({ error: 'Email et mot de passe requis.' });

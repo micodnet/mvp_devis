@@ -81,7 +81,11 @@
         #authScreen .sub { color:#94a3b8; font-size:14px; margin-bottom:24px; }
         #authScreen .form-group { margin-bottom:14px; }
         #authScreen label { display:block; color:#94a3b8; font-size:13px; margin-bottom:4px; }
-        #authScreen input { width:100%; padding:12px 16px; border-radius:12px; background:#0b1120; border:1px solid #2a3a55; color:#e2e8f0; font-size:14px; }
+        /*#authScreen input { width:100%; padding:12px 16px; border-radius:12px; background:#0b1120; border:1px solid #2a3a55; color:#e2e8f0; font-size:14px; }*/
+        #authScreen input[type="checkbox"] { width: 18px; height: 18px; padding: 0; margin: 0; flex-shrink: 0; accent-color: #f97316; cursor: pointer; border-radius: 4px; }
+        #authScreen .checkbox-accept { display: flex; align-items: flex-start; gap: 12px; padding: 14px 18px; background: #0b1120; border: 1px solid #1e2a41; border-radius: 12px; cursor: pointer; }
+        #authScreen .checkbox-accept .text { font-size: 13px; color: #cbd5e1; line-height: 1.5; padding-top: 1px; }
+    
         #authScreen input:focus { outline:2px solid #f97316; border-color:transparent; }
         #authScreen button[type=submit] { width:100%; padding:14px; border-radius:60px; border:none; background:#f97316; color:#0b1120; font-weight:700; font-size:15px; cursor:pointer; margin-top:8px; }
         #authScreen button[type=submit]:hover { background:#ea580c; }
