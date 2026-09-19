@@ -1,5 +1,20 @@
 const { PDFDocument, rgb, StandardFonts } = require('pdf-lib');
 
+// Helper : formate une date en français (JJ/MM/AAAA)
+function formatDateFr(d) {
+    if (!d) return '—';
+    try {
+        const date = (d instanceof Date) ? d : new Date(d);
+        if (isNaN(date.getTime())) return String(d);
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const year = date.getFullYear();
+        return `${day}/${month}/${year}`;
+    } catch (e) {
+        return String(d);
+    }
+}
+
 async function generateQuotePDF(items, subtotal, vatAmount, total, vatRegime, vatRate, quoteNumber, issueDate, validDate, company, client, signature = null) {
     const pdfDoc = await PDFDocument.create();
     const page = pdfDoc.addPage([595, 842]); // A4
@@ -57,7 +72,7 @@ async function generateQuotePDF(items, subtotal, vatAmount, total, vatRegime, va
         color: white,
     });
 
-    const issueText = `Émis le : ${issueDate}`;
+    const issueText = `Émis le : ${formatDateFr(issueDate)}`;
     const issueWidth = font.widthOfTextAtSize(issueText, 10);
     page.drawText(issueText, {
         x: width - marginRight - issueWidth,
@@ -182,7 +197,7 @@ async function generateQuotePDF(items, subtotal, vatAmount, total, vatRegime, va
     // ---- DATE DE VALIDITÉ ----
     let y = Math.min(ly, blockTopY - clientBoxHeight) - 20;
     const rightX = width - marginRight;
-    const validText = `Valable jusqu'au : ${validDate}`;
+    const validText = `Valable jusqu'au : ${formatDateFr(validDate)}`;
     const validWidth = font.widthOfTextAtSize(validText, 10);
     page.drawText(validText, {
         x: rightX - validWidth,

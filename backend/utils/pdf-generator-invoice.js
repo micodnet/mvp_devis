@@ -1,4 +1,20 @@
+// backend/utils/pdf-generator-invoice.js
 const { PDFDocument, rgb, StandardFonts } = require('pdf-lib');
+
+// Helper : formate une date en français (JJ/MM/AAAA)
+function formatDateFr(d) {
+    if (!d) return '—';
+    try {
+        const date = (d instanceof Date) ? d : new Date(d);
+        if (isNaN(date.getTime())) return String(d);
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const year = date.getFullYear();
+        return `${day}/${month}/${year}`;
+    } catch (e) {
+        return String(d);
+    }
+}
 
 async function generateInvoicePDF(items, subtotal, vatAmount, total, vatRegime, vatRate, invoiceNumber, issueDate, dueDate, status, notes, company, client) {
     const pdfDoc = await PDFDocument.create();
@@ -30,19 +46,19 @@ async function generateInvoicePDF(items, subtotal, vatAmount, total, vatRegime, 
     const iw = boldFont.widthOfTextAtSize(invoiceNumber, 16);
     page.drawText(invoiceNumber, { x: width - mR - iw, y: height - 48, size: 16, font: boldFont, color: white });
 
-    const issueTxt = `Émise le : ${issueDate}`;
+    const issueTxt = `Émise le : ${formatDateFr(issueDate)}`;
     const issueW = font.widthOfTextAtSize(issueTxt, 10);
     page.drawText(issueTxt, { x: width - mR - issueW, y: height - 66, size: 10, font, color: rgb(0.85, 0.9, 1) });
 
-    const dueTxt = `Échéance : ${dueDate}`;
+    const dueTxt = `Échéance : ${formatDateFr(dueDate)}`;
     const dueW = font.widthOfTextAtSize(dueTxt, 10);
     page.drawText(dueTxt, { x: width - mR - dueW, y: height - 80, size: 10, font: boldFont, color: white });
 
-    // Statut PAYÉ en gros si payé
+    // Statut PAYÉ ou EN RETARD
     if (status === 'paid') {
-        page.drawText('PAYÉE', { x: 40, y: height - 130, size: 24, font: boldFont, color: green });
+        page.drawText('✓ PAYÉE', { x: 40, y: height - 130, size: 22, font: boldFont, color: green });
     } else if (status === 'overdue') {
-        page.drawText('EN RETARD', { x: 40, y: height - 130, size: 20, font: boldFont, color: red });
+        page.drawText('EN RETARD', { x: 40, y: height - 130, size: 18, font: boldFont, color: red });
     }
 
     // Blocs Émetteur / Client
@@ -53,6 +69,7 @@ async function generateInvoicePDF(items, subtotal, vatAmount, total, vatRegime, 
 
     let ly = blockTopY;
 
+    // Logo
     if (company.logo) {
         try {
             const b64 = company.logo.replace(/^data:image\/\w+;base64,/, '');
@@ -67,6 +84,7 @@ async function generateInvoicePDF(items, subtotal, vatAmount, total, vatRegime, 
         } catch (e) { /* ignore */ }
     }
 
+    // ÉMETTEUR
     page.drawText('ÉMETTEUR', { x: colLeftX, y: ly, size: 7, font: boldFont, color: lightGray });
     ly -= 14;
     page.drawText(company.companyName || 'Votre Entreprise', { x: colLeftX, y: ly, size: 12, font: boldFont, color: black });
@@ -81,7 +99,7 @@ async function generateInvoicePDF(items, subtotal, vatAmount, total, vatRegime, 
     if (company.siret) { page.drawText(`BCE : ${company.siret}`, { x: colLeftX, y: ly, size: 8, font, color: darkGray }); ly -= 11; }
     if (company.tva && vatRegime === 'assujetti') { page.drawText(`TVA : ${company.tva}`, { x: colLeftX, y: ly, size: 8, font, color: darkGray }); ly -= 11; }
 
-    // Client
+    // CLIENT
     let ry = blockTopY;
     const clientBoxHeight = 110;
     page.drawRectangle({
@@ -136,11 +154,11 @@ async function generateInvoicePDF(items, subtotal, vatAmount, total, vatRegime, 
         const qtyW = font.widthOfTextAtSize(qtyStr, 9);
         page.drawText(qtyStr, { x: colQty + 15 - qtyW / 2, y: y - 15, size: 9, font, color: black });
 
-        const puStr = item.unitPrice.toFixed(2) + ' €';
+        const puStr = parseFloat(item.unitPrice).toFixed(2) + ' €';
         const puW = font.widthOfTextAtSize(puStr, 9);
         page.drawText(puStr, { x: colPU + 40 - puW, y: y - 15, size: 9, font, color: black });
 
-        const totStr = item.total.toFixed(2) + ' €';
+        const totStr = parseFloat(item.total).toFixed(2) + ' €';
         const totW = boldFont.widthOfTextAtSize(totStr, 9);
         page.drawText(totStr, { x: colTotal + 70 - totW, y: y - 15, size: 9, font: boldFont, color: darkBlue });
 
