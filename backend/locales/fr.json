@@ -1,0 +1,67 @@
+{
+    "quote": {
+        "title": "DEVIS",
+        "issued_on": "Émis le",
+        "valid_until": "Valable jusqu'au",
+        "sender": "ÉMETTEUR",
+        "client": "CLIENT",
+        "table": {
+            "ref": "Réf.",
+            "name": "Désignation",
+            "qty": "Qté",
+            "unit_price": "P.U. HT",
+            "total_ht": "Total HT"
+        },
+        "totals": {
+            "subtotal": "Total HT",
+            "vat": "TVA",
+            "total_ttc": "TOTAL TTC",
+            "total": "TOTAL"
+        },
+        "vat_franchise": "Régime particulier de franchise des petites entreprises — TVA non applicable.",
+        "payment_terms": "Paiement à 30 jours. Devis valable jusqu'à la date indiquée ci-dessus.",
+        "legal_notice": "Devis généré automatiquement — Document non contractuel jusqu'à acceptation écrite.",
+        "page": "Page"
+    },
+    "invoice": {
+        "title": "FACTURE",
+        "issued_on": "Émise le",
+        "due_date": "Échéance",
+        "paid_stamp": "✓ PAYÉE",
+        "overdue_stamp": "EN RETARD",
+        "sender": "ÉMETTEUR",
+        "client": "CLIENT",
+        "table": {
+            "ref": "Réf.",
+            "name": "Désignation",
+            "qty": "Qté",
+            "unit_price": "P.U. HT",
+            "total_ht": "Total HT"
+        },
+        "totals": {
+            "subtotal": "Total HT",
+            "vat": "TVA",
+            "total_ttc": "TOTAL TTC",
+            "total": "TOTAL"
+        },
+        "bank_details": "COORDONNÉES BANCAIRES",
+        "iban": "IBAN",
+        "bic": "BIC",
+        "bank": "Banque",
+        "communication": "Communication",
+        "notes": "NOTES",
+        "vat_franchise": "Régime particulier de franchise des petites entreprises — TVA non applicable.",
+        "payment_terms": "Facture soumise à la TVA belge. Paiement à l'échéance indiquée.",
+        "legal_notice": "Facture générée automatiquement — Document à conserver 7 ans."
+    },
+    "signature": {
+        "title": "SIGNATURE DU CLIENT",
+        "signed_by": "Signé par",
+        "on_date": "Le",
+        "ip": "IP",
+        "method": "Méthode",
+        "draw": "Signature manuscrite",
+        "checkbox": "Acceptation électronique",
+        "accepted": "DEVIS ACCEPTÉ"
+    }
+}

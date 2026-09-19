@@ -1,0 +1,67 @@
+{
+    "quote": {
+        "title": "QUOTE",
+        "issued_on": "Issued on",
+        "valid_until": "Valid until",
+        "sender": "SENDER",
+        "client": "CLIENT",
+        "table": {
+            "ref": "Ref.",
+            "name": "Description",
+            "qty": "Qty",
+            "unit_price": "Unit price (excl.)",
+            "total_ht": "Total (excl.)"
+        },
+        "totals": {
+            "subtotal": "Subtotal (excl.)",
+            "vat": "VAT",
+            "total_ttc": "TOTAL (incl.)",
+            "total": "TOTAL"
+        },
+        "vat_franchise": "Special VAT exemption scheme for small businesses — VAT not applicable.",
+        "payment_terms": "Payment within 30 days. Quote valid until the date above.",
+        "legal_notice": "Automatically generated quote — Non-contractual document until written acceptance.",
+        "page": "Page"
+    },
+    "invoice": {
+        "title": "INVOICE",
+        "issued_on": "Issued on",
+        "due_date": "Due date",
+        "paid_stamp": "✓ PAID",
+        "overdue_stamp": "OVERDUE",
+        "sender": "SENDER",
+        "client": "CLIENT",
+        "table": {
+            "ref": "Ref.",
+            "name": "Description",
+            "qty": "Qty",
+            "unit_price": "Unit price (excl.)",
+            "total_ht": "Total (excl.)"
+        },
+        "totals": {
+            "subtotal": "Subtotal (excl.)",
+            "vat": "VAT",
+            "total_ttc": "TOTAL (incl.)",
+            "total": "TOTAL"
+        },
+        "bank_details": "BANK DETAILS",
+        "iban": "IBAN",
+        "bic": "BIC",
+        "bank": "Bank",
+        "communication": "Reference",
+        "notes": "NOTES",
+        "vat_franchise": "Special VAT exemption scheme for small businesses — VAT not applicable.",
+        "payment_terms": "Invoice subject to Belgian VAT. Payment on the due date above.",
+        "legal_notice": "Automatically generated invoice — Keep this document for 7 years."
+    },
+    "signature": {
+        "title": "CLIENT SIGNATURE",
+        "signed_by": "Signed by",
+        "on_date": "On",
+        "ip": "IP",
+        "method": "Method",
+        "draw": "Handwritten signature",
+        "checkbox": "Electronic acceptance",
+        "accepted": "QUOTE ACCEPTED"
+    }
+}

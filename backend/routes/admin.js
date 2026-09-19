@@ -420,4 +420,28 @@ router.get('/email-log', requireAdminKey, async (req, res) => {
     }
 });
 
+// ============================================================
+// DELETE /api/admin/email-log/reset — Efface l'historique des emails
+// (utilise pour re-tester la séquence)
+// ============================================================
+router.delete('/email-log/reset', requireAdminKey, async (req, res) => {
+    try {
+        const email = req.body?.email;
+        if (email) {
+            const result = await pool.query(`
+                DELETE FROM email_log
+                WHERE user_id = (SELECT id FROM users WHERE email = $1)
+                RETURNING id
+            `, [email]);
+            res.json({ success: true, deleted: result.rows.length });
+        } else {
+            const result = await pool.query('DELETE FROM email_log RETURNING id');
+            res.json({ success: true, deleted: result.rows.length });
+        }
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
 module.exports = router;

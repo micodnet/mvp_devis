@@ -1,0 +1,67 @@
+{
+    "quote": {
+        "title": "OFFERTE",
+        "issued_on": "Uitgegeven op",
+        "valid_until": "Geldig tot",
+        "sender": "AFZENDER",
+        "client": "KLANT",
+        "table": {
+            "ref": "Ref.",
+            "name": "Omschrijving",
+            "qty": "Aantal",
+            "unit_price": "Prijs excl. btw",
+            "total_ht": "Totaal excl. btw"
+        },
+        "totals": {
+            "subtotal": "Subtotaal excl. btw",
+            "vat": "BTW",
+            "total_ttc": "TOTAAL incl. btw",
+            "total": "TOTAAL"
+        },
+        "vat_franchise": "Bijzondere regeling vrijstelling van btw voor kleine ondernemingen — btw niet van toepassing.",
+        "payment_terms": "Betaling binnen 30 dagen. Offert geldig tot bovenstaande datum.",
+        "legal_notice": "Offerte automatisch gegenereerd — Niet-contractueel document tot schriftelijke aanvaarding.",
+        "page": "Pagina"
+    },
+    "invoice": {
+        "title": "FACTUUR",
+        "issued_on": "Uitgegeven op",
+        "due_date": "Vervaldatum",
+        "paid_stamp": "✓ BETAALD",
+        "overdue_stamp": "ACHTERSTALLIG",
+        "sender": "AFZENDER",
+        "client": "KLANT",
+        "table": {
+            "ref": "Ref.",
+            "name": "Omschrijving",
+            "qty": "Aantal",
+            "unit_price": "Prijs excl. btw",
+            "total_ht": "Totaal excl. btw"
+        },
+        "totals": {
+            "subtotal": "Subtotaal excl. btw",
+            "vat": "BTW",
+            "total_ttc": "TOTAAL incl. btw",
+            "total": "TOTAAL"
+        },
+        "bank_details": "BANKGEGEVENS",
+        "iban": "IBAN",
+        "bic": "BIC",
+        "bank": "Bank",
+        "communication": "Mededeling",
+        "notes": "NOTITIES",
+        "vat_franchise": "Bijzondere regeling vrijstelling van btw voor kleine ondernemingen — btw niet van toepassing.",
+        "payment_terms": "Factuur onderworpen aan Belgische btw. Betaling op de aangegeven vervaldatum.",
+        "legal_notice": "Factuur automatisch gegenereerd — Bewaar dit document 7 jaar."
+    },
+    "signature": {
+        "title": "HANDTEKENING VAN DE KLANT",
+        "signed_by": "Ondertekend door",
+        "on_date": "Op",
+        "ip": "IP",
+        "method": "Methode",
+        "draw": "Handmatige handtekening",
+        "checkbox": "Elektronische aanvaarding",
+        "accepted": "OFFERTE AANVAARD"
+    }
+}
