@@ -441,7 +441,6 @@
     </style>
 </head>
 <body>
-
 <!-- LANDING -->
 <div id="landingScreen">
     <nav class="landing-nav">
@@ -455,7 +454,7 @@
     <section class="hero">
         <div class="eyebrow" data-i18n="landing.eyebrow">Propulsé par l'IA</div>
         <h1><span data-i18n="landing.hero_title_1">Générez vos devis en</span> <span data-i18n="landing.hero_title_2">10 secondes</span> <span data-i18n="landing.hero_title_3">au lieu de 3 heures.</span></h1>
-        <p data-i18n="landing.hero_sub">Déposez n'importe quelle demande client (PDF, Word, Excel, email) et obtenez un devis professionnel prêt à envoyer. L'IA extrait les articles, applique vos tarifs, calcule la TVA et génère le PDF.</p>
+        <p data-i18n="landing.hero_sub">Déposez n'importe quelle demande client (PDF, Word, Excel, email) et obtenez un devis professionnel prêt à envoyer.</p>
         <div class="cta-row">
             <button class="cta-primary" id="ctaSignupBtn" data-i18n="landing.cta_primary">🚀 Essayer gratuitement</button>
             <button class="cta-secondary" id="ctaLoginBtn" data-i18n="landing.cta_secondary">J'ai déjà un compte</button>
@@ -465,17 +464,20 @@
             <div class="preview-flow">
                 <div class="preview-step">
                     <div class="icon-box"><svg viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div>
-                    <div class="label" data-i18n="landing.step1.label">Demande client</div><div class="sub" data-i18n="landing.step1.sub">PDF, Word, Excel, CSV</div>
+                    <div class="label" data-i18n="landing.step1.label">Demande client</div>
+                    <div class="sub" data-i18n="landing.step1.sub">PDF, Word, Excel, CSV</div>
                 </div>
                 <svg class="preview-arrow" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
                 <div class="preview-step ai">
                     <div class="icon-box"><svg viewBox="0 0 24 24" fill="none" stroke="#f97316" stroke-width="2"><path d="M12 2 L14 9 L21 10 L15.5 15 L17 22 L12 18 L7 22 L8.5 15 L3 10 L10 9 Z"/></svg></div>
-                    <div class="label" data-i18n="landing.step2.label">Analyse IA</div><div class="sub" data-i18n="landing.step2.sub">Extraction automatique</div>
+                    <div class="label" data-i18n="landing.step2.label">Analyse IA</div>
+                    <div class="sub" data-i18n="landing.step2.sub">Extraction automatique</div>
                 </div>
                 <svg class="preview-arrow" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
                 <div class="preview-step">
                     <div class="icon-box"><svg viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg></div>
-                    <div class="label" data-i18n="landing.step3.label">Devis prêt</div><div class="sub" data-i18n="landing.step3.sub">PDF signé & envoyé</div>
+                    <div class="label" data-i18n="landing.step3.label">Devis prêt</div>
+                    <div class="sub" data-i18n="landing.step3.sub">PDF signé & envoyé</div>
                 </div>
             </div>
         </div>
@@ -499,7 +501,7 @@
             <div class="feature">
                 <div class="icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div>
                 <h3 data-i18n="landing.feature4.title">Ce qui est possible actuellement</h3>
-                <p data-i18n="landing.feature.desc">
+                <p data-i18n="landing.feature4.desc">
                     -Authentification complète (login, signup, reset password)<br />
                     -Devis IA (extraction, matching catalogue, PDF, email)<br />
                     -4 statuts (brouillon/envoyé/accepté/refusé) + édition + duplication<br />
@@ -543,37 +545,65 @@
             <div class="pricing-header">
                 <h2><span data-i18n="pricing.title_1">Des tarifs </span><span data-i18n="pricing.title_2">simples</span><span data-i18n="pricing.title_3"> et transparents</span></h2>
                 <p data-i18n="pricing.sub">Commencez gratuitement. Passez à un plan supérieur quand vous en avez besoin.</p>
-                <p data-i18n="pricing.sub">(illimité pour la periode de test de 30 jours): la fonction d'abonnement n'est pas prise en charge actuellement.</p>
+                <p data-i18n="pricing.test_notice">(illimité pour la periode de test de 30 jours): la fonction d'abonnement n'est pas prise en charge actuellement.</p>
             </div>
             <div class="pricing-grid">
+                <!-- Plan Free -->
                 <div class="pricing-card">
-                    <div class="plan-name" data-i18n="pricing.cta.free">Free</div>
-                    <div class="plan-price">0<span class="currency">€</span><span class="period" data-i18n="pricing.cta.free">/mois</span></div>
-                    <div class="plan-desc" data-i18n="pricing.cta.free">Pour tester l'outil et découvrir la puissance de l'IA.</div>
-                    <ul><li data-i18n="pricing.cta.free">3 devis par mois</li><li>Catalogue produits</li><li data-i18n="pricing.cta.free">Carnet clients</li><li  data-i18n="pricing.cta.free">PDF avec votre logo</li></ul>
-                    <button class="plan-cta" data-plan="free" data-i18n="pricing.cta.choose">Commencer gratuitement</button>
+                    <div class="plan-name" data-i18n="plan.free.name">Free</div>
+                    <div class="plan-price">0<span class="currency">€</span><span class="period" data-i18n="pricing.per_month">/mois</span></div>
+                    <div class="plan-desc" data-i18n="plan.free.desc">Pour tester l'outil et découvrir la puissance de l'IA.</div>
+                    <ul>
+                        <li data-i18n="plan.free.f1">3 devis par mois</li>
+                        <li data-i18n="plan.free.f2">Catalogue produits</li>
+                        <li data-i18n="plan.free.f3">Carnet clients</li>
+                        <li data-i18n="plan.free.f4">PDF avec votre logo</li>
+                    </ul>
+                    <button class="plan-cta" data-plan="free" data-i18n="pricing.cta.free">Commencer gratuitement</button>
                 </div>
+
+                <!-- Plan Starter -->
                 <div class="pricing-card featured">
                     <div class="popular-badge" data-i18n="pricing.popular">Populaire</div>
-                    <div class="plan-name" data-i18n="pricing.cta.starter">Starter</div>
-                    <div class="plan-price">19<span class="currency">€</span><span class="period" data-i18n="pricing.cta.starter">/mois</span></div>
-                    <div class="plan-desc" data-i18n="pricing.cta.starter">Idéal pour les indépendants et artisans.</div>
-                    <ul><li data-i18n="pricing.cta.starter">50 devis par mois</li><li data-i18n="pricing.cta.starter">Catalogue produits</li><li data-i18n="pricing.cta.starter">Carnet clients</li><li data-i18n="pricing.cta.starter">Envoi par email</li><li data-i18n="pricing.cta.starter">TVA (franchise/assujetti)</li></ul>
-                    <button class="plan-cta" data-plan="starter" data-i18n="pricing.cta.choose">Choisir Starter</button>
+                    <div class="plan-name" data-i18n="plan.starter.name">Starter</div>
+                    <div class="plan-price">19<span class="currency">€</span><span class="period" data-i18n="pricing.per_month">/mois</span></div>
+                    <div class="plan-desc" data-i18n="plan.starter.desc">Idéal pour les indépendants et artisans.</div>
+                    <ul>
+                        <li data-i18n="plan.starter.f1">50 devis par mois</li>
+                        <li data-i18n="plan.starter.f2">Catalogue produits</li>
+                        <li data-i18n="plan.starter.f3">Carnet clients</li>
+                        <li data-i18n="plan.starter.f4">Envoi par email</li>
+                        <li data-i18n="plan.starter.f5">TVA (franchise/assujetti)</li>
+                    </ul>
+                    <button class="plan-cta" data-plan="starter" data-i18n="pricing.cta.choose">Choisir</button>
                 </div>
+
+                <!-- Plan Pro -->
                 <div class="pricing-card">
-                    <div class="plan-name" data-i18n="pricing.cta.pro">Pro</div>
-                    <div class="plan-price">49<span class="currency">€</span><span class="period" data-i18n="pricing.cta.pro">/mois</span></div>
-                    <div class="plan-desc" data-i18n="pricing.cta.pro">Pour les TPE/PME avec une activité soutenue.</div>
-                    <ul><li data-i18n="pricing.cta.pro">200 devis par mois</li><li data-i18n="pricing.cta.pro">Catalogue produits</li><li data-i18n="pricing.cta.pro">Carnet clients</li><li data-i18n="pricing.cta.pro">Statistiques avancées</li></ul>
-                    <button class="plan-cta" data-plan="pro" data-i18n="pricing.cta.choose">Choisir Pro</button>
+                    <div class="plan-name" data-i18n="plan.pro.name">Pro</div>
+                    <div class="plan-price">49<span class="currency">€</span><span class="period" data-i18n="pricing.per_month">/mois</span></div>
+                    <div class="plan-desc" data-i18n="plan.pro.desc">Pour les TPE/PME avec une activité soutenue.</div>
+                    <ul>
+                        <li data-i18n="plan.pro.f1">200 devis par mois</li>
+                        <li data-i18n="plan.pro.f2">Catalogue produits</li>
+                        <li data-i18n="plan.pro.f3">Carnet clients</li>
+                        <li data-i18n="plan.pro.f4">Statistiques avancées</li>
+                    </ul>
+                    <button class="plan-cta" data-plan="pro" data-i18n="pricing.cta.choose">Choisir</button>
                 </div>
+
+                <!-- Plan Entreprise -->
                 <div class="pricing-card">
-                    <div class="plan-name" data-i18n="pricing.cta.enterprise">Entreprise</div>
-                    <div class="plan-price">99<span class="currency">€</span><span class="period" data-i18n="pricing.cta.enterprise">/mois</span></div>
-                    <div class="plan-desc" data-i18n="pricing.cta.enterprise">Pour les équipes commerciales.</div>
-                    <ul><li data-i18n="pricing.cta.enterprise">Devis illimités</li><li data-i18n="pricing.cta.enterprise">Catalogue produits</li><li data-i18n="pricing.cta.enterprise">Carnet clients</li><li data-i18n="pricing.cta.enterprise">Support dédié</li></ul>
-                    <button class="plan-cta" data-plan="entreprise" data-i18n="pricing.cta.choose">Choisir Entreprise</button>
+                    <div class="plan-name" data-i18n="plan.ent.name">Entreprise</div>
+                    <div class="plan-price">99<span class="currency">€</span><span class="period" data-i18n="pricing.per_month">/mois</span></div>
+                    <div class="plan-desc" data-i18n="plan.ent.desc">Pour les équipes commerciales.</div>
+                    <ul>
+                        <li data-i18n="plan.ent.f1">Devis illimités</li>
+                        <li data-i18n="plan.ent.f2">Catalogue produits</li>
+                        <li data-i18n="plan.ent.f3">Carnet clients</li>
+                        <li data-i18n="plan.ent.f4">Support dédié</li>
+                    </ul>
+                    <button class="plan-cta" data-plan="entreprise" data-i18n="pricing.cta.choose">Choisir</button>
                 </div>
             </div>
         </div>
@@ -581,22 +611,22 @@
 
     <footer class="landing-footer">
         <div class="footer-links">
-            <a href="/mentions-legales.html">Mentions légales</a>
+            <a href="/mentions-legales.html" data-i18n="footer.legal">Mentions légales</a>
             <span class="footer-sep">•</span>
-            <a href="/cgu.html">CGU / CGV</a>
+            <a href="/cgu.html" data-i18n="footer.cgu">CGU / CGV</a>
             <span class="footer-sep">•</span>
-            <a href="/confidentialite.html">Confidentialité</a>
+            <a href="/confidentialite.html" data-i18n="footer.privacy">Confidentialité</a>
             <span class="footer-sep">•</span>
-            <a href="https://github.com/micodnet/mvp_devis" target="_blank" rel="noopener">Code source</a>
+            <a href="https://github.com/micodnet/mvp_devis" target="_blank" rel="noopener" data-i18n="footer.source">Code source</a>
         </div>
-        <div class="footer-copyright" data-i18n="footer">© 2026 Devis Express Pro — Tous droits réservés</div>
+        <div class="footer-copyright" data-i18n="footer.copyright">© 2026 Devis Express Pro — Tous droits réservés</div>
     </footer>
 </div>
 
 <!-- AUTH -->
 <div id="authScreen">
     <div id="authViewLogin">
-        <h1 data-i18n="auth.login_title">Devis <span data-i18n="auth.login_title">Express</span data-i18n="auth.login_title"> Pro</h1>
+        <h1>Devis <span>Express</span> Pro</h1>
         <div class="sub" data-i18n="auth.login_title">Connectez-vous ou créez votre compte</div>
         <div class="error" id="authError"></div>
         <form id="authForm">
@@ -605,40 +635,42 @@
             <div class="form-group" id="termsGroup" style="display:none;">
                 <label class="checkbox-accept" style="margin:0;">
                     <input type="checkbox" id="termsCheckbox" style="margin-top:0;" />
-                    <div class="text" data-i18n="auth.terms">
-                        J'accepte les <a href="/cgu.html" target="_blank" style="color:#f97316;">CGU/CGV</a>
-                        et la <a href="/confidentialite.html" target="_blank" style="color:#f97316;">politique de confidentialité</a>.
+                    <div class="text">
+                        <span data-i18n="auth.terms_accept">J'accepte les</span>
+                        <a href="/cgu.html" target="_blank" style="color:#f97316;" data-i18n="auth.terms_cgu">CGU/CGV</a>
+                        <span data-i18n="auth.terms_and">et la</span>
+                        <a href="/confidentialite.html" target="_blank" style="color:#f97316;" data-i18n="auth.terms_privacy">politique de confidentialité</a>.
                     </div>
                 </label>
             </div>
-            <div class="forgot-link" id="forgotLinkWrap"><a id="forgotLink" data-i18n="auth.btn">Mot de passe oublié ?</a></div>
-            <button type="submit" id="authSubmitBtn" data-i18n="auth.btn">Se connecter</button>
+            <div class="forgot-link" id="forgotLinkWrap"><a id="forgotLink" data-i18n="auth.forgot">Mot de passe oublié ?</a></div>
+            <button type="submit" id="authSubmitBtn" data-i18n="auth.login_btn">Se connecter</button>
         </form>
         <div class="toggle"><span id="toggleText" data-i18n="auth.toggle_login">Pas encore de compte ?</span> <a id="toggleAuth" data-i18n="auth.toggle_link_login">Créer un compte</a></div>
         <div class="back-link"><a id="backToLanding" data-i18n="auth.back_home">← Retour à l'accueil</a></div>
     </div>
     <div id="authViewForgot" style="display:none;">
-        <h1 data-i18n="auth.forgot">Mot de passe <span data-i18n="auth.forgot">oublié</span></h1>
-        <div class="sub" data-i18n="auth.sub">Entrez votre email, nous vous enverrons un lien.</div>
-        <div class="error" id="forgotError" data-i18n="auth.sub"></div>
-        <div class="success" id="forgotSuccess" data-i18n="auth.sub"></div>
+        <h1><span data-i18n="auth.forgot_title_1">Mot de passe</span> <span data-i18n="auth.forgot_title_2">oublié</span></h1>
+        <div class="sub" data-i18n="auth.forgot_sub">Entrez votre email, nous vous enverrons un lien.</div>
+        <div class="error" id="forgotError"></div>
+        <div class="success" id="forgotSuccess"></div>
         <form id="forgotForm">
-            <div class="form-group"><label data-i18n="auth.label">Email</label><input type="email" id="forgotEmail" required placeholder="vous@entreprise.com" /></div>
-            <button type="submit" id="forgotSubmitBtn" data-i18n="auth.btn">Envoyer le lien</button>
+            <div class="form-group"><label data-i18n="auth.email">Email</label><input type="email" id="forgotEmail" required placeholder="vous@entreprise.com" /></div>
+            <button type="submit" id="forgotSubmitBtn" data-i18n="auth.forgot_btn">Envoyer le lien</button>
         </form>
-        <div class="back-link"><a id="backToLoginFromForgot" data-i18n="auth.sub">← Retour à la connexion</a></div>
+        <div class="back-link"><a id="backToLoginFromForgot" data-i18n="auth.back_login">← Retour à la connexion</a></div>
     </div>
     <div id="authViewReset" style="display:none;">
-        <h1 data-i18n="auth.sub">Nouveau <span data-i18n="auth.sub">mot de passe</span></h1>
-        <div class="sub" data-i18n="auth.sub">Choisissez un nouveau mot de passe (min. 6 caractères).</div>
-        <div class="error" id="resetError" data-i18n="auth.sub"></div>
-        <div class="success" id="resetSuccess" data-i18n="auth.sub"></div>
+        <h1><span data-i18n="auth.reset_title_1">Nouveau</span> <span data-i18n="auth.reset_title_2">mot de passe</span></h1>
+        <div class="sub" data-i18n="auth.reset_sub">Choisissez un nouveau mot de passe (min. 6 caractères).</div>
+        <div class="error" id="resetError"></div>
+        <div class="success" id="resetSuccess"></div>
         <form id="resetForm">
-            <div class="form-group"><label data-i18n="auth.sub">Nouveau mot de passe</label><input type="password" id="resetPassword" required placeholder="••••••••" minlength="6" /></div>
-            <div class="form-group"><label data-i18n="auth.sub">Confirmer le mot de passe</label><input type="password" id="resetPasswordConfirm" required placeholder="••••••••" minlength="6" /></div>
-            <button type="submit" id="resetSubmitBtn" data-i18n="auth.sub">Réinitialiser</button>
+            <div class="form-group"><label data-i18n="auth.reset_new">Nouveau mot de passe</label><input type="password" id="resetPassword" required placeholder="••••••••" minlength="6" /></div>
+            <div class="form-group"><label data-i18n="auth.reset_confirm">Confirmer le mot de passe</label><input type="password" id="resetPasswordConfirm" required placeholder="••••••••" minlength="6" /></div>
+            <button type="submit" id="resetSubmitBtn" data-i18n="auth.reset_btn">Réinitialiser</button>
         </form>
-        <div class="back-link"><a id="backToLoginFromReset" data-i18n="auth.sub">← Retour à la connexion</a></div>
+        <div class="back-link"><a id="backToLoginFromReset" data-i18n="auth.back_login">← Retour à la connexion</a></div>
     </div>
 </div>
 
@@ -646,7 +678,7 @@
 <div class="app" id="appContainer">
     <div class="header">
         <div class="logo-area">
-            <h1 data-i18n="app.title">Devis <span data-i18n="app.title">Express</span> Pro</h1>
+            <h1>Devis <span>Express</span> Pro</h1>
             <div class="sub" data-i18n="app.subtitle">⚡ IA + Gestion complète</div>
         </div>
         <div class="user-area">
@@ -673,61 +705,69 @@
         <div id="startHint" class="start-hint" style="display:none;">
             <div class="icon">⚠️</div>
             <div class="text">
-                <strong>Commencez par configurer votre entreprise</strong>
-                <p>Votre nom, adresse et numéro de TVA apparaîtront sur tous vos devis. Sans ces infos, le PDF sera incomplet.</p>
+                <strong data-i18n="quotes.start_hint_title">Commencez par configurer votre entreprise</strong>
+                <p data-i18n="quotes.start_hint_desc">Votre nom, adresse et numéro de TVA apparaîtront sur tous vos devis. Sans ces infos, le PDF sera incomplet.</p>
             </div>
-            <button id="startHintBtn">Configurer maintenant</button>
+            <button id="startHintBtn" data-i18n="quotes.start_hint_btn">Configurer maintenant</button>
         </div>
         <div class="quota-banner" id="quotaBanner">
             <span class="quota-text" id="quotaText">Chargement du quota...</span>
             <button class="quota-btn" id="quotaUpgradeBtn" style="display:none;">Améliorer mon plan</button>
         </div>
-        <p>(illimité pour la periode de test de 30 jours): la fonction d'abonnement n'est pas prise en charge actuellement</p>
+        <p data-i18n="quotes.test_notice">(illimité pour la periode de test de 30 jours): la fonction d'abonnement n'est pas prise en charge actuellement</p>
         <div class="card">
             <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:16px;">
-                <div class="card-title" style="margin:0;">👤 Client</div>
-                <button class="btn-primary-sm" id="quickNewClientBtn">+ Nouveau client</button>
+                <div class="card-title" style="margin:0;" data-i18n="quotes.client_title">👤 Client</div>
+                <button class="btn-primary-sm" id="quickNewClientBtn" data-i18n="quotes.new_client">+ Nouveau client</button>
             </div>
             <div class="form-group">
-                <label>Sélectionner un client</label>
-                <select id="clientSelector"><option value="">— Aucun client sélectionné —</option></select>
+                <label data-i18n="quotes.select_client">Sélectionner un client</label>
+                <select id="clientSelector"><option value="" data-i18n="quotes.no_client">— Aucun client sélectionné —</option></select>
             </div>
             <div id="selectedClientInfo" class="client-info-box" style="display:none;"></div>
             <p class="client-empty-hint" id="noClientsHint" style="display:none;">
-                Aucun client enregistré. Cliquez sur <strong>+ Nouveau client</strong> pour créer votre première fiche.
+                <span data-i18n="quotes.no_client_hint_1">Aucun client enregistré. Cliquez sur</span>
+                <strong data-i18n="quotes.new_client">+ Nouveau client</strong>
+                <span data-i18n="quotes.no_client_hint_2">pour créer votre première fiche.</span>
             </p>
         </div>
         <div class="card">
             <div class="drop-zone" id="dropZone">
                 <div class="icon">📄</div>
-                <p>Déposez votre fichier (PDF, Word, Excel, CSV, TXT)</p>
-                <span>ou cliquez pour parcourir</span>
+                <p data-i18n="quotes.drop_text">Déposez votre fichier (PDF, Word, Excel, CSV, TXT)</p>
+                <span data-i18n="quotes.drop_sub">ou cliquez pour parcourir</span>
                 <input type="file" id="fileInput" style="display:none;" accept=".pdf,.doc,.docx,.txt,.csv,.xlsx,.xls" />
                 <div id="file-name"></div>
             </div>
-            <button class="btn-orange" id="generateBtn" disabled>🚀 Générer le devis</button>
+            <button class="btn-orange" id="generateBtn" disabled data-i18n="quotes.generate">🚀 Générer le devis</button>
             <div id="ia-panel">
-                <div class="ia-header"><span>🧠 Journal d'exécution de l'IA</span><span style="color:#22c55e;">● actif</span></div>
-                <div id="ia-console"><div><span class="log-time">Système</span> En attente...</div></div>
+                <div class="ia-header"><span data-i18n="quotes.ia_log_title">🧠 Journal d'exécution de l'IA</span><span style="color:#22c55e;" data-i18n="quotes.ia_active">● actif</span></div>
+                <div id="ia-console"><div><span class="log-time">Système</span> <span data-i18n="quotes.ia_waiting">En attente...</span></div></div>
             </div>
             <div class="error-msg" id="errorMsg"></div>
             <div id="result">
-                <h3 style="color:#e2e8f0; margin-bottom:12px;">📋 Devis généré</h3>
+                <h3 style="color:#e2e8f0; margin-bottom:12px;" data-i18n="quotes.result_title">📋 Devis généré</h3>
                 <div style="display:flex; justify-content:space-between; color:#94a3b8; font-size:13px; margin-bottom:8px; flex-wrap:wrap; gap:8px;">
                     <span>N° <span id="quoteNumber" style="color:#f97316; font-weight:600;"></span></span>
-                    <span>Émis le <span id="issueDate"></span> - Valable jusqu'au <span id="validDate"></span></span>
+                    <span><span data-i18n="quotes.issued">Émis le</span> <span id="issueDate"></span> - <span data-i18n="quotes.valid_until">Valable jusqu'au</span> <span id="validDate"></span></span>
                 </div>
                 <div style="overflow-x:auto;">
                     <table>
-                        <thead><tr><th>Référence</th><th>Désignation</th><th style="text-align:center;">Qté</th><th style="text-align:right;">P.U. HT</th><th style="text-align:right;">Total HT</th></tr></thead>
+                        <thead><tr>
+                            <th data-i18n="quotes.col_ref">Référence</th>
+                            <th data-i18n="quotes.col_name">Désignation</th>
+                            <th style="text-align:center;" data-i18n="quotes.col_qty">Qté</th>
+                            <th style="text-align:right;" data-i18n="quotes.col_pu">P.U. HT</th>
+                            <th style="text-align:right;" data-i18n="quotes.col_total">Total HT</th>
+                        </tr></thead>
                         <tbody id="itemsBody"></tbody>
                     </table>
                 </div>
                 <div class="totaux-box" id="totauxBox"></div>
                 <div class="actions">
-                    <a href="#" id="downloadPdfBtn" class="primary">⬇ Télécharger le PDF</a>
-                    <a href="#" id="sendEmailBtn">✉️ Envoyer par email</a>
-                    <a href="#" id="resetBtn">⟲ Nouveau devis</a>
+                    <a href="#" id="downloadPdfBtn" class="primary" data-i18n="quotes.download_pdf">⬇ Télécharger le PDF</a>
+                    <a href="#" id="sendEmailBtn" data-i18n="quotes.send_email">✉️ Envoyer par email</a>
+                    <a href="#" id="resetBtn" data-i18n="quotes.new_quote">⟲ Nouveau devis</a>
                 </div>
             </div>
         </div>
@@ -737,10 +777,10 @@
     <div id="tab-clients" class="tab-content">
         <div class="card">
             <div class="catalog-header">
-                <h2>👥 Mon carnet clients</h2>
-                <div class="catalog-actions"><button class="btn-primary-sm" id="addClientBtn">+ Nouveau client</button></div>
+                <h2 data-i18n="clients.title">👥 Mon carnet clients</h2>
+                <div class="catalog-actions"><button class="btn-primary-sm" id="addClientBtn" data-i18n="clients.new">+ Nouveau client</button></div>
             </div>
-            <input type="text" id="clientsSearch" class="catalog-search" placeholder="🔍 Rechercher un client..." />
+            <input type="text" id="clientsSearch" class="catalog-search" placeholder="🔍 Rechercher un client..." data-i18n-placeholder="clients.search" />
             <div id="clientsContent"><p style="color:#64748b; text-align:center; padding:40px;">Chargement...</p></div>
         </div>
     </div>
@@ -749,13 +789,13 @@
     <div id="tab-catalogue" class="tab-content">
         <div class="card">
             <div class="catalog-header">
-                <h2>📦 Mon catalogue produits</h2>
+                <h2 data-i18n="catalog.title">📦 Mon catalogue produits</h2>
                 <div class="catalog-actions">
-                    <button class="btn-secondary" id="importCatalogBtn">📥 Importer</button>
-                    <button class="btn-primary-sm" id="addProductBtn">+ Ajouter</button>
+                    <button class="btn-secondary" id="importCatalogBtn" data-i18n="catalog.import">📥 Importer</button>
+                    <button class="btn-primary-sm" id="addProductBtn" data-i18n="catalog.add">+ Ajouter</button>
                 </div>
             </div>
-            <input type="text" id="catalogSearch" class="catalog-search" placeholder="🔍 Rechercher un produit..." />
+            <input type="text" id="catalogSearch" class="catalog-search" placeholder="🔍 Rechercher un produit..." data-i18n-placeholder="catalog.search" />
             <div id="catalogContent"><p style="color:#64748b; text-align:center; padding:40px;">Chargement...</p></div>
         </div>
     </div>
@@ -764,14 +804,14 @@
     <div id="tab-history" class="tab-content">
         <div class="card">
             <div class="catalog-header">
-                <h2>📜 Historique de vos devis</h2>
+                <h2 data-i18n="history.title">📜 Historique de vos devis</h2>
             </div>
             <div class="history-filters" id="historyFilters">
-                <button class="history-filter active" data-filter="all">Tous <span class="count" id="cntAll">0</span></button>
-                <button class="history-filter" data-filter="draft">Brouillons <span class="count" id="cntDraft">0</span></button>
-                <button class="history-filter" data-filter="sent">Envoyés <span class="count" id="cntSent">0</span></button>
-                <button class="history-filter" data-filter="accepted">Acceptés <span class="count" id="cntAccepted">0</span></button>
-                <button class="history-filter" data-filter="refused">Refusés <span class="count" id="cntRefused">0</span></button>
+                <button class="history-filter active" data-filter="all"><span data-i18n="history.filter.all">Tous</span> <span class="count" id="cntAll">0</span></button>
+                <button class="history-filter" data-filter="draft"><span data-i18n="history.filter.draft">Brouillons</span> <span class="count" id="cntDraft">0</span></button>
+                <button class="history-filter" data-filter="sent"><span data-i18n="history.filter.sent">Envoyés</span> <span class="count" id="cntSent">0</span></button>
+                <button class="history-filter" data-filter="accepted"><span data-i18n="history.filter.accepted">Acceptés</span> <span class="count" id="cntAccepted">0</span></button>
+                <button class="history-filter" data-filter="refused"><span data-i18n="history.filter.refused">Refusés</span> <span class="count" id="cntRefused">0</span></button>
             </div>
             <div id="historyList"><p style="color:#64748b;">Chargement...</p></div>
         </div>
@@ -781,17 +821,17 @@
     <div id="tab-invoices" class="tab-content">
         <div class="card">
             <div class="catalog-header">
-                <h2>🧾 Mes factures</h2>
+                <h2 data-i18n="invoices.title">🧾 Mes factures</h2>
                 <div class="catalog-actions">
-                    <button class="btn-primary-sm" id="newInvoiceBtn">+ Nouvelle facture</button>
+                    <button class="btn-primary-sm" id="newInvoiceBtn" data-i18n="invoices.new">+ Nouvelle facture</button>
                 </div>
             </div>
             <div class="history-filters" id="invoiceFilters">
-                <button class="history-filter active" data-ifilter="all">Toutes <span class="count" id="ifCntAll">0</span></button>
-                <button class="history-filter" data-ifilter="draft">Brouillons <span class="count" id="ifCntDraft">0</span></button>
-                <button class="history-filter" data-ifilter="sent">Envoyées <span class="count" id="ifCntSent">0</span></button>
-                <button class="history-filter" data-ifilter="paid">Payées <span class="count" id="ifCntPaid">0</span></button>
-                <button class="history-filter" data-ifilter="overdue">En retard <span class="count" id="ifCntOverdue">0</span></button>
+                <button class="history-filter active" data-ifilter="all"><span data-i18n="invoices.filter.all">Toutes</span> <span class="count" id="ifCntAll">0</span></button>
+                <button class="history-filter" data-ifilter="draft"><span data-i18n="invoices.filter.draft">Brouillons</span> <span class="count" id="ifCntDraft">0</span></button>
+                <button class="history-filter" data-ifilter="sent"><span data-i18n="invoices.filter.sent">Envoyées</span> <span class="count" id="ifCntSent">0</span></button>
+                <button class="history-filter" data-ifilter="paid"><span data-i18n="invoices.filter.paid">Payées</span> <span class="count" id="ifCntPaid">0</span></button>
+                <button class="history-filter" data-ifilter="overdue"><span data-i18n="invoices.filter.overdue">En retard</span> <span class="count" id="ifCntOverdue">0</span></button>
             </div>
             <div id="invoicesList"><p style="color:#64748b;">Chargement...</p></div>
         </div>
@@ -800,30 +840,30 @@
     <!-- DASHBOARD -->
     <div id="tab-dashboard" class="tab-content">
         <div id="onboardingBox" class="onboarding-box" style="display:none;">
-            <h3>🚀 Bienvenue, commençons !</h3>
-            <div class="onboarding-sub">3 étapes pour être opérationnel. Une fois terminé, cette section disparaîtra.</div>
+            <h3 data-i18n="dash.welcome">🚀 Bienvenue, commençons !</h3>
+            <div class="onboarding-sub" data-i18n="dash.welcome_sub">3 étapes pour être opérationnel. Une fois terminé, cette section disparaîtra.</div>
             <div class="onboarding-steps">
                 <div class="onboarding-step" id="obStep1" data-step="1">
                     <div class="check-circle">1</div>
                     <div class="step-text">
-                        <div class="step-title">Configurer mon entreprise</div>
-                        <div class="step-desc">Nom, adresse, SIRET/BCE, TVA et logo.</div>
+                        <div class="step-title" data-i18n="dash.step1.title">Configurer mon entreprise</div>
+                        <div class="step-desc" data-i18n="dash.step1.desc">Nom, adresse, SIRET/BCE, TVA et logo.</div>
                     </div>
                     <div class="step-arrow">→</div>
                 </div>
                 <div class="onboarding-step" id="obStep2" data-step="2">
                     <div class="check-circle">2</div>
                     <div class="step-text">
-                        <div class="step-title">Créer mon premier client</div>
-                        <div class="step-desc">Pour ne plus retaper ses coordonnées à chaque devis.</div>
+                        <div class="step-title" data-i18n="dash.step2.title">Créer mon premier client</div>
+                        <div class="step-desc" data-i18n="dash.step2.desc">Pour ne plus retaper ses coordonnées à chaque devis.</div>
                     </div>
                     <div class="step-arrow">→</div>
                 </div>
                 <div class="onboarding-step" id="obStep3" data-step="3">
                     <div class="check-circle">3</div>
                     <div class="step-text">
-                        <div class="step-title">Générer mon premier devis</div>
-                        <div class="step-desc">Déposez une demande client, l'IA fait le reste.</div>
+                        <div class="step-title" data-i18n="dash.step3.title">Générer mon premier devis</div>
+                        <div class="step-desc" data-i18n="dash.step3.desc">Déposez une demande client, l'IA fait le reste.</div>
                     </div>
                     <div class="step-arrow">→</div>
                 </div>
@@ -837,25 +877,25 @@
         </div>
 
         <div class="card">
-            <div class="card-title">📊 Vos statistiques</div>
+            <div class="card-title" data-i18n="dash.stats_title">📊 Vos statistiques</div>
             <div class="stats-grid">
-                <div class="stat-card"><div class="number" id="statTotalQuotes">0</div><div class="label">Devis générés</div></div>
-                <div class="stat-card"><div class="number" id="statTotalAmount">0,00 €</div><div class="label">Montant total TTC</div></div>
-                <div class="stat-card"><div class="number" id="statAccepted">0</div><div class="label">Devis acceptés</div></div>
-                <div class="stat-card"><div class="number" id="statConversion">0%</div><div class="label">Taux d'acceptation</div></div>
+                <div class="stat-card"><div class="number" id="statTotalQuotes">0</div><div class="label" data-i18n="dash.stat.quotes">Devis générés</div></div>
+                <div class="stat-card"><div class="number" id="statTotalAmount">0,00 €</div><div class="label" data-i18n="dash.stat.amount">Montant total TTC</div></div>
+                <div class="stat-card"><div class="number" id="statAccepted">0</div><div class="label" data-i18n="dash.stat.accepted">Devis acceptés</div></div>
+                <div class="stat-card"><div class="number" id="statConversion">0%</div><div class="label" data-i18n="dash.stat.conversion">Taux d'acceptation</div></div>
             </div>
-            <div class="card-title" style="margin-top:20px;">🏆 Produits les plus demandés</div>
-            <ul class="top-products" id="topProductsList"><li style="color:#64748b;">Aucune donnée.</li></ul>
+            <div class="card-title" style="margin-top:20px;" data-i18n="dash.top_products">🏆 Produits les plus demandés</div>
+            <ul class="top-products" id="topProductsList"><li style="color:#64748b;" data-i18n="dash.no_data">Aucune donnée.</li></ul>
         </div>
         <div class="charts-grid">
             <div class="card">
-                <div class="card-title">📈 Chiffre d'affaires (12 derniers mois)</div>
+                <div class="card-title" data-i18n="dash.revenue_chart">📈 Chiffre d'affaires (12 derniers mois)</div>
                 <div class="chart-wrapper">
                     <canvas id="revenueChart"></canvas>
                 </div>
             </div>
             <div class="card">
-                <div class="card-title">🥧 Répartition des devis par statut</div>
+                <div class="card-title" data-i18n="dash.status_chart">🥧 Répartition des devis par statut</div>
                 <div class="chart-wrapper">
                     <canvas id="statusChart"></canvas>
                 </div>
@@ -879,15 +919,17 @@
                     <div class="form-group"><label data-i18n="settings.email">Email</label><input type="email" id="companyEmail" /></div>
                 </div>
                 <div class="form-group"><label data-i18n="settings.website">Site web</label><input type="text" id="companyWebsite" /></div>
+
                 <div class="card-title" style="margin-top:24px;" data-i18n="settings.vat_section">💰 TVA</div>
                 <div class="form-group">
-                    <label data-i18n="settings.vat_section">Régime de TVA</label>
+                    <label data-i18n="settings.vat_regime">Régime de TVA</label>
                     <select id="vatRegime">
                         <option value="franchise" data-i18n="settings.vat_franchise">Franchise (pas de TVA) — Auto-entrepreneur</option>
                         <option value="assujetti" data-i18n="settings.vat_assujetti">Assujetti (TVA applicable) — Société</option>
                     </select>
                 </div>
-                <div class="form-group"><label data-i18n="settings.vat_section">Taux de TVA par défaut (%)</label><input type="number" id="vatRate" step="0.01" min="0" max="30" value="21" /></div>
+                <div class="form-group"><label data-i18n="settings.vat_rate">Taux de TVA par défaut (%)</label><input type="number" id="vatRate" step="0.01" min="0" max="30" value="21" /></div>
+
                 <div class="card-title" style="margin-top:24px;" data-i18n="settings.language_section">🌍 Langue</div>
                 <div class="form-group">
                     <label data-i18n="settings.language">Langue de l'interface et des documents</label>
@@ -897,14 +939,15 @@
                         <option value="en" data-i18n="settings.lang_en">English</option>
                     </select>
                 </div>
+
                 <div class="card-title" style="margin-top:24px;" data-i18n="settings.bank_section">🏦 Coordonnées bancaires & Facturation</div>
                 <div class="form-group">
-                    <label>IBAN</label>
+                    <label data-i18n="settings.iban">IBAN</label>
                     <input type="text" id="companyIban" placeholder="BE68 5390 0754 7034" />
                 </div>
                 <div class="form-row">
                     <div class="form-group">
-                        <label>BIC / SWIFT</label>
+                        <label data-i18n="settings.bic">BIC / SWIFT</label>
                         <input type="text" id="companyBic" placeholder="GEBABEBB" />
                     </div>
                     <div class="form-group">
@@ -914,31 +957,32 @@
                 </div>
                 <div class="form-row">
                     <div class="form-group">
-                        <label data-i18n="settings.invoice">Préfixe n° de facture</label>
+                        <label data-i18n="settings.invoice_prefix">Préfixe n° de facture</label>
                         <input type="text" id="invoicePrefix" placeholder="FAC" value="FAC" />
                     </div>
                     <div class="form-group">
-                        <label data-i18n="settings.invoice">Délai de paiement (jours)</label>
+                        <label data-i18n="settings.payment_terms">Délai de paiement (jours)</label>
                         <input type="number" id="paymentTerms" min="0" max="120" value="30" />
                     </div>
                 </div>
-                <p style="color:#64748b;font-size:12px;margin-bottom:16px;" data-i18n="settings.invoice">
+                <p style="color:#64748b;font-size:12px;margin-bottom:16px;" data-i18n="settings.invoice_notice">
                     Ces informations apparaîtront sur toutes vos factures (numéro, échéance, coordonnées de paiement).
                 </p>
+
                 <div class="card-title" style="margin-top:24px;" data-i18n="settings.signature_section">✍️ Signature électronique</div>
                 <div class="form-group">
-                    <label data-i18n="settings.signature_section">Méthode de signature par défaut</label>
+                    <label data-i18n="settings.signature_method">Méthode de signature par défaut</label>
                     <select id="signatureMethod">
-                        <option value="none" data-i18n="settings.signature_section">Aucune (devis sans signature)</option>
-                        <option value="checkbox" data-i18n="settings.signature_section">Case à cocher (acceptation électronique)</option>
-                        <option value="draw" data-i18n="settings.signature_section">Signature dessinée (manuscrite)</option>
+                        <option value="none" data-i18n="settings.sig_none">Aucune (devis sans signature)</option>
+                        <option value="checkbox" data-i18n="settings.sig_checkbox">Case à cocher (acceptation électronique)</option>
+                        <option value="draw" data-i18n="settings.sig_draw">Signature dessinée (manuscrite)</option>
                     </select>
                 </div>
-                <p style="color:#64748b;font-size:12px;line-height:1.6;margin-bottom:16px;" data-i18n="settings.signature_section">
+                <p style="color:#64748b;font-size:12px;line-height:1.6;margin-bottom:16px;" data-i18n="settings.sig_notice">
                     Cette méthode sera proposée par défaut lors de la signature d'un devis. Vous pourrez toujours changer au moment de signer.
                 </p>
                 <div class="form-group" style="margin-top:16px;">
-                    <label data-i18n="settings.logo_section">Logo (PNG ou JPEG)</label>
+                    <label data-i18n="settings.logo">Logo (PNG ou JPEG)</label>
                     <input type="file" id="logoInput" accept="image/png,image/jpeg" />
                     <div id="logoPreview" style="margin-top:8px;"></div>
                 </div>
@@ -947,86 +991,90 @@
         </div>
         <div class="card">
             <div class="card-title" data-i18n="settings.password_section">🔒 Changer mon mot de passe</div>
-            <p style="color:#94a3b8;font-size:13px;margin-bottom:20px;line-height:1.6;" data-i18n="settings.password_section">
+            <p style="color:#94a3b8;font-size:13px;margin-bottom:20px;line-height:1.6;" data-i18n="settings.password_desc">
                 Pour des raisons de sécurité, saisissez votre mot de passe actuel avant d'en définir un nouveau.
             </p>
             <form id="changePasswordForm">
                 <div class="form-group">
-                    <label data-i18n="settings.password_section">Mot de passe actuel *</label>
+                    <label data-i18n="settings.current_password">Mot de passe actuel *</label>
                     <input type="password" id="currentPassword" required placeholder="••••••••" autocomplete="current-password" />
                 </div>
                 <div class="form-row">
                     <div class="form-group">
-                        <label data-i18n="settings.password_section">Nouveau mot de passe *</label>
+                        <label data-i18n="settings.new_password">Nouveau mot de passe *</label>
                         <input type="password" id="newPassword" required placeholder="••••••••" minlength="6" autocomplete="new-password" />
                     </div>
                     <div class="form-group">
-                        <label data-i18n="settings.password_section">Confirmer le nouveau mot de passe *</label>
+                        <label data-i18n="settings.confirm_password">Confirmer le nouveau mot de passe *</label>
                         <input type="password" id="confirmNewPassword" required placeholder="••••••••" minlength="6" autocomplete="new-password" />
                     </div>
                 </div>
                 <div class="error-msg" id="changePasswordError" style="margin-bottom:12px;"></div>
-                <button type="submit" class="btn-save" id="changePasswordBtn" data-i18n="settings.password_section">🔒 Changer le mot de passe</button>
+                <button type="submit" class="btn-save" id="changePasswordBtn" data-i18n="settings.change_password_btn">🔒 Changer le mot de passe</button>
             </form>
         </div>
         <div class="card">
-            <div class="card-title" data-i18n="settings.rgpd">📥 Portabilité de vos données (RGPD)</div>
-            <p style="color:#94a3b8;font-size:13px;margin-bottom:16px;line-height:1.6;" data-i18n="settings.rgpd">
+            <div class="card-title" data-i18n="settings.rgpd_title">📥 Portabilité de vos données (RGPD)</div>
+            <p style="color:#94a3b8;font-size:13px;margin-bottom:16px;line-height:1.6;" data-i18n="settings.rgpd_desc">
                 Conformément à l'article 20 du RGPD, vous pouvez télécharger l'intégralité de vos données (compte, paramètres, clients, produits, devis) dans un fichier JSON lisible.
             </p>
-            <button class="btn-secondary" id="exportDataBtn" data-i18n="settings.rgpd">📥 Télécharger mes données (JSON)</button>
+            <button class="btn-secondary" id="exportDataBtn" data-i18n="settings.rgpd_btn">📥 Télécharger mes données (JSON)</button>
         </div>
         <div class="card" style="border-color:rgba(248,113,113,0.3);">
-            <div class="card-title" style="color:#f87171;" data-i18n="settings.delete_account">⚠️ Zone de danger</div>
-            <p style="color:#94a3b8;font-size:13px;margin-bottom:16px;line-height:1.6;" data-i18n="settings.delete_account">
-                La suppression de votre compte est <strong style="color:#f87171;" data-i18n="settings.delete_account">définitive et irréversible</strong>. Toutes vos données (paramètres, clients, produits, devis) seront effacées. Votre abonnement Stripe sera automatiquement annulé.
+            <div class="card-title" style="color:#f87171;" data-i18n="settings.danger_title">⚠️ Zone de danger</div>
+            <p style="color:#94a3b8;font-size:13px;margin-bottom:16px;line-height:1.6;">
+                <span data-i18n="settings.danger_desc_1">La suppression de votre compte est</span>
+                <strong style="color:#f87171;" data-i18n="settings.danger_desc_2">définitive et irréversible</strong>
+                <span data-i18n="settings.danger_desc_3">. Toutes vos données (paramètres, clients, produits, devis) seront effacées. Votre abonnement Stripe sera automatiquement annulé.</span>
             </p>
-            <button class="btn-secondary" id="deleteAccountBtn" style="border-color:rgba(248,113,113,0.5); color:#f87171;" data-i18n="settings.delete_account">🗑 Supprimer mon compte</button>
+            <button class="btn-secondary" id="deleteAccountBtn" style="border-color:rgba(248,113,113,0.5); color:#f87171;" data-i18n="settings.delete_btn">🗑 Supprimer mon compte</button>
         </div>
     </div>
-        <!-- ÉQUIPE -->
+
+    <!-- ÉQUIPE -->
     <div id="tab-team" class="tab-content">
         <div class="card">
             <div class="catalog-header">
                 <h2 data-i18n="team.title">👥 Mon équipe</h2>
                 <div class="catalog-actions">
-                    <button class="btn-primary-sm" id="inviteMemberBtn" data-i18n="team.btn">+ Inviter un membre</button>
+                    <button class="btn-primary-sm" id="inviteMemberBtn" data-i18n="team.invite">+ Inviter un membre</button>
                 </div>
             </div>
-            <p style="color:#94a3b8;font-size:13px;margin-bottom:20px;" data-i18n="team.title">
+            <p style="color:#94a3b8;font-size:13px;margin-bottom:20px;" data-i18n="team.desc">
                 Invitez vos collaborateurs à utiliser Devis Express Pro avec vous. Ils verront et géreront les mêmes clients, produits et devis.
             </p>
             <div id="teamContent">
-                <p style="color:#64748b;text-align:center;padding:40px;" data-i18n="team.title">Chargement...</p>
+                <p style="color:#64748b;text-align:center;padding:40px;" data-i18n="team.loading">Chargement...</p>
             </div>
         </div>
     </div>
+
     <!-- ABONNEMENT -->
     <div id="tab-subscription" class="tab-content">
         <div id="subscriptionBox" style="background:linear-gradient(135deg,#0b1120,#1a253b);border:1px solid #2a3a55;border-radius:20px;padding:28px;">
-            <p style="color:#64748b;" data-i18n="follow">Chargement...</p>
+            <p style="color:#64748b;" data-i18n="sub.loading">Chargement...</p>
         </div>
         <div id="upgradeSection" style="display:none;margin-top:24px;">
-            <h3 style="color:#fff;font-size:16px;margin-bottom:16px;font-weight:700;" data-i18n="follow">🚀 Passer à un plan supérieur</h3>
+            <h3 style="color:#fff;font-size:16px;margin-bottom:16px;font-weight:700;" data-i18n="sub.upgrade_title">🚀 Passer à un plan supérieur</h3>
             <div class="pricing-grid">
                 <div class="pricing-card">
-                    <div class="plan-name" data-i18n="follow">Starter</div>
-                    <div class="plan-price">19<span class="currency">€</span><span class="period" data-i18n="follow">/mois</span></div>
-                    <div class="plan-desc" data-i18n="follow">50 devis par mois, envoi par email, TVA.</div>
-                    <button class="plan-cta" data-plan="starter" data-i18n="follow">Choisir</button>
+                    <div class="plan-name" data-i18n="plan.starter.name">Starter</div>
+                    <div class="plan-price">19<span class="currency">€</span><span class="period" data-i18n="pricing.per_month">/mois</span></div>
+                    <div class="plan-desc" data-i18n="plan.starter.desc">Idéal pour les indépendants et artisans.</div>
+                    <button class="plan-cta" data-plan="starter" data-i18n="pricing.cta.choose">Choisir</button>
                 </div>
                 <div class="pricing-card featured">
-                    <div class="popular-badge" data-i18n="follow">Populaire</div>
-                    <div class="plan-name" data-i18n="follow">Pro</div>
-                    <div class="plan-price">49<span class="currency">€</span><span class="period" data-i18n="follow">/mois</span></div>
-                    <div class="plan-desc" data-i18n="follow">200 devis, stats avancées, support prioritaire.</div>
-                    <button class="plan-cta" data-plan="pro" data-i18n="follow">Choisir</button>
+                    <div class="popular-badge" data-i18n="pricing.popular">Populaire</div>
+                    <div class="plan-name" data-i18n="plan.pro.name">Pro</div>
+                    <div class="plan-price">49<span class="currency">€</span><span class="period" data-i18n="pricing.per_month">/mois</span></div>
+                    <div class="plan-desc" data-i18n="plan.pro.desc">Pour les TPE/PME avec une activité soutenue.</div>
+                    <button class="plan-cta" data-plan="pro" data-i18n="pricing.cta.choose">Choisir</button>
                 </div>
                 <div class="pricing-card">
-                    <div class="plan-name" data-i18n="follow">Entreprise</div>
-                    <div class="plan-price">99<span class="currency">€</span><span class="period" data-i18n="follow">/mois</span></div>
-                    <div class="plan-desc" data-i18n="follow">Devis illimités, multi-utilisateurs, API.</div>
-                    <button class="plan-cta" data-plan="entreprise" data-i18n="follow">Choisir</button>
+                    <div class="plan-name" data-i18n="plan.ent.name">Entreprise</div>
+                    <div class="plan-price">99<span class="currency">€</span><span class="period" data-i18n="pricing.per_month">/mois</span></div>
+                    <div class="plan-desc" data-i18n="plan.ent.desc">Pour les équipes commerciales.</div>
+                    <button class="plan-cta" data-plan="entreprise" data-i18n="pricing.cta.choose">Choisir</button>
                 </div>
             </div>
         </div>
@@ -1036,152 +1084,153 @@
 <!-- MODALS -->
 <div class="modal-overlay" id="productModal">
     <div class="modal">
-        <h3 id="productModalTitle" data-i18n="modal">Ajouter un produit</h3>
+        <h3 id="productModalTitle" data-i18n="modal.product.add">Ajouter un produit</h3>
         <input type="hidden" id="productId" />
         <div class="form-row">
-            <div class="form-group"><label data-i18n="modal">Référence</label><input type="text" id="productRef" placeholder="REF-001" /></div>
-            <div class="form-group"><label data-i18n="modal">Unité</label><input type="text" id="productUnit" placeholder="u" value="u" /></div>
+            <div class="form-group"><label data-i18n="modal.product.ref">Référence</label><input type="text" id="productRef" placeholder="REF-001" /></div>
+            <div class="form-group"><label data-i18n="modal.product.unit">Unité</label><input type="text" id="productUnit" placeholder="u" value="u" /></div>
         </div>
-        <div class="form-group"><label data-i18n="modal">Nom *</label><input type="text" id="productName" required /></div>
-        <div class="form-group"><label data-i18n="modal">Description</label><input type="text" id="productDescription" /></div>
+        <div class="form-group"><label data-i18n="modal.product.name">Nom *</label><input type="text" id="productName" required /></div>
+        <div class="form-group"><label data-i18n="modal.product.desc">Description</label><input type="text" id="productDescription" /></div>
         <div class="form-row">
-            <div class="form-group"><label data-i18n="modal">Prix HT (€) *</label><input type="number" id="productPrice" step="0.01" min="0" required /></div>
-            <div class="form-group"><label data-i18n="modal">Catégorie</label><input type="text" id="productCategory" /></div>
+            <div class="form-group"><label data-i18n="modal.product.price">Prix HT (€) *</label><input type="number" id="productPrice" step="0.01" min="0" required /></div>
+            <div class="form-group"><label data-i18n="modal.product.cat">Catégorie</label><input type="text" id="productCategory" /></div>
         </div>
         <div class="modal-actions">
-            <button class="btn-cancel" id="cancelProductBtn" data-i18n="modal">Annuler</button>
-            <button class="btn-confirm" id="saveProductBtn" data-i18n="modal">Enregistrer</button>
+            <button class="btn-cancel" id="cancelProductBtn" data-i18n="btn.cancel">Annuler</button>
+            <button class="btn-confirm" id="saveProductBtn" data-i18n="btn.save">Enregistrer</button>
         </div>
     </div>
 </div>
 
 <div class="modal-overlay" id="clientModal">
     <div class="modal">
-        <h3 id="clientModalTitle" data-i18n="modal">Nouveau client</h3>
+        <h3 id="clientModalTitle" data-i18n="modal.client.add">Nouveau client</h3>
         <input type="hidden" id="clientIdField" />
-        <div class="form-group"><label data-i18n="modal">Nom / Raison sociale *</label><input type="text" id="cName" required /></div>
+        <div class="form-group"><label data-i18n="modal.client.name">Nom / Raison sociale *</label><input type="text" id="cName" required /></div>
         <div class="form-row">
-            <div class="form-group"><label data-i18n="modal">Personne de contact</label><input type="text" id="cContact" /></div>
-            <div class="form-group"><label data-i18n="modal">N° TVA</label><input type="text" id="cVat" /></div>
+            <div class="form-group"><label data-i18n="modal.client.contact">Personne de contact</label><input type="text" id="cContact" /></div>
+            <div class="form-group"><label data-i18n="modal.client.vat">N° TVA</label><input type="text" id="cVat" /></div>
         </div>
         <div class="form-row">
-            <div class="form-group"><label data-i18n="modal">Email</label><input type="email" id="cEmail" /></div>
-            <div class="form-group"><label data-i18n="modal">Téléphone</label><input type="text" id="cPhone" /></div>
+            <div class="form-group"><label data-i18n="modal.client.email">Email</label><input type="email" id="cEmail" /></div>
+            <div class="form-group"><label data-i18n="modal.client.phone">Téléphone</label><input type="text" id="cPhone" /></div>
         </div>
-        <div class="form-group"><label data-i18n="modal">Adresse</label><input type="text" id="cAddress" /></div>
-        <div class="form-group"><label data-i18n="modal">Notes internes</label><input type="text" id="cNotes" /></div>
+        <div class="form-group"><label data-i18n="modal.client.address">Adresse</label><input type="text" id="cAddress" /></div>
+        <div class="form-group"><label data-i18n="modal.client.notes">Notes internes</label><input type="text" id="cNotes" /></div>
         <div class="modal-actions">
-            <button class="btn-cancel" id="cancelClientBtn" data-i18n="modal">Annuler</button>
-            <button class="btn-confirm" id="saveClientBtn" data-i18n="modal">Enregistrer</button>
+            <button class="btn-cancel" id="cancelClientBtn" data-i18n="btn.cancel">Annuler</button>
+            <button class="btn-confirm" id="saveClientBtn" data-i18n="btn.save">Enregistrer</button>
         </div>
     </div>
 </div>
 
 <div class="modal-overlay" id="importModal">
     <div class="modal">
-        <h3 data-i18n="modal">📥 Importer un catalogue</h3>
-        <p style="color:#94a3b8;font-size:13px;margin-bottom:18px;line-height:1.6;" data-i18n="modal">Déposez un fichier <strong>CSV</strong> ou <strong>Excel</strong>. Le fichier doit contenir au minimum une colonne <strong>nom</strong> et une colonne <strong>prix</strong>.</p>
+        <h3 data-i18n="modal.import.title">📥 Importer un catalogue</h3>
+        <p style="color:#94a3b8;font-size:13px;margin-bottom:18px;line-height:1.6;" data-i18n="modal.import.desc">Déposez un fichier <strong>CSV</strong> ou <strong>Excel</strong>. Le fichier doit contenir au minimum une colonne <strong>nom</strong> et une colonne <strong>prix</strong>.</p>
         <div class="drop-zone" id="importDropZone" style="padding:24px;">
             <div class="icon" style="font-size:32px;">📁</div>
-            <p data-i18n="modal">Déposez votre fichier ici</p>
-            <span data-i18n="modal">ou cliquez pour parcourir</span>
+            <p data-i18n="modal.import.drop">Déposez votre fichier ici</p>
+            <span data-i18n="modal.import.or">ou cliquez pour parcourir</span>
             <input type="file" id="importFileInput" style="display:none;" accept=".csv,.xlsx,.xls" />
             <div id="importFileName" style="margin-top:8px;color:#3b82f6;font-weight:500;"></div>
         </div>
         <div class="modal-actions">
-            <button class="btn-cancel" id="cancelImportBtn" data-i18n="modal">Annuler</button>
-            <button class="btn-confirm" id="confirmImportBtn" disabled data-i18n="modal">Importer</button>
+            <button class="btn-cancel" id="cancelImportBtn" data-i18n="btn.cancel">Annuler</button>
+            <button class="btn-confirm" id="confirmImportBtn" disabled data-i18n="btn.import">Importer</button>
         </div>
     </div>
 </div>
 
-<!-- Modal signature interne (utilisateur qui marque un devis accepté manuellement) -->
+<!-- Modal signature interne -->
 <div class="modal-overlay" id="signatureModal">
     <div class="modal">
-        <h3 data-i18n="modal">✍️ Marquer le devis comme signé</h3>
-        <p style="color:#94a3b8;font-size:12px;margin-bottom:16px;line-height:1.6;" data-i18n="modal">
-            Utilisez ceci si votre client a accepté le devis par un autre canal (téléphone, email, courrier). Pour une signature client en ligne, utilisez plutôt le bouton <strong>Envoyer</strong>.
+        <h3 data-i18n="modal.sig.title">✍️ Marquer le devis comme signé</h3>
+        <p style="color:#94a3b8;font-size:12px;margin-bottom:16px;line-height:1.6;" data-i18n="modal.sig.desc">
+            Utilisez ceci si votre client a accepté le devis par un autre canal (téléphone, email, courrier).
         </p>
         <input type="hidden" id="signQuoteId" />
         <div class="form-group">
-            <label data-i18n="modal">N° de devis</label>
+            <label data-i18n="modal.sig.quote_num">N° de devis</label>
             <input type="text" id="signQuoteNumber" disabled />
         </div>
         <div class="form-group">
-            <label data-i18n="modal">Nom du signataire *</label>
+            <label data-i18n="modal.sig.signer">Nom du signataire *</label>
             <input type="text" id="signSignedBy" placeholder="Jean Dupont" />
         </div>
 
         <div id="signMethodCheckbox">
             <label class="checkbox-accept">
                 <input type="checkbox" id="signAcceptCheckbox" />
-                <div class="text" data-i18n="modal">
-                    Le client a accepté le devis <strong id="signQuoteNumDisplay"></strong> et confirme sa commande.
-                    Cette acceptation électronique vaut signature conformément à l'article 25 du règlement eIDAS.
+                <div class="text">
+                    <span data-i18n="modal.sig.checkbox">Le client a accepté le devis</span>
+                    <strong id="signQuoteNumDisplay"></strong>
+                    <span data-i18n="modal.sig.checkbox_end">et confirme sa commande. Cette acceptation électronique vaut signature conformément à l'article 25 du règlement eIDAS.</span>
                 </div>
             </label>
         </div>
 
         <div id="signMethodDraw" style="display:none;">
-            <label style="display:block;color:#94a3b8;font-weight:500;font-size:13px;margin-bottom:4px;">Signez ci-dessous (souris, doigt ou stylet)</label>
+            <label style="display:block;color:#94a3b8;font-weight:500;font-size:13px;margin-bottom:4px;" data-i18n="modal.sig.draw_label">Signez ci-dessous (souris, doigt ou stylet)</label>
             <div class="sig-canvas-wrap">
                 <canvas id="sigCanvas"></canvas>
             </div>
             <div class="sig-canvas-actions">
-                <button id="sigClearBtn" type="button" data-i18n="modal">Effacer</button>
+                <button id="sigClearBtn" type="button" data-i18n="modal.sig.clear">Effacer</button>
             </div>
         </div>
 
-        <p style="color:#64748b;font-size:11px;margin-top:14px;line-height:1.6;" data-i18n="modal">
+        <p style="color:#64748b;font-size:11px;margin-top:14px;line-height:1.6;" data-i18n="modal.sig.notice">
             En validant, votre nom, votre adresse IP et la date/heure seront enregistrés comme preuve d'acceptation.
         </p>
 
         <div class="modal-actions">
-            <button class="btn-cancel" id="cancelSignBtn" data-i18n="modal">Annuler</button>
-            <button class="btn-confirm" id="saveSignBtn" data-i18n="modal">Valider la signature</button>
+            <button class="btn-cancel" id="cancelSignBtn" data-i18n="btn.cancel">Annuler</button>
+            <button class="btn-confirm" id="saveSignBtn" data-i18n="modal.sig.save">Valider la signature</button>
         </div>
     </div>
 </div>
 
 <div class="modal-overlay" id="editQuoteModal">
     <div class="modal modal-wide">
-        <h3 id="editQuoteTitle" data-i18n="modal">Modifier le devis</h3>
+        <h3 id="editQuoteTitle" data-i18n="modal.edit.title">Modifier le devis</h3>
         <input type="hidden" id="editQuoteId" />
 
         <div class="form-row">
-            <div class="form-group"><label data-i18n="modal">N° de devis</label><input type="text" id="editQuoteNumber" disabled /></div>
-            <div class="form-group"><label data-i18n="modal">Valable jusqu'au</label><input type="date" id="editQuoteValidDate" /></div>
+            <div class="form-group"><label data-i18n="modal.sig.quote_num">N° de devis</label><input type="text" id="editQuoteNumber" disabled /></div>
+            <div class="form-group"><label data-i18n="modal.edit.valid_until">Valable jusqu'au</label><input type="date" id="editQuoteValidDate" /></div>
         </div>
 
-        <div class="card-title" style="margin-top:8px;font-size:15px;" data-i18n="modal">Informations client</div>
+        <div class="card-title" style="margin-top:8px;font-size:15px;" data-i18n="modal.edit.client_info">Informations client</div>
         <div class="form-row">
-            <div class="form-group"><label data-i18n="modal">Nom / Raison sociale</label><input type="text" id="editClientName" /></div>
-            <div class="form-group"><label data-i18n="modal">N° TVA</label><input type="text" id="editClientVat" /></div>
+            <div class="form-group"><label data-i18n="modal.client.name">Nom / Raison sociale</label><input type="text" id="editClientName" /></div>
+            <div class="form-group"><label data-i18n="modal.client.vat">N° TVA</label><input type="text" id="editClientVat" /></div>
         </div>
-        <div class="form-group"><label data-i18n="modal">Adresse</label><input type="text" id="editClientAddress" /></div>
-        <div class="form-group"><label data-i18n="modal">Email</label><input type="email" id="editClientEmail" /></div>
+        <div class="form-group"><label data-i18n="modal.client.address">Adresse</label><input type="text" id="editClientAddress" /></div>
+        <div class="form-group"><label data-i18n="modal.client.email">Email</label><input type="email" id="editClientEmail" /></div>
 
-        <div class="card-title" style="margin-top:16px;font-size:15px;" data-i18n="modal">Articles</div>
+        <div class="card-title" style="margin-top:16px;font-size:15px;" data-i18n="modal.edit.items">Articles</div>
         <div id="editItemsContainer"></div>
-        <button class="btn-secondary" id="addEditItemBtn" style="margin-top:8px;" data-i18n="modal">+ Ajouter une ligne</button>
+        <button class="btn-secondary" id="addEditItemBtn" style="margin-top:8px;" data-i18n="modal.edit.add_item">+ Ajouter une ligne</button>
 
-        <div class="card-title" style="margin-top:20px;font-size:15px;" data-i18n="modal">TVA</div>
+        <div class="card-title" style="margin-top:20px;font-size:15px;" data-i18n="modal.edit.vat">TVA</div>
         <div class="form-row">
             <div class="form-group">
-                <label data-i18n="modal">Régime</label>
+                <label data-i18n="modal.edit.regime">Régime</label>
                 <select id="editVatRegime">
-                    <option value="franchise" data-i18n="modal">Franchise (pas de TVA)</option>
-                    <option value="assujetti" data-i18n="modal">Assujetti (TVA applicable)</option>
+                    <option value="franchise" data-i18n="settings.vat_franchise">Franchise (pas de TVA)</option>
+                    <option value="assujetti" data-i18n="settings.vat_assujetti">Assujetti (TVA applicable)</option>
                 </select>
             </div>
-            <div class="form-group"><label data-i18n="modal">Taux (%)</label><input type="number" id="editVatRate" step="0.01" min="0" max="30" value="21" /></div>
+            <div class="form-group"><label data-i18n="modal.edit.rate">Taux (%)</label><input type="number" id="editVatRate" step="0.01" min="0" max="30" value="21" /></div>
         </div>
 
         <div class="totaux-box" id="editTotauxBox" style="margin-top:16px;"></div>
 
         <div class="modal-actions">
-            <button class="btn-cancel" id="cancelEditQuoteBtn" data-i18n="modal">Annuler</button>
-            <button class="btn-confirm" id="saveEditQuoteBtn" data-i18n="modal">Enregistrer</button>
+            <button class="btn-cancel" id="cancelEditQuoteBtn" data-i18n="btn.cancel">Annuler</button>
+            <button class="btn-confirm" id="saveEditQuoteBtn" data-i18n="btn.save">Enregistrer</button>
         </div>
     </div>
 </div>
@@ -1189,26 +1238,30 @@
 <!-- Modal suppression de compte -->
 <div class="modal-overlay" id="deleteAccountModal">
     <div class="modal">
-        <h3 style="color:#f87171;" data-i18n="modal">🗑 Supprimer mon compte</h3>
-        <p style="color:#cbd5e1;font-size:13px;line-height:1.6;margin-bottom:16px;" data-i18n="modal">
-            Cette action est <strong data-i18n="modal">irréversible</strong>. Toutes vos données seront supprimées définitivement.
+        <h3 style="color:#f87171;" data-i18n="modal.delete.title">🗑 Supprimer mon compte</h3>
+        <p style="color:#cbd5e1;font-size:13px;line-height:1.6;margin-bottom:16px;">
+            <span data-i18n="modal.delete.desc_1">Cette action est</span>
+            <strong data-i18n="modal.delete.desc_2">irréversible</strong>
+            <span data-i18n="modal.delete.desc_3">. Toutes vos données seront supprimées définitivement.</span>
         </p>
-        <p style="color:#cbd5e1;font-size:13px;line-height:1.6;margin-bottom:16px;" data-i18n="modal">
-            Pour confirmer, saisissez votre mot de passe et tapez <strong style="color:#f87171;" data-i18n="modal">SUPPRIMER</strong> ci-dessous.
+        <p style="color:#cbd5e1;font-size:13px;line-height:1.6;margin-bottom:16px;">
+            <span data-i18n="modal.delete.confirm_1">Pour confirmer, saisissez votre mot de passe et tapez</span>
+            <strong style="color:#f87171;" data-i18n="modal.delete.confirm_2">SUPPRIMER</strong>
+            <span data-i18n="modal.delete.confirm_3">ci-dessous.</span>
         </p>
 
         <div class="form-group">
-            <label data-i18n="modal">Votre mot de passe</label>
+            <label data-i18n="modal.delete.password">Votre mot de passe</label>
             <input type="password" id="deletePassword" placeholder="••••••••" />
         </div>
         <div class="form-group">
-            <label data-i18n="modal">Tapez "SUPPRIMER" pour confirmer</label>
+            <label data-i18n="modal.delete.type">Tapez "SUPPRIMER" pour confirmer</label>
             <input type="text" id="deleteConfirmText" placeholder="SUPPRIMER" />
         </div>
 
         <div class="modal-actions">
-            <button class="btn-cancel" id="cancelDeleteBtn" data-i18n="modal">Annuler</button>
-            <button class="btn-confirm" id="confirmDeleteBtn" style="background:#f87171;color:#fff;" data-i18n="modal">Supprimer définitivement</button>
+            <button class="btn-cancel" id="cancelDeleteBtn" data-i18n="btn.cancel">Annuler</button>
+            <button class="btn-confirm" id="confirmDeleteBtn" style="background:#f87171;color:#fff;" data-i18n="modal.delete.btn">Supprimer définitivement</button>
         </div>
     </div>
 </div>
@@ -1216,117 +1269,118 @@
 <!-- MODAL : INVITER UN MEMBRE -->
 <div class="modal-overlay" id="inviteModal">
     <div class="modal">
-        <h3 data-i18n="modal">👥 Inviter un membre</h3>
-        <p style="color:#94a3b8;font-size:13px;margin-bottom:20px;line-height:1.6;" data-i18n="modal">
+        <h3 data-i18n="modal.invite.title">👥 Inviter un membre</h3>
+        <p style="color:#94a3b8;font-size:13px;margin-bottom:20px;line-height:1.6;" data-i18n="modal.invite.desc">
             Un email sera envoyé avec un lien pour rejoindre votre espace de travail.
         </p>
         <div class="form-group">
-            <label data-i18n="modal">Email du collaborateur *</label>
+            <label data-i18n="modal.invite.email">Email du collaborateur *</label>
             <input type="email" id="inviteEmail" placeholder="collaborateur@entreprise.com" />
         </div>
         <div class="form-group">
-            <label data-i18n="modal">Rôle</label>
+            <label data-i18n="modal.invite.role">Rôle</label>
             <select id="inviteRole">
-                <option value="admin" data-i18n="modal">Admin — Peut tout faire sauf gérer l'équipe</option>
-                <option value="member" selected data-i18n="modal">Membre — Peut créer et modifier les devis</option>
+                <option value="admin" data-i18n="modal.invite.role_admin">Admin — Peut tout faire sauf gérer l'équipe</option>
+                <option value="member" selected data-i18n="modal.invite.role_member">Membre — Peut créer et modifier les devis</option>
             </select>
         </div>
         <div class="modal-actions">
-            <button class="btn-cancel" id="cancelInviteBtn" data-i18n="modal">Annuler</button>
-            <button class="btn-confirm" id="confirmInviteBtn" data-i18n="modal">Envoyer l'invitation</button>
+            <button class="btn-cancel" id="cancelInviteBtn" data-i18n="btn.cancel">Annuler</button>
+            <button class="btn-confirm" id="confirmInviteBtn" data-i18n="modal.invite.send">Envoyer l'invitation</button>
         </div>
     </div>
 </div>
 
-<!-- MODAL : ACCEPTER UNE INVITATION (page publique) -->
+<!-- MODAL : ACCEPTER UNE INVITATION -->
 <div class="modal-overlay" id="acceptInviteModal" style="background:#0b1120;">
     <div class="modal" style="max-width:460px;">
         <div style="text-align:center;margin-bottom:20px;">
-            <h1 style="color:#fff;font-size:24px;margin-bottom:6px;" data-i18n="modal">Devis <span style="color:#f97316;">Express</span> Pro</h1>
-            <p style="color:#94a3b8;font-size:14px;" data-i18n="modal">Vous êtes invité(e) à rejoindre</p>
+            <h1 style="color:#fff;font-size:24px;margin-bottom:6px;">Devis <span style="color:#f97316;">Express</span> Pro</h1>
+            <p style="color:#94a3b8;font-size:14px;" data-i18n="modal.accept.welcome">Vous êtes invité(e) à rejoindre</p>
             <p style="color:#f97316;font-size:16px;font-weight:700;margin-top:8px;" id="acceptInviteCompany">—</p>
         </div>
         <div id="acceptInviteInfo" style="background:#0b1120;border:1px solid #1e2a41;border-radius:12px;padding:14px 18px;margin-bottom:20px;font-size:13px;color:#cbd5e1;line-height:1.7;">
-            <div><strong data-i18n="modal">Email :</strong> <span id="acceptInviteEmail">—</span></div>
-            <div><strong data-i18n="modal">Rôle :</strong> <span id="acceptInviteRole">—</span></div>
+            <div><strong data-i18n="modal.accept.email">Email :</strong> <span id="acceptInviteEmail">—</span></div>
+            <div><strong data-i18n="modal.accept.role">Rôle :</strong> <span id="acceptInviteRole">—</span></div>
         </div>
         <div class="error" id="acceptInviteError" style="background:#1f1220;color:#f87171;padding:10px 14px;border-radius:10px;border:1px solid #3f1e24;margin-bottom:14px;font-size:13px;display:none;"></div>
         <form id="acceptInviteForm">
             <div class="form-group">
-                <label data-i18n="modal">Choisissez un mot de passe *</label>
+                <label data-i18n="modal.accept.password">Choisissez un mot de passe *</label>
                 <input type="password" id="acceptPassword" required placeholder="••••••••" minlength="6" />
             </div>
             <div class="form-group">
                 <label class="checkbox-accept" style="margin:0;">
                     <input type="checkbox" id="acceptTerms" style="margin-top:0;" />
-                    <div class="text" data-i18n="modal">
-                        J'accepte les <a href="/cgu.html" target="_blank" style="color:#f97316;">CGU/CGV</a>
-                        et la <a href="/confidentialite.html" target="_blank" style="color:#f97316;">politique de confidentialité</a>.
+                    <div class="text">
+                        <span data-i18n="modal.accept.terms_1">J'accepte les</span>
+                        <a href="/cgu.html" target="_blank" style="color:#f97316;" data-i18n="modal.accept.terms_cgu">CGU/CGV</a>
+                        <span data-i18n="modal.accept.terms_and">et la</span>
+                        <a href="/confidentialite.html" target="_blank" style="color:#f97316;" data-i18n="modal.accept.terms_privacy">politique de confidentialité</a>.
                     </div>
                 </label>
             </div>
-            <button type="submit" class="btn-confirm" id="acceptInviteSubmit" style="width:100%;padding:14px;">Rejoindre l'équipe</button>
+            <button type="submit" class="btn-confirm" id="acceptInviteSubmit" style="width:100%;padding:14px;" data-i18n="modal.accept.join">Rejoindre l'équipe</button>
         </form>
         <div style="text-align:center;margin-top:16px;">
-            <a id="cancelAcceptInvite" style="color:#64748b;cursor:pointer;font-size:13px;text-decoration:none;">← Retour</a>
+            <a id="cancelAcceptInvite" style="color:#64748b;cursor:pointer;font-size:13px;text-decoration:none;" data-i18n="modal.accept.back">← Retour</a>
         </div>
     </div>
 </div>
 
-<!-- MODAL : FACTURE (création / édition) -->
+<!-- MODAL : FACTURE -->
 <div class="modal-overlay" id="invoiceModal">
     <div class="modal modal-wide">
-        <h3 id="invoiceModalTitle" data-i18n="modal">Nouvelle facture</h3>
+        <h3 id="invoiceModalTitle" data-i18n="modal.invoice.new">Nouvelle facture</h3>
         <input type="hidden" id="invoiceIdField" />
 
         <div class="form-row">
-            <div class="form-group"><label data-i18n="modal">N° de facture</label><input type="text" id="invoiceNumberField" disabled /></div>
-            <div class="form-group"><label data-i18n="modal">Échéance</label><input type="date" id="invoiceDueDate" /></div>
+            <div class="form-group"><label data-i18n="modal.invoice.num">N° de facture</label><input type="text" id="invoiceNumberField" disabled /></div>
+            <div class="form-group"><label data-i18n="modal.invoice.due">Échéance</label><input type="date" id="invoiceDueDate" /></div>
         </div>
 
-        <div class="card-title" style="margin-top:8px;font-size:15px;" data-i18n="modal">Client</div>
+        <div class="card-title" style="margin-top:8px;font-size:15px;" data-i18n="modal.invoice.client">Client</div>
         <div class="form-row">
             <div class="form-group">
-                <label data-i18n="modal">Sélectionner un client</label>
-                <select id="invoiceClientSelector"><option value="" data-i18n="modal">— Aucun —</option></select>
+                <label data-i18n="modal.invoice.select_client">Sélectionner un client</label>
+                <select id="invoiceClientSelector"><option value="" data-i18n="modal.invoice.none">— Aucun —</option></select>
             </div>
-            <div class="form-group"><label data-i18n="modal">Nom / Raison sociale</label><input type="text" id="invoiceClientName" /></div>
+            <div class="form-group"><label data-i18n="modal.client.name">Nom / Raison sociale</label><input type="text" id="invoiceClientName" /></div>
         </div>
         <div class="form-row">
-            <div class="form-group"><label data-i18n="modal">Adresse</label><input type="text" id="invoiceClientAddress" /></div>
-            <div class="form-group"><label data-i18n="modal">N° TVA</label><input type="text" id="invoiceClientVat" /></div>
+            <div class="form-group"><label data-i18n="modal.client.address">Adresse</label><input type="text" id="invoiceClientAddress" /></div>
+            <div class="form-group"><label data-i18n="modal.client.vat">N° TVA</label><input type="text" id="invoiceClientVat" /></div>
         </div>
-        <div class="form-group"><label data-i18n="modal">Email</label><input type="email" id="invoiceClientEmail" /></div>
+        <div class="form-group"><label data-i18n="modal.client.email">Email</label><input type="email" id="invoiceClientEmail" /></div>
 
-        <div class="card-title" style="margin-top:16px;font-size:15px;" data-i18n="modal">Articles</div>
+        <div class="card-title" style="margin-top:16px;font-size:15px;" data-i18n="modal.invoice.items">Articles</div>
         <div id="invoiceItemsContainer"></div>
-        <button class="btn-secondary" id="addInvoiceItemBtn" style="margin-top:8px;" data-i18n="modal">+ Ajouter une ligne</button>
+        <button class="btn-secondary" id="addInvoiceItemBtn" style="margin-top:8px;" data-i18n="modal.edit.add_item">+ Ajouter une ligne</button>
 
-        <div class="card-title" style="margin-top:20px;font-size:15px;" data-i18n="modal">TVA</div>
+        <div class="card-title" style="margin-top:20px;font-size:15px;" data-i18n="modal.invoice.vat">TVA</div>
         <div class="form-row">
             <div class="form-group">
-                <label data-i18n="modal">Régime</label>
+                <label data-i18n="modal.edit.regime">Régime</label>
                 <select id="invoiceVatRegime">
-                    <option value="franchise" data-i18n="modal">Franchise (pas de TVA)</option>
-                    <option value="assujetti" data-i18n="modal">Assujetti (TVA applicable)</option>
+                    <option value="franchise" data-i18n="settings.vat_franchise">Franchise (pas de TVA)</option>
+                    <option value="assujetti" data-i18n="settings.vat_assujetti">Assujetti (TVA applicable)</option>
                 </select>
             </div>
-            <div class="form-group"><label data-i18n="modal">Taux (%)</label><input type="number" id="invoiceVatRate" step="0.01" min="0" max="30" value="21" /></div>
+            <div class="form-group"><label data-i18n="modal.edit.rate">Taux (%)</label><input type="number" id="invoiceVatRate" step="0.01" min="0" max="30" value="21" /></div>
         </div>
 
-        <div class="form-group"><label data-i18n="modal">Notes (optionnel)</label><textarea id="invoiceNotes" rows="2" placeholder="Merci de votre confiance." data-i18n="modal"></textarea></div>
+        <div class="form-group"><label data-i18n="modal.invoice.notes">Notes (optionnel)</label><textarea id="invoiceNotes" rows="2" placeholder="Merci de votre confiance." data-i18n-placeholder="modal.invoice.notes_placeholder"></textarea></div>
 
         <div class="totaux-box" id="invoiceTotauxBox" style="margin-top:16px;"></div>
 
         <div class="modal-actions">
-            <button class="btn-cancel" id="cancelInvoiceBtn" data-i18n="modal">Annuler</button>
-            <button class="btn-confirm" id="saveInvoiceBtn" data-i18n="modal">Enregistrer</button>
+            <button class="btn-cancel" id="cancelInvoiceBtn" data-i18n="btn.cancel">Annuler</button>
+            <button class="btn-confirm" id="saveInvoiceBtn" data-i18n="btn.save">Enregistrer</button>
         </div>
     </div>
 </div>
 
 <div id="toast"></div>
-
 <script>
 // ================================================================
 // 1. UTILS
