@@ -5,6 +5,7 @@ const { pool } = require('../db');
 const fs = require('fs');
 const path = require('path');
 const { runEmailSequence } = require('../utils/email-sequence');
+const { runExpirationCheck } = require('../utils/email-expiration');
 
 const router = express.Router();
 
@@ -438,6 +439,49 @@ router.delete('/email-log/reset', requireAdminKey, async (req, res) => {
             const result = await pool.query('DELETE FROM email_log RETURNING id');
             res.json({ success: true, deleted: result.rows.length });
         }
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ============================================================
+// POST /api/admin/run-expiration-check — Lance la vérification
+// d'expiration des devis (à appeler 1x par jour via cron)
+// ============================================================
+router.post('/run-expiration-check', requireAdminKey, async (req, res) => {
+    try {
+        const baseUrl = req.body.baseUrl || `${req.protocol}://${req.get('host')}`;
+        console.log('📧 Vérification des devis qui expirent...');
+        const stats = await runExpirationCheck(baseUrl);
+        console.log(`📧 Terminé : ${stats.emails_sent} emails envoyés, ${stats.quotes_notified} devis notifiés`);
+        res.json({
+            success: true,
+            timestamp: new Date().toISOString(),
+            stats
+        });
+    } catch (err) {
+        console.error('Erreur expiration check:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ============================================================
+// GET /api/admin/expiration-notifications — Voir l'historique
+// ============================================================
+router.get('/expiration-notifications', requireAdminKey, async (req, res) => {
+    try {
+        const result = await pool.query(`
+            SELECT en.id, en.level, en.sent_at,
+                   q.quote_number, q.client_name,
+                   u.email
+            FROM expiration_notifications en
+            JOIN quotes q ON q.id = en.quote_id
+            JOIN users u ON u.id = en.user_id
+            ORDER BY en.sent_at DESC
+            LIMIT 200
+        `);
+        res.json(result.rows);
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: err.message });

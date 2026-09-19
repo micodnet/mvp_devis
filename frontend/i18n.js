@@ -192,6 +192,9 @@ const TRANSLATIONS = {
         "history.status.sent": "Envoyé",
         "history.status.accepted": "Accepté",
         "history.status.refused": "Refusé",
+        "history.expire_today": "⚠️ Expire aujourd'hui",
+        "history.expire_in": "⏳ Expire dans",
+        "history.expired": "⛔ Expiré",
 
         // Onglet Factures
         "invoices.title": "🧾 Mes factures",
@@ -571,6 +574,9 @@ const TRANSLATIONS = {
         "history.status.sent": "Verzonden",
         "history.status.accepted": "Aanvaard",
         "history.status.refused": "Geweigerd",
+        "history.expire_today": "⚠️ Verloopt vandaag",
+        "history.expire_in": "⏳ Verloopt over",
+        "history.expired": "⛔ Verlopen",
 
         "invoices.title": "🧾 Mijn facturen",
         "invoices.new": "+ Nieuwe factuur",
@@ -935,6 +941,9 @@ const TRANSLATIONS = {
         "history.status.sent": "Sent",
         "history.status.accepted": "Accepted",
         "history.status.refused": "Refused",
+        "history.expire_today": "⚠️ Expires today",
+        "history.expire_in": "⏳ Expires in",
+        "history.expired": "⛔ Expired",
 
         "invoices.title": "🧾 My invoices",
         "invoices.new": "+ New invoice",

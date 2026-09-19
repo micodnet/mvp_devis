@@ -692,7 +692,7 @@
         <button class="tab-btn active" data-tab="tab-devis" data-i18n="app.tab.quotes">📄 Devis</button>
         <button class="tab-btn" data-tab="tab-clients" data-i18n="app.tab.clients">👥 Clients</button>
         <button class="tab-btn" data-tab="tab-catalogue" data-i18n="app.tab.products">📦 Catalogue</button>
-        <button class="tab-btn" data-tab="tab-history" data-i18n="app.tab.history">📜 Devis</button>
+        <button class="tab-btn" data-tab="tab-history" data-i18n="app.tab.history">📜 Historique</button>
         <button class="tab-btn" data-tab="tab-invoices" data-i18n="app.tab.invoices">🧾 Factures</button>
         <button class="tab-btn" data-tab="tab-dashboard" data-i18n="app.tab.dashboard">📊 Dashboard</button>
         <button class="tab-btn" data-tab="tab-team" data-i18n="app.tab.team">👥 Équipe</button>
@@ -1423,6 +1423,19 @@ function escapeHtml(str) {
 }
 
 const STATUS_LABELS = { draft: 'Brouillon', sent: 'Envoyé', accepted: 'Accepté', refused: 'Refusé' };
+
+// Calcule le nombre de jours avant expiration
+function daysUntilExpiration(validDate) {
+    if (!validDate) return null;
+    try {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const valid = new Date(validDate);
+        valid.setHours(0, 0, 0, 0);
+        const diff = Math.round((valid - today) / (1000 * 60 * 60 * 24));
+        return diff;
+    } catch (e) { return null; }
+}
 
 // ================================================================
 // 2. NAVIGATION
@@ -2337,6 +2350,18 @@ function renderHistory() {
         else if (isViewed) badges += `<span class="viewed-badge">👁 Vu</span>`;
         else if (isSent) badges += `<span class="sent-badge">📤 Envoyé</span>`;
 
+        // Badge expiration (uniquement si en attente)
+        if (status === 'sent' && !isSigned) {
+            const days = daysUntilExpiration(q.validDate);
+            if (days !== null && days <= 3 && days >= 0) {
+                const expColor = days === 0 ? '#f87171' : (days === 1 ? '#f97316' : '#facc15');
+                const expLabel = days === 0 ? '⚠️ Expire aujourd\'hui' : `⏳ Expire dans ${days}j`;
+                badges += `<span style="display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:700;padding:3px 10px;border-radius:40px;background:rgba(250,204,21,0.15);color:${expColor};border:1px solid ${expColor};margin-left:6px;">${expLabel}</span>`;
+            } else if (days !== null && days < 0) {
+                badges += `<span style="display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:700;padding:3px 10px;border-radius:40px;background:rgba(248,113,113,0.15);color:#f87171;border:1px solid #f87171;margin-left:6px;">⛔ Expiré</span>`;
+            }
+        }
+        
         // Menu items (conditionnels)
         let menuItems = '';
 
