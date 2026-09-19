@@ -140,7 +140,7 @@ app.post('/api/settings', authenticateToken, async (req, res) => {
                 invoice_prefix = EXCLUDED.invoice_prefix,
                 payment_terms = EXCLUDED.payment_terms,
                 language = EXCLUDED.language,
-                pdf_template = EXCLUDED.pdf_template
+                pdf_template = EXCLUDED.pdf_template,
                 updated_at = NOW()
         `, [
             req.user.id,
