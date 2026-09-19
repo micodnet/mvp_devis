@@ -20,6 +20,7 @@ const productsRoutes = require('./routes/products');
 const clientsRoutes = require('./routes/clients');
 const quotesRoutes = require('./routes/quotes');
 const adminRoutes = require('./routes/admin');
+const teamRoutes = require('./routes/team');
 
 // ⚙️ INTERRUPTEUR DE QUOTA — Mets à `false` pour désactiver les limites pendant les tests
 const ENABLE_QUOTA_LIMITS = false;
@@ -44,6 +45,7 @@ app.use('/api/products', productsRoutes);
 app.use('/api/clients', clientsRoutes);
 app.use('/api/quotes', quotesRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/team', teamRoutes);
 
 // Multer
 const storage = multer.diskStorage({

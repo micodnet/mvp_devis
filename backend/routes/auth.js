@@ -41,17 +41,21 @@ router.post('/signup', async (req, res) => {
 
         const passwordHash = await bcrypt.hash(password, 10);
 
+        // Créer l'utilisateur avec account_id = son propre id (il est propriétaire)
         const result = await pool.query(
-            'INSERT INTO users (email, password_hash, terms_accepted_at) VALUES ($1, $2, NOW()) RETURNING id, email',
-            [email, passwordHash]
+            'INSERT INTO users (email, password_hash, terms_accepted_at, role) VALUES ($1, $2, NOW(), $3) RETURNING id, email',
+            [email, passwordHash, 'owner']
         );
         const user = result.rows[0];
+
+        // account_id = son propre id
+        await pool.query('UPDATE users SET account_id = $1 WHERE id = $1', [user.id]);
 
         await pool.query('INSERT INTO settings (user_id) VALUES ($1)', [user.id]);
         await pool.query('INSERT INTO counters (user_id, last_number) VALUES ($1, 0)', [user.id]);
 
         const token = jwt.sign(
-            { id: user.id, email: user.email },
+            { id: user.id, email: user.email, account_id: user.id, role: 'owner' },
             process.env.JWT_SECRET,
             { expiresIn: '30d' }
         );
@@ -62,7 +66,7 @@ router.post('/signup', async (req, res) => {
             console.error('Erreur envoi email de bienvenue:', err.message);
         });
 
-        res.status(201).json({ token, user: { id: user.id, email: user.email } });
+        res.status(201).json({ token, user: { id: user.id, email: user.email, account_id: user.id, role: 'owner' } });
     } catch (err) {
         console.error('Erreur signup:', err);
         res.status(500).json({ error: 'Erreur lors de l\'inscription.' });
@@ -81,7 +85,7 @@ router.post('/login', async (req, res) => {
 
     try {
         const result = await pool.query(
-            'SELECT id, email, password_hash FROM users WHERE email = $1',
+            'SELECT id, email, password_hash, account_id, role FROM users WHERE email = $1',
             [email]
         );
 
@@ -96,13 +100,15 @@ router.post('/login', async (req, res) => {
             return res.status(401).json({ error: 'Email ou mot de passe incorrect.' });
         }
 
+        const accountId = user.account_id || user.id;
+        const role = user.role || 'owner';
         const token = jwt.sign(
-            { id: user.id, email: user.email },
+            { id: user.id, email: user.email, account_id: accountId, role: role },
             process.env.JWT_SECRET,
             { expiresIn: '30d' }
         );
 
-        res.json({ token, user: { id: user.id, email: user.email } });
+        res.json({ token, user: { id: user.id, email: user.email, account_id: accountId, role: role } });
     } catch (err) {
         console.error('Erreur login:', err);
         res.status(500).json({ error: 'Erreur lors de la connexion.' });
