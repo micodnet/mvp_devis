@@ -4,6 +4,7 @@ const express = require('express');
 const { pool } = require('../db');
 const fs = require('fs');
 const path = require('path');
+const { runEmailSequence } = require('../utils/email-sequence');
 
 const router = express.Router();
 
@@ -16,7 +17,10 @@ const TABLES = [
     'quotes',
     'counters',
     'monthly_quota',
-    'password_reset_tokens'
+    'password_reset_tokens',
+    'email_log',
+    'invoices',
+    'invoice_counters'
 ];
 
 // Middleware : vérifie la clé admin
@@ -374,4 +378,46 @@ router.get('/schema-check', requireAdminKey, async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+
+// ============================================================
+// POST /api/admin/run-email-sequence — Lance la séquence d'emails
+// (appelé par un cron quotidien)
+// ============================================================
+router.post('/run-email-sequence', requireAdminKey, async (req, res) => {
+    try {
+        const baseUrl = req.body.baseUrl || `${req.protocol}://${req.get('host')}`;
+        console.log(`📧 Lancement de la séquence d'emails...`);
+        const stats = await runEmailSequence(baseUrl);
+        console.log(`📧 Séquence terminée : ${stats.sent} envoyés, ${stats.skipped} ignorés, ${stats.errors} erreurs`);
+        res.json({
+            success: true,
+            timestamp: new Date().toISOString(),
+            stats
+        });
+    } catch (err) {
+        console.error('Erreur run-email-sequence:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ============================================================
+// GET /api/admin/email-log — Voir l'historique des envois
+// ============================================================
+router.get('/email-log', requireAdminKey, async (req, res) => {
+    try {
+        const result = await pool.query(`
+            SELECT el.id, el.email_type, el.sent_at,
+                   u.email, u.subscription_plan
+            FROM email_log el
+            JOIN users u ON u.id = el.user_id
+            ORDER BY el.sent_at DESC
+            LIMIT 200
+        `);
+        res.json(result.rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
 module.exports = router;

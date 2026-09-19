@@ -347,7 +347,28 @@ app.post('/api/download-pdf', authenticateToken, async (req, res) => {
         res.status(500).json({ error: 'Erreur génération PDF : ' + err.message });
     }
 });
+// app.post('/api/download-pdf', authenticateToken, async (req, res) => {
+//     try {
+//         const dataParam = req.query.data;
+//         if (!dataParam) return res.status(400).send('Données manquantes');
+//         const data = JSON.parse(dataParam);
+//         const { items, subtotal, vatAmount, total, vatRegime, vatRate, quoteNumber, issueDate, validDate, company, client, signature } = data;
 
+//         if (!items || items.length === 0) return res.status(400).send('Aucun article');
+
+//         const pdfBytes = await generateQuotePDF(
+//             items, subtotal, vatAmount, total,
+//             vatRegime, vatRate, quoteNumber, issueDate, validDate,
+//             company, client, signature
+//         );
+//         res.setHeader('Content-Type', 'application/pdf');
+//         res.setHeader('Content-Disposition', `attachment; filename=devis_${quoteNumber}.pdf`);
+//         res.send(Buffer.from(pdfBytes));
+//     } catch (err) {
+//         console.error(err);
+//         res.status(500).send('Erreur génération PDF');
+//     }
+// });
 // ============================================================
 // POST /api/send-email
 // ============================================================
