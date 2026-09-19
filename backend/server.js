@@ -21,6 +21,7 @@ const clientsRoutes = require('./routes/clients');
 const quotesRoutes = require('./routes/quotes');
 const adminRoutes = require('./routes/admin');
 const teamRoutes = require('./routes/team');
+const invoicesRoutes = require('./routes/invoices');
 
 // ⚙️ INTERRUPTEUR DE QUOTA — Mets à `false` pour désactiver les limites pendant les tests
 const ENABLE_QUOTA_LIMITS = false;
@@ -46,6 +47,7 @@ app.use('/api/clients', clientsRoutes);
 app.use('/api/quotes', quotesRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/team', teamRoutes);
+app.use('/api/invoices', invoicesRoutes);
 
 // Multer
 const storage = multer.diskStorage({
@@ -86,7 +88,12 @@ app.get('/api/settings', authenticateToken, async (req, res) => {
             logo: s.logo,
             vatRegime: s.vat_regime || 'franchise',
             vatRate: parseFloat(s.vat_rate) || 21,
-            signatureMethod: s.signature_method || 'none'
+            signatureMethod: s.signature_method || 'none',
+            iban: s.iban,
+            bic: s.bic,
+            bankName: s.bank_name,
+            invoicePrefix: s.invoice_prefix || 'FAC',
+            paymentTerms: s.payment_terms || 30
         });
     } catch (err) {
         console.error(err);
@@ -98,11 +105,11 @@ app.get('/api/settings', authenticateToken, async (req, res) => {
 // POST /api/settings
 // ============================================================
 app.post('/api/settings', authenticateToken, async (req, res) => {
-    const { companyName, address, siret, tva, phone, email, website, logo, vatRegime, vatRate, signatureMethod } = req.body;
+        const { companyName, address, siret, tva, phone, email, website, logo, vatRegime, vatRate, signatureMethod, iban, bic, bankName, invoicePrefix, paymentTerms } = req.body;
     try {
         await pool.query(`
-            INSERT INTO settings (user_id, company_name, address, siret, tva, phone, email, website, logo, vat_regime, vat_rate, signature_method, updated_at)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, NOW())
+            INSERT INTO settings (user_id, company_name, address, siret, tva, phone, email, website, logo, vat_regime, vat_rate, signature_method, iban, bic, bank_name, invoice_prefix, payment_terms, updated_at)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, NOW())
             ON CONFLICT (user_id) DO UPDATE SET
                 company_name = EXCLUDED.company_name,
                 address = EXCLUDED.address,
@@ -115,8 +122,13 @@ app.post('/api/settings', authenticateToken, async (req, res) => {
                 vat_regime = EXCLUDED.vat_regime,
                 vat_rate = EXCLUDED.vat_rate,
                 signature_method = EXCLUDED.signature_method,
+                iban = EXCLUDED.iban,
+                bic = EXCLUDED.bic,
+                bank_name = EXCLUDED.bank_name,
+                invoice_prefix = EXCLUDED.invoice_prefix,
+                payment_terms = EXCLUDED.payment_terms,
                 updated_at = NOW()
-        `, [req.user.id, companyName, address, siret, tva, phone, email, website, logo, vatRegime || 'franchise', vatRate || 21, signatureMethod || 'none']);
+        `, [req.user.id, companyName, address, siret, tva, phone, email, website, logo, vatRegime || 'franchise', vatRate || 21, signatureMethod || 'none', iban || null, bic || null, bankName || null, invoicePrefix || 'FAC', paymentTerms || 30]);
         res.json({ success: true });
     } catch (err) {
         console.error(err);

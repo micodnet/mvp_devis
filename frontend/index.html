@@ -424,13 +424,19 @@
         .actions-menu button.danger { color: #f87171; }
         .actions-menu button.danger:hover { background: #3f1e24; }
         .actions-menu button .icon { width: 16px; text-align: center; flex-shrink: 0; }
-
         /* Menu mobile : pleine largeur */
         @media (max-width: 700px) {
             .actions-menu { right: auto; left: 0; min-width: 200px; }
             .actions-toggle { width: 100%; justify-content: center; }
             .quote-actions { justify-content: flex-start; }
         }
+        /* FACTURES */
+        .invoice-badge { display:inline-flex; align-items:center; gap:5px; font-size:10px; font-weight:700; padding:4px 12px; border-radius:40px; text-transform:uppercase; letter-spacing:0.3px; }
+        .invoice-badge.draft { background:rgba(148,163,184,0.15); color:#94a3b8; border:1px solid rgba(148,163,184,0.3); }
+        .invoice-badge.sent { background:rgba(59,130,246,0.15); color:#3b82f6; border:1px solid rgba(59,130,246,0.3); }
+        .invoice-badge.paid { background:rgba(34,197,94,0.15); color:#22c55e; border:1px solid rgba(34,197,94,0.3); }
+        .invoice-badge.overdue { background:rgba(249,115,22,0.15); color:#f97316; border:1px solid rgba(249,115,22,0.3); }
+        .invoice-badge.cancelled { background:rgba(248,113,113,0.15); color:#f87171; border:1px solid rgba(248,113,113,0.3); }
     </style>
 </head>
 <body>
@@ -654,6 +660,7 @@
         <button class="tab-btn" data-tab="tab-clients">👥 Clients</button>
         <button class="tab-btn" data-tab="tab-catalogue">📦 Catalogue</button>
         <button class="tab-btn" data-tab="tab-history">📜 Historique</button>
+        <button class="tab-btn" data-tab="tab-invoices">🧾 Factures</button>
         <button class="tab-btn" data-tab="tab-dashboard">📊 Dashboard</button>
         <button class="tab-btn" data-tab="tab-settings">⚙️ Paramètres</button>
         <button class="tab-btn" data-tab="tab-team">👥 Équipe</button>
@@ -769,6 +776,26 @@
         </div>
     </div>
 
+    <!-- FACTURES -->
+    <div id="tab-invoices" class="tab-content">
+        <div class="card">
+            <div class="catalog-header">
+                <h2>🧾 Mes factures</h2>
+                <div class="catalog-actions">
+                    <button class="btn-primary-sm" id="newInvoiceBtn">+ Nouvelle facture</button>
+                </div>
+            </div>
+            <div class="history-filters" id="invoiceFilters">
+                <button class="history-filter active" data-ifilter="all">Toutes <span class="count" id="ifCntAll">0</span></button>
+                <button class="history-filter" data-ifilter="draft">Brouillons <span class="count" id="ifCntDraft">0</span></button>
+                <button class="history-filter" data-ifilter="sent">Envoyées <span class="count" id="ifCntSent">0</span></button>
+                <button class="history-filter" data-ifilter="paid">Payées <span class="count" id="ifCntPaid">0</span></button>
+                <button class="history-filter" data-ifilter="overdue">En retard <span class="count" id="ifCntOverdue">0</span></button>
+            </div>
+            <div id="invoicesList"><p style="color:#64748b;">Chargement...</p></div>
+        </div>
+    </div>
+
     <!-- DASHBOARD -->
     <div id="tab-dashboard" class="tab-content">
         <div id="onboardingBox" class="onboarding-box" style="display:none;">
@@ -860,6 +887,34 @@
                     </select>
                 </div>
                 <div class="form-group"><label>Taux de TVA par défaut (%)</label><input type="number" id="vatRate" step="0.01" min="0" max="30" value="21" /></div>
+                <div class="card-title" style="margin-top:24px;">🏦 Coordonnées bancaires & Facturation</div>
+                <div class="form-group">
+                    <label>IBAN</label>
+                    <input type="text" id="companyIban" placeholder="BE68 5390 0754 7034" />
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>BIC / SWIFT</label>
+                        <input type="text" id="companyBic" placeholder="GEBABEBB" />
+                    </div>
+                    <div class="form-group">
+                        <label>Nom de la banque</label>
+                        <input type="text" id="companyBankName" placeholder="ING, BNP, KBC..." />
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Préfixe n° de facture</label>
+                        <input type="text" id="invoicePrefix" placeholder="FAC" value="FAC" />
+                    </div>
+                    <div class="form-group">
+                        <label>Délai de paiement (jours)</label>
+                        <input type="number" id="paymentTerms" min="0" max="120" value="30" />
+                    </div>
+                </div>
+                <p style="color:#64748b;font-size:12px;margin-bottom:16px;">
+                    Ces informations apparaîtront sur toutes vos factures (numéro, échéance, coordonnées de paiement).
+                </p>
                 <div class="card-title" style="margin-top:24px;">✍️ Signature électronique</div>
                 <div class="form-group">
                     <label>Méthode de signature par défaut</label>
@@ -1120,6 +1175,7 @@
         </div>
     </div>
 </div>
+
 <!-- Modal suppression de compte -->
 <div class="modal-overlay" id="deleteAccountModal">
     <div class="modal">
@@ -1146,6 +1202,7 @@
         </div>
     </div>
 </div>
+
 <!-- MODAL : INVITER UN MEMBRE -->
 <div class="modal-overlay" id="inviteModal">
     <div class="modal">
@@ -1205,6 +1262,59 @@
         </div>
     </div>
 </div>
+
+<!-- MODAL : FACTURE (création / édition) -->
+<div class="modal-overlay" id="invoiceModal">
+    <div class="modal modal-wide">
+        <h3 id="invoiceModalTitle">Nouvelle facture</h3>
+        <input type="hidden" id="invoiceIdField" />
+
+        <div class="form-row">
+            <div class="form-group"><label>N° de facture</label><input type="text" id="invoiceNumberField" disabled /></div>
+            <div class="form-group"><label>Échéance</label><input type="date" id="invoiceDueDate" /></div>
+        </div>
+
+        <div class="card-title" style="margin-top:8px;font-size:15px;">Client</div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Sélectionner un client</label>
+                <select id="invoiceClientSelector"><option value="">— Aucun —</option></select>
+            </div>
+            <div class="form-group"><label>Nom / Raison sociale</label><input type="text" id="invoiceClientName" /></div>
+        </div>
+        <div class="form-row">
+            <div class="form-group"><label>Adresse</label><input type="text" id="invoiceClientAddress" /></div>
+            <div class="form-group"><label>N° TVA</label><input type="text" id="invoiceClientVat" /></div>
+        </div>
+        <div class="form-group"><label>Email</label><input type="email" id="invoiceClientEmail" /></div>
+
+        <div class="card-title" style="margin-top:16px;font-size:15px;">Articles</div>
+        <div id="invoiceItemsContainer"></div>
+        <button class="btn-secondary" id="addInvoiceItemBtn" style="margin-top:8px;">+ Ajouter une ligne</button>
+
+        <div class="card-title" style="margin-top:20px;font-size:15px;">TVA</div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Régime</label>
+                <select id="invoiceVatRegime">
+                    <option value="franchise">Franchise (pas de TVA)</option>
+                    <option value="assujetti">Assujetti (TVA applicable)</option>
+                </select>
+            </div>
+            <div class="form-group"><label>Taux (%)</label><input type="number" id="invoiceVatRate" step="0.01" min="0" max="30" value="21" /></div>
+        </div>
+
+        <div class="form-group"><label>Notes (optionnel)</label><textarea id="invoiceNotes" rows="2" placeholder="Merci de votre confiance."></textarea></div>
+
+        <div class="totaux-box" id="invoiceTotauxBox" style="margin-top:16px;"></div>
+
+        <div class="modal-actions">
+            <button class="btn-cancel" id="cancelInvoiceBtn">Annuler</button>
+            <button class="btn-confirm" id="saveInvoiceBtn">Enregistrer</button>
+        </div>
+    </div>
+</div>
+
 <div id="toast"></div>
 
 <script>
@@ -1427,6 +1537,7 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
         if (btn.dataset.tab === 'tab-catalogue') loadCatalog();
         if (btn.dataset.tab === 'tab-clients') loadClients();
         if (btn.dataset.tab === 'tab-team') loadTeam();
+        if (btn.dataset.tab === 'tab-invoices') loadInvoices();
     });
 });
 
@@ -1545,6 +1656,11 @@ async function loadSettings() {
         document.getElementById('vatRegime').value = data.vatRegime || 'franchise';
         document.getElementById('vatRate').value = data.vatRate || 21;
         document.getElementById('signatureMethod').value = data.signatureMethod || 'none';
+        document.getElementById('companyIban').value = data.iban || '';
+        document.getElementById('companyBic').value = data.bic || '';
+        document.getElementById('companyBankName').value = data.bankName || '';
+        document.getElementById('invoicePrefix').value = data.invoicePrefix || 'FAC';
+        document.getElementById('paymentTerms').value = data.paymentTerms || 30;
         if (data.logo) document.getElementById('logoPreview').innerHTML = `<img src="${data.logo}" style="max-height:80px; border-radius:8px;" />`;
     } catch(e) { console.warn(e); }
 }
@@ -1585,6 +1701,11 @@ document.getElementById('settingsForm').addEventListener('submit', async (e) => 
         vatRegime: document.getElementById('vatRegime').value,
         vatRate: parseFloat(document.getElementById('vatRate').value) || 0,
         signatureMethod: document.getElementById('signatureMethod').value,
+        iban: document.getElementById('companyIban').value.trim(),
+        bic: document.getElementById('companyBic').value.trim(),
+        bankName: document.getElementById('companyBankName').value.trim(),
+        invoicePrefix: document.getElementById('invoicePrefix').value.trim() || 'FAC',
+        paymentTerms: parseInt(document.getElementById('paymentTerms').value) || 30,
         logo: logoBase64 || undefined
     };
     try {
@@ -2088,57 +2209,6 @@ document.querySelectorAll('.history-filter').forEach(btn => {
     });
 });
 
-//function renderHistory() {
-//    const container = document.getElementById('historyList');
-//    let filtered = allQuotes;
-//    if (currentFilter !== 'all') filtered = allQuotes.filter(q => (q.status || 'draft') === currentFilter);
-//    if (filtered.length === 0) {
-//        container.innerHTML = '<p style="color:#64748b; text-align:center; padding:40px;">Aucun devis dans cette catégorie.</p>';
-//        return;
-//    }
-//    let html = `<div class="quote-row header">
-//        <div>N° / Date</div><div>Client</div><div>Montant</div><div>Statut</div><div style="text-align:right;">Actions</div>
-//   </div>`;
-//    filtered.forEach(q => {
-//        const status = q.status || 'draft';
-//        const statusLabel = STATUS_LABELS[status] || 'Brouillon';
-//        const isSigned = q.signature && q.signature.signedAt;
-//        const isSent = q.sentToClientAt;
-//        const isViewed = q.clientViewedAt;
-
-        // Badges d'état
-//        let badges = `<span class="status-badge ${status}">${statusLabel}</span>`;
-//        if (isSigned) badges += `<span class="signature-badge">✍️ Signé</span>`;
-//        else if (isViewed) badges += `<span class="viewed-badge">👁 Vu</span>`;
-//        else if (isSent) badges += `<span class="sent-badge">📤 Envoyé</span>`;
-
-        // Boutons
-//        const sendBtn = !isSent && !isSigned ? `<button onclick="sendToClient(${q.id})" title="Envoyer le lien au client">Envoyer</button>` : '';
-//        const copyBtn = isSent && !isSigned && q.publicToken ? `<button onclick="copyPublicLink('${q.publicToken}')" title="Copier le lien public">Copier lien</button>` : '';
-//        const signBtn = !isSigned ? `<button onclick="openSignatureModal(${q.id})" title="Signature manuelle (client a accepté par tél/email)">Signer</button>` : '';
-
-//        html += `<div class="quote-row">
-//            <div>
-//                <div class="quote-number">${escapeHtml(q.quoteNumber)}</div>
-//                <div class="stat-mini">${q.issueDate}</div>
-//            </div>
-//            <div class="quote-client">${q.clientName ? escapeHtml(q.clientName) : '<span style="color:#475569;">Aucun client</span>'}</div>
-//            <div class="quote-total">${q.total.toFixed(2)} €</div>
-//            <div>${badges}</div>
-//            <div class="quote-actions">
-//                ${sendBtn}
-//                ${copyBtn}
-//                ${signBtn}
-//                <button onclick="changeStatus(${q.id}, '${status}')">Statut</button>
-//                <button onclick="editQuote(${q.id})">Modifier</button>
-//                <button onclick="duplicateQuote(${q.id})">Dupliquer</button>
-//                <button onclick="downloadQuotePdf(${q.id})">PDF</button>
-//                <button class="danger" onclick="deleteQuote(${q.id})">✕</button>
-//            </div>
-//        </div>`;
-//    });
-//    container.innerHTML = html;
-//}
 function renderHistory() {
     const container = document.getElementById('historyList');
     let filtered = allQuotes;
@@ -2184,6 +2254,10 @@ function renderHistory() {
         menuItems += `<button onclick="closeAllMenus(); changeStatus(${q.id}, '${status}')"><span class="icon">🔄</span> Changer le statut</button>`;
         menuItems += `<button onclick="closeAllMenus(); editQuote(${q.id})"><span class="icon">✏️</span> Modifier</button>`;
         menuItems += `<button onclick="closeAllMenus(); duplicateQuote(${q.id})"><span class="icon">📋</span> Dupliquer</button>`;
+        // Bouton "Transformer en facture" si le devis est accepté ou signé
+        if (q.status === 'accepted' || (q.signature && q.signature.signedAt)) {
+            menuItems += `<button onclick="closeAllMenus(); convertQuoteToInvoice(${q.id})"><span class="icon">🧾</span> Transformer en facture</button>`;
+        }
         menuItems += `<button onclick="closeAllMenus(); downloadQuotePdf(${q.id})"><span class="icon">⬇</span> Télécharger PDF</button>`;
         menuItems += `<button class="danger" onclick="closeAllMenus(); deleteQuote(${q.id})"><span class="icon">🗑</span> Supprimer</button>`;
 
@@ -3105,6 +3179,403 @@ document.getElementById('changePasswordForm')?.addEventListener('submit', async 
         btn.textContent = '🔒 Changer le mot de passe';
     }
 });
+
+// ================================================================
+// 13.9. FACTURES
+// ================================================================
+let allInvoices = [];
+let currentInvoiceFilter = 'all';
+let invoiceClientData = null;
+
+async function loadInvoices() {
+    const container = document.getElementById('invoicesList');
+    if (!container) return;
+    container.innerHTML = '<p style="color:#64748b;text-align:center;padding:40px;">Chargement...</p>';
+    try {
+        const res = await apiFetch('/api/invoices');
+        allInvoices = await res.json();
+        updateInvoiceCounts();
+        renderInvoices();
+    } catch (err) {
+        container.innerHTML = '<p style="color:#f87171;text-align:center;padding:40px;">Erreur.</p>';
+    }
+}
+
+function updateInvoiceCounts() {
+    document.getElementById('ifCntAll').textContent = allInvoices.length;
+    document.getElementById('ifCntDraft').textContent = allInvoices.filter(i => i.status === 'draft').length;
+    document.getElementById('ifCntSent').textContent = allInvoices.filter(i => i.status === 'sent').length;
+    document.getElementById('ifCntPaid').textContent = allInvoices.filter(i => i.status === 'paid').length;
+    document.getElementById('ifCntOverdue').textContent = allInvoices.filter(i => i.status === 'overdue').length;
+}
+
+document.querySelectorAll('#invoiceFilters .history-filter').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('#invoiceFilters .history-filter').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentInvoiceFilter = btn.dataset.ifilter;
+        renderInvoices();
+    });
+});
+
+const INVOICE_STATUS_LABELS = { draft: 'Brouillon', sent: 'Envoyée', paid: 'Payée', overdue: 'En retard', cancelled: 'Annulée' };
+
+function renderInvoices() {
+    const container = document.getElementById('invoicesList');
+    let filtered = allInvoices;
+    if (currentInvoiceFilter !== 'all') filtered = allInvoices.filter(i => i.status === currentInvoiceFilter);
+    if (filtered.length === 0) {
+        container.innerHTML = '<p style="color:#64748b;text-align:center;padding:40px;">Aucune facture dans cette catégorie.</p>';
+        return;
+    }
+    let html = '<div class="quote-row header"><div>N° / Dates</div><div>Client</div><div>Montant</div><div>Statut</div><div style="text-align:right;">Actions</div></div>';
+    filtered.forEach(inv => {
+        const status = inv.status || 'draft';
+        const statusLabel = INVOICE_STATUS_LABELS[status] || 'Brouillon';
+        const isPaid = status === 'paid';
+
+        let menuItems = '';
+        menuItems += `<button onclick="closeAllMenus(); downloadInvoicePdf(${inv.id})"><span class="icon">⬇</span> Télécharger PDF</button>`;
+        if (!isPaid) {
+            menuItems += `<button onclick="closeAllMenus(); markInvoicePaid(${inv.id})"><span class="icon">✅</span> Marquer payée</button>`;
+            menuItems += `<button onclick="closeAllMenus(); changeInvoiceStatus(${inv.id}, '${status}')"><span class="icon">🔄</span> Changer le statut</button>`;
+        }
+        menuItems += `<button onclick="closeAllMenus(); editInvoice(${inv.id})"><span class="icon">✏️</span> Modifier</button>`;
+        if (isPaid) {
+            menuItems += `<button onclick="closeAllMenus(); markInvoiceUnpaid(${inv.id})"><span class="icon">↩</span> Marquer non payée</button>`;
+        }
+        menuItems += `<button class="danger" onclick="closeAllMenus(); deleteInvoice(${inv.id})"><span class="icon">🗑</span> Supprimer</button>`;
+
+        html += `<div class="quote-row">
+            <div>
+                <div class="quote-number">${escapeHtml(inv.invoiceNumber)}</div>
+                <div class="stat-mini">Émise: ${inv.issueDate} • Éch.: ${inv.dueDate}</div>
+            </div>
+            <div class="quote-client">${inv.clientName ? escapeHtml(inv.clientName) : '<span style="color:#475569;">Aucun client</span>'}</div>
+            <div class="quote-total">${inv.total.toFixed(2)} €</div>
+            <div><span class="invoice-badge ${status}">${statusLabel}</span></div>
+            <div class="quote-actions">
+                <button class="actions-toggle" onclick="toggleActionsMenu(event, 'inv-${inv.id}')">Actions <span style="font-size:10px;">▼</span></button>
+                <div class="actions-menu" id="actionsMenu-inv-${inv.id}">${menuItems}</div>
+            </div>
+        </div>`;
+    });
+    container.innerHTML = html;
+}
+
+// Actions facture
+window.downloadInvoicePdf = async function(id) {
+    try {
+        showToast('Génération du PDF...', 'info');
+        const res = await apiFetch(`/api/invoices/${id}/pdf`);
+        if (!res.ok) throw new Error('Erreur PDF');
+        const blob = await res.blob();
+        const u = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        const inv = allInvoices.find(i => i.id === id);
+        a.href = u;
+        a.download = `facture_${inv?.invoiceNumber || id}.pdf`;
+        document.body.appendChild(a); a.click(); a.remove();
+        window.URL.revokeObjectURL(u);
+    } catch (err) { showToast('Erreur : ' + err.message, 'error'); }
+};
+
+window.markInvoicePaid = async function(id) {
+    const method = prompt('Mode de paiement (virement, carte, espèces, autre) :', 'virement');
+    if (method === null) return;
+    try {
+        const res = await apiFetch(`/api/invoices/${id}/status`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: 'paid', paymentMethod: method })
+        });
+        if (!res.ok) throw new Error('Erreur');
+        showToast('✅ Facture marquée payée', 'success');
+        loadInvoices();
+    } catch (err) { showToast('Erreur : ' + err.message, 'error'); }
+};
+
+window.markInvoiceUnpaid = async function(id) {
+    if (!confirm('Marquer cette facture comme non payée ?')) return;
+    try {
+        const res = await apiFetch(`/api/invoices/${id}/status`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: 'sent' })
+        });
+        if (!res.ok) throw new Error('Erreur');
+        showToast('✅ Statut modifié', 'success');
+        loadInvoices();
+    } catch (err) { showToast('Erreur : ' + err.message, 'error'); }
+};
+
+window.changeInvoiceStatus = async function(id, currentStatus) {
+    const order = ['draft', 'sent', 'paid', 'overdue'];
+    const next = order[(order.indexOf(currentStatus) + 1) % order.length];
+    const labels = { draft: 'Brouillon', sent: 'Envoyée', paid: 'Payée', overdue: 'En retard' };
+    if (!confirm(`Changer le statut vers "${labels[next]}" ?`)) return;
+    try {
+        const res = await apiFetch(`/api/invoices/${id}/status`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: next })
+        });
+        if (!res.ok) throw new Error('Erreur');
+        showToast(`✅ Statut : ${labels[next]}`, 'success');
+        loadInvoices();
+    } catch (err) { showToast('Erreur : ' + err.message, 'error'); }
+};
+
+window.deleteInvoice = async function(id) {
+    if (!confirm('Supprimer cette facture définitivement ?')) return;
+    try {
+        const res = await apiFetch(`/api/invoices/${id}`, { method: 'DELETE' });
+        if (!res.ok) throw new Error('Erreur');
+        showToast('🗑 Facture supprimée', 'success');
+        loadInvoices();
+    } catch (err) { showToast('Erreur : ' + err.message, 'error'); }
+};
+
+// Modal facture
+const invoiceModal = document.getElementById('invoiceModal');
+
+async function openInvoiceModal(mode = 'add', invoice = null, prefill = null) {
+    document.getElementById('invoiceModalTitle').textContent = mode === 'add' ? 'Nouvelle facture' : 'Modifier la facture';
+    document.getElementById('invoiceIdField').value = invoice ? invoice.id : '';
+    document.getElementById('invoiceNumberField').value = invoice ? invoice.invoiceNumber : '(généré à l\'enregistrement)';
+
+    // Charger settings pour les defaults
+    try {
+        const s = await (await apiFetch('/api/settings')).json();
+        document.getElementById('invoiceVatRegime').value = invoice?.vatRegime || s.vatRegime || 'franchise';
+        document.getElementById('invoiceVatRate').value = s.vatRate || 21;
+
+        // Date d'échéance par défaut
+        if (invoice?.dueDate) {
+            document.getElementById('invoiceDueDate').value = invoice.dueDate.slice(0, 10);
+        } else if (prefill?.dueDate) {
+            document.getElementById('invoiceDueDate').value = prefill.dueDate;
+        } else {
+            const d = new Date();
+            d.setDate(d.getDate() + (s.paymentTerms || 30));
+            document.getElementById('invoiceDueDate').value = d.toISOString().slice(0, 10);
+        }
+    } catch (e) { console.warn(e); }
+
+    // Client
+    document.getElementById('invoiceClientName').value = invoice?.clientName || prefill?.client?.name || '';
+    document.getElementById('invoiceClientAddress').value = invoice?.clientAddress || prefill?.client?.address || '';
+    document.getElementById('invoiceClientVat').value = invoice?.clientVat || prefill?.client?.vat || '';
+    document.getElementById('invoiceClientEmail').value = invoice?.clientEmail || prefill?.client?.email || '';
+
+    // Remplir le sélecteur de clients
+    const sel = document.getElementById('invoiceClientSelector');
+    sel.innerHTML = '<option value="">— Aucun —</option>';
+    clientsList.forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c.id;
+        opt.textContent = c.name + (c.email ? ` (${c.email})` : '');
+        sel.appendChild(opt);
+    });
+
+    // Notes
+    document.getElementById('invoiceNotes').value = invoice?.notes || '';
+
+    // Items
+    const items = invoice?.items || prefill?.items || [];
+    renderInvoiceItems(items);
+    recomputeInvoiceTotals();
+
+    invoiceModal.classList.add('show');
+}
+
+function renderInvoiceItems(items) {
+    const container = document.getElementById('invoiceItemsContainer');
+    container.innerHTML = '';
+    if (items.length === 0) {
+        addInvoiceItemRow();
+    } else {
+        items.forEach(item => addInvoiceItemRow(item));
+    }
+}
+
+function addInvoiceItemRow(item = null) {
+    const container = document.getElementById('invoiceItemsContainer');
+    const row = document.createElement('div');
+    row.className = 'edit-item-row';
+    row.innerHTML = `
+        <input type="text" placeholder="Désignation" class="inv-name" value="${item ? escapeHtml(item.name) : ''}" />
+        <input type="number" placeholder="Qté" class="inv-qty" min="1" step="1" value="${item ? item.qty : 1}" />
+        <input type="number" placeholder="Prix HT" class="inv-price" min="0" step="0.01" value="${item ? item.unitPrice : 0}" />
+        <input type="text" placeholder="Total" class="inv-total" disabled />
+        <button class="remove-btn">✕</button>
+    `;
+    const nameI = row.querySelector('.inv-name');
+    const qtyI = row.querySelector('.inv-qty');
+    const priceI = row.querySelector('.inv-price');
+    const totalI = row.querySelector('.inv-total');
+    const removeB = row.querySelector('.remove-btn');
+
+    function upd() {
+        const q = parseInt(qtyI.value) || 0;
+        const p = parseFloat(priceI.value) || 0;
+        totalI.value = (q * p).toFixed(2) + ' €';
+        recomputeInvoiceTotals();
+    }
+    nameI.addEventListener('input', upd);
+    qtyI.addEventListener('input', upd);
+    priceI.addEventListener('input', upd);
+    removeB.addEventListener('click', () => { row.remove(); recomputeInvoiceTotals(); });
+
+    if (item && item.ref) nameI.dataset.ref = item.ref;
+    upd();
+    container.appendChild(row);
+}
+
+function recomputeInvoiceTotals() {
+    const rows = document.querySelectorAll('#invoiceItemsContainer .edit-item-row');
+    let subtotal = 0;
+    rows.forEach(row => {
+        const q = parseInt(row.querySelector('.inv-qty').value) || 0;
+        const p = parseFloat(row.querySelector('.inv-price').value) || 0;
+        subtotal += q * p;
+    });
+    const regime = document.getElementById('invoiceVatRegime').value;
+    const rate = parseFloat(document.getElementById('invoiceVatRate').value) || 0;
+    const vat = regime === 'assujetti' ? subtotal * (rate / 100) : 0;
+    const total = subtotal + vat;
+
+    const box = document.getElementById('invoiceTotauxBox');
+    let html = '';
+    if (regime === 'assujetti') {
+        html += `<div class="totaux-line"><span>Total HT</span><span>${subtotal.toFixed(2)} €</span></div>`;
+        html += `<div class="totaux-line"><span>TVA (${rate}%)</span><span>${vat.toFixed(2)} €</span></div>`;
+        html += `<div class="totaux-line total"><span>TOTAL TTC</span><span class="amount">${total.toFixed(2)} €</span></div>`;
+    } else {
+        html += `<div class="totaux-line total"><span>TOTAL</span><span class="amount">${total.toFixed(2)} €</span></div>`;
+    }
+    box.innerHTML = html;
+}
+
+document.getElementById('addInvoiceItemBtn')?.addEventListener('click', () => addInvoiceItemRow());
+document.getElementById('invoiceVatRegime')?.addEventListener('change', recomputeInvoiceTotals);
+document.getElementById('invoiceVatRate')?.addEventListener('input', recomputeInvoiceTotals);
+document.getElementById('newInvoiceBtn')?.addEventListener('click', () => openInvoiceModal('add'));
+document.getElementById('cancelInvoiceBtn')?.addEventListener('click', () => invoiceModal.classList.remove('show'));
+invoiceModal?.addEventListener('click', (e) => { if (e.target === invoiceModal) invoiceModal.classList.remove('show'); });
+
+// Sélecteur client dans la modal facture
+document.getElementById('invoiceClientSelector')?.addEventListener('change', (e) => {
+    const id = parseInt(e.target.value);
+    const c = clientsList.find(x => x.id === id);
+    if (c) {
+        document.getElementById('invoiceClientName').value = c.name || '';
+        document.getElementById('invoiceClientAddress').value = c.address || '';
+        document.getElementById('invoiceClientVat').value = c.vatNumber || '';
+        document.getElementById('invoiceClientEmail').value = c.email || '';
+    }
+});
+
+document.getElementById('saveInvoiceBtn')?.addEventListener('click', async () => {
+    const id = document.getElementById('invoiceIdField').value;
+    const rows = document.querySelectorAll('#invoiceItemsContainer .edit-item-row');
+    const items = [];
+    let valid = true;
+    rows.forEach(row => {
+        const name = row.querySelector('.inv-name').value.trim();
+        const qty = parseInt(row.querySelector('.inv-qty').value) || 0;
+        const price = parseFloat(row.querySelector('.inv-price').value) || 0;
+        if (!name || qty <= 0) { valid = false; return; }
+        items.push({
+            ref: row.querySelector('.inv-name').dataset.ref || 'EXT-' + Math.random().toString(36).slice(2, 6).toUpperCase(),
+            name, qty, unitPrice: price, total: qty * price
+        });
+    });
+    if (!valid || items.length === 0) { showToast('Vérifiez les articles.', 'error'); return; }
+
+    const payload = {
+        items,
+        client: {
+            name: document.getElementById('invoiceClientName').value.trim(),
+            address: document.getElementById('invoiceClientAddress').value.trim(),
+            vat: document.getElementById('invoiceClientVat').value.trim(),
+            email: document.getElementById('invoiceClientEmail').value.trim()
+        },
+        vatRegime: document.getElementById('invoiceVatRegime').value,
+        vatRate: parseFloat(document.getElementById('invoiceVatRate').value) || 0,
+        dueDate: document.getElementById('invoiceDueDate').value,
+        notes: document.getElementById('invoiceNotes').value.trim()
+    };
+
+    const btn = document.getElementById('saveInvoiceBtn');
+    btn.disabled = true; btn.textContent = 'Enregistrement...';
+
+    try {
+        const url = id ? `/api/invoices/${id}` : '/api/invoices';
+        const method = id ? 'PUT' : 'POST';
+        const res = await apiFetch(url, {
+            method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Erreur');
+        showToast(id ? '✅ Facture modifiée !' : '✅ Facture créée !', 'success');
+        invoiceModal.classList.remove('show');
+        loadInvoices();
+    } catch (err) { showToast('Erreur : ' + err.message, 'error'); }
+    finally { btn.disabled = false; btn.textContent = 'Enregistrer'; }
+});
+
+window.editInvoice = async function(id) {
+    try {
+        showToast('Chargement...', 'info');
+        const res = await apiFetch(`/api/invoices/${id}`);
+        const inv = await res.json();
+        if (!res.ok) throw new Error(inv.error || 'Erreur');
+        await openInvoiceModal('edit', inv);
+    } catch (err) { showToast('Erreur : ' + err.message, 'error'); }
+};
+
+// Transformer un devis en facture
+window.convertQuoteToInvoice = async function(quoteId) {
+    try {
+        showToast('Chargement du devis...', 'info');
+        const res = await apiFetch(`/api/quotes/${quoteId}`);
+        const quote = await res.json();
+        if (!res.ok) throw new Error(quote.error || 'Erreur');
+
+        if (!confirm(`Créer une facture à partir du devis ${quote.quoteNumber} ?`)) return;
+
+        // Créer la facture directement
+        const payload = {
+            quoteId: quote.id,
+            items: quote.items,
+            client: {
+                name: quote.clientName,
+                address: quote.clientAddress,
+                vat: quote.clientVat,
+                email: quote.clientEmail
+            },
+            vatRegime: quote.vatRegime,
+            vatRate: quote.vatRate || 21,
+            status: 'draft'
+        };
+
+        const createRes = await apiFetch('/api/invoices', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const data = await createRes.json();
+        if (!createRes.ok) throw new Error(data.error || 'Erreur');
+
+        showToast(`✅ Facture ${data.invoiceNumber} créée !`, 'success');
+
+        // Basculer sur l'onglet factures
+        document.querySelector('[data-tab="tab-invoices"]').click();
+    } catch (err) { showToast('Erreur : ' + err.message, 'error'); }
+};
 
 // ================================================================
 // 14. EXPORT RGPD
