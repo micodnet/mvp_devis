@@ -3366,6 +3366,12 @@ function renderInvoices() {
 
         let menuItems = '';
         menuItems += `<button onclick="closeAllMenus(); downloadInvoicePdf(${inv.id})"><span class="icon">⬇</span> Télécharger PDF</button>`;
+        // Bouton Peppol (uniquement si pas déjà envoyé)
+        if (!inv.peppolOrderId) {
+            menuItems += `<button onclick="closeAllMenus(); sendInvoicePeppol(${inv.id})"><span class="icon">📨</span> Envoyer via Peppol</button>`;
+        } else {
+            menuItems += `<button onclick="closeAllMenus(); checkPeppolStatus(${inv.id})"><span class="icon">🔍</span> Statut Peppol</button>`;
+        }
         if (!isPaid) {
             menuItems += `<button onclick="closeAllMenus(); markInvoicePaid(${inv.id})"><span class="icon">✅</span> Marquer payée</button>`;
             menuItems += `<button onclick="closeAllMenus(); changeInvoiceStatus(${inv.id}, '${status}')"><span class="icon">🔄</span> Changer le statut</button>`;
@@ -3454,6 +3460,41 @@ window.changeInvoiceStatus = async function(id, currentStatus) {
         showToast(`✅ Statut : ${labels[next]}`, 'success');
         loadInvoices();
     } catch (err) { showToast('Erreur : ' + err.message, 'error'); }
+};
+
+window.sendInvoicePeppol = async function(id) {
+    if (!confirm('Envoyer cette facture via Peppol ?\n\nLa facture sera envoyée au client via le réseau Peppol.')) return;
+
+    showToast('Envoi via Peppol en cours...', 'info');
+    try {
+        const res = await apiFetch(`/api/invoices/${id}/send-peppol`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Erreur');
+
+        showToast('✅ Facture envoyée via Peppol !', 'success');
+        loadInvoices();
+    } catch (err) {
+        showToast('Erreur : ' + err.message, 'error');
+    }
+};
+
+window.checkPeppolStatus = async function(id) {
+    try {
+        showToast('Vérification...', 'info');
+        const res = await apiFetch(`/api/invoices/${id}/peppol-status`);
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Erreur');
+
+        let msg = `Statut : ${data.status}`;
+        if (data.delivered) msg += ' — ✅ Livrée';
+        if (data.date) msg += ` (${new Date(data.date).toLocaleString('fr-FR')})`;
+        alert(msg);
+    } catch (err) {
+        showToast('Erreur : ' + err.message, 'error');
+    }
 };
 
 window.deleteInvoice = async function(id) {

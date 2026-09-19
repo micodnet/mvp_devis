@@ -24,6 +24,8 @@ router.get('/', authenticateToken, async (req, res) => {
         res.json(result.rows.map(i => ({
             id: i.id,
             invoiceNumber: i.invoice_number,
+            peppolOrderId: i.peppol_order_id,
+            peppolSentAt: i.peppol_sent_at,
             quoteId: i.quote_id,
             issueDate: i.issue_date,
             dueDate: i.due_date,
@@ -334,6 +336,117 @@ router.get('/:id/pdf', authenticateToken, async (req, res) => {
     } catch (err) {
         console.error(err);
         res.status(500).send('Erreur PDF.');
+    }
+});
+
+// ============================================================
+// POST /api/invoices/:id/send-peppol — Envoyer la facture via Peppol (Billit)
+// ============================================================
+router.post('/:id/send-peppol', authenticateToken, async (req, res) => {
+    const invoiceId = parseInt(req.params.id);
+    if (!invoiceId) return res.status(400).json({ error: 'ID invalide.' });
+
+    const { createInvoiceInBillit, sendViaPeppol } = require('../utils/peppol-billit');
+
+    try {
+        // 1. Récupérer la facture
+        const invResult = await pool.query(
+            'SELECT * FROM invoices WHERE id = $1 AND user_id = $2',
+            [invoiceId, req.user.id]
+        );
+        if (invResult.rows.length === 0) return res.status(404).json({ error: 'Facture non trouvée.' });
+        const invoice = invResult.rows[0];
+
+        // 2. Vérifier qu'elle n'a pas déjà été envoyée
+        if (invoice.peppol_order_id && invoice.peppol_sent_at) {
+            return res.status(400).json({
+                error: 'Cette facture a déjà été envoyée via Peppol.',
+                orderId: invoice.peppol_order_id,
+                sentAt: invoice.peppol_sent_at
+            });
+        }
+
+        // 3. Récupérer les paramètres entreprise (IBAN, TVA...)
+        const settingsResult = await pool.query(
+            'SELECT * FROM settings WHERE user_id = $1',
+            [req.user.id]
+        );
+        const s = settingsResult.rows[0] || {};
+
+        // 4. Vérifications obligatoires Peppol
+        if (!invoice.client_name) {
+            return res.status(400).json({ error: 'Le nom du client est requis pour Peppol.' });
+        }
+        if (!s.siret) {
+            return res.status(400).json({ error: 'Votre numéro BCE est requis dans les Paramètres.' });
+        }
+
+        // 5. Créer la facture chez Billit
+        const payload = {
+            invoiceNumber: invoice.invoice_number,
+            issueDate: invoice.issue_date,
+            dueDate: invoice.due_date,
+            clientName: invoice.client_name,
+            clientVat: invoice.client_vat,
+            clientEmail: invoice.client_email,
+            items: invoice.items,
+            vatRegime: invoice.vat_regime,
+            vatRate: parseFloat(s.vat_rate) || 21,
+            companyIban: s.iban
+        };
+
+        const orderId = await createInvoiceInBillit(payload);
+
+        // 6. Envoyer via Peppol
+        await sendViaPeppol(orderId);
+
+        // 7. Sauvegarder l'OrderID en base
+        await pool.query(`
+            UPDATE invoices
+            SET status = 'sent',
+                peppol_order_id = $1,
+                peppol_sent_at = NOW(),
+                updated_at = NOW()
+            WHERE id = $2 AND user_id = $3
+        `, [String(orderId), invoiceId, req.user.id]);
+
+        res.json({
+            success: true,
+            orderId,
+            message: 'Facture envoyée via Peppol.'
+        });
+    } catch (err) {
+        console.error('Erreur send-peppol:', err);
+        res.status(500).json({ error: err.message || 'Erreur envoi Peppol.' });
+    }
+});
+
+// ============================================================
+// GET /api/invoices/:id/peppol-status — Récupérer le statut d'envoi
+// ============================================================
+router.get('/:id/peppol-status', authenticateToken, async (req, res) => {
+    const invoiceId = parseInt(req.params.id);
+    if (!invoiceId) return res.status(400).json({ error: 'ID invalide.' });
+
+    const { getInvoiceStatus } = require('../utils/peppol-billit');
+
+    try {
+        const result = await pool.query(
+            'SELECT peppol_order_id FROM invoices WHERE id = $1 AND user_id = $2',
+            [invoiceId, req.user.id]
+        );
+        if (result.rows.length === 0) return res.status(404).json({ error: 'Facture non trouvée.' });
+
+        const orderId = result.rows[0].peppol_order_id;
+        if (!orderId) {
+            return res.json({ status: 'not_sent', delivered: false });
+        }
+
+        const status = await getInvoiceStatus(orderId);
+        res.json({ orderId, ...status });
+    } catch (err) {
+        console.error('Erreur peppol-status:', err);
+        res.status(500).json({ error: err.message });
     }
 });
 
