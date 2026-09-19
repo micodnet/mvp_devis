@@ -94,7 +94,8 @@ app.get('/api/settings', authenticateToken, async (req, res) => {
             bankName: s.bank_name,
             invoicePrefix: s.invoice_prefix || 'FAC',
             paymentTerms: s.payment_terms || 30,
-            language: s.language || 'fr'
+            language: s.language || 'fr',
+            pdfTemplate: s.pdf_template || 'classic'
         });
     } catch (err) {
         console.error(err);
@@ -106,19 +107,19 @@ app.get('/api/settings', authenticateToken, async (req, res) => {
 // POST /api/settings
 // ============================================================
 app.post('/api/settings', authenticateToken, async (req, res) => {
-        const { companyName, address, siret, tva, phone, email, website, logo, vatRegime, vatRate, signatureMethod, iban, bic, bankName, invoicePrefix, paymentTerms, language } = req.body;
+        const { companyName, address, siret, tva, phone, email, website, logo, vatRegime, vatRate, signatureMethod, iban, bic, bankName, invoicePrefix, paymentTerms, language, pdfTemplate } = req.body;
     try {
         await pool.query(`
             INSERT INTO settings (
                 user_id, company_name, address, siret, tva, phone, email, website,
                 logo, vat_regime, vat_rate, signature_method,
-                iban, bic, bank_name, invoice_prefix, payment_terms, language,
+                iban, bic, bank_name, invoice_prefix, payment_terms, language, pdf_template,
                 updated_at
             )
             VALUES (
                 $1, $2, $3, $4, $5, $6, $7, $8,
                 $9, $10, $11, $12,
-                $13, $14, $15, $16, $17, $18,
+                $13, $14, $15, $16, $17, $18, $19
                 NOW()
             )
             ON CONFLICT (user_id) DO UPDATE SET
@@ -139,6 +140,7 @@ app.post('/api/settings', authenticateToken, async (req, res) => {
                 invoice_prefix = EXCLUDED.invoice_prefix,
                 payment_terms = EXCLUDED.payment_terms,
                 language = EXCLUDED.language,
+                pdf_template = EXCLUDED.pdf_template
                 updated_at = NOW()
         `, [
             req.user.id,
@@ -158,7 +160,8 @@ app.post('/api/settings', authenticateToken, async (req, res) => {
             bankName || null,
             invoicePrefix || 'FAC',
             paymentTerms || 30,
-            language || 'fr'
+            language || 'fr',
+            pdfTemplate || 'classic'
         ]);
         res.json({ success: true });
     } catch (err) {
@@ -358,13 +361,15 @@ app.post('/api/generate-quote', authenticateToken, upload.single('file'), async 
 // ============================================================
 app.post('/api/download-pdf', authenticateToken, async (req, res) => {
     try {
-        const { items, subtotal, vatAmount, total, vatRegime, vatRate, quoteNumber, issueDate, validDate, company, client, signature, lang } = req.body;
+        const { items, subtotal, vatAmount, total, vatRegime, vatRate, quoteNumber, issueDate, validDate, company, client, signature, lang, template } = req.body;
 
         // Si la langue n'est pas spécifiée, on la lit dans les settings
         let finalLang = lang;
-        if (!finalLang) {
-            const settingsLangRes = await pool.query('SELECT language FROM settings WHERE user_id = $1', [req.user.id]);
-            finalLang = settingsLangRes.rows[0]?.language || 'fr';
+        let finalTemplate = template;
+        if (!finalLang || !finalTemplate) {
+            const settingsRes = await pool.query('SELECT language, pdf_template FROM settings WHERE user_id = $1', [req.user.id]);
+            if (!finalLang) finalLang = settingsRes.rows[0]?.language || 'fr';
+            if (!finalTemplate) finalTemplate = settingsRes.rows[0]?.pdf_template || 'classic';
         }
         if (!items || !Array.isArray(items) || items.length === 0) {
             return res.status(400).json({ error: 'Aucun article' });
@@ -373,7 +378,7 @@ app.post('/api/download-pdf', authenticateToken, async (req, res) => {
         const pdfBytes = await generateQuotePDF(
             items, subtotal, vatAmount, total,
             vatRegime, vatRate, quoteNumber, issueDate, validDate,
-            company, client, signature, finalLang
+            company, client, signature, finalLang, finalTemplate
         );
 
         res.setHeader('Content-Type', 'application/pdf');
@@ -419,9 +424,11 @@ app.post('/api/send-email', authenticateToken, async (req, res) => {
         const settingsLangRes = await pool.query('SELECT language FROM settings WHERE user_id = $1', [req.user.id]);
         const mailLang = settingsLangRes.rows[0]?.language || 'fr';
         
+        const settingsTplRes = await pool.query('SELECT pdf_template FROM settings WHERE user_id = $1', [req.user.id]);
+        const mailTemplate = settingsTplRes.rows[0]?.pdf_template || 'classic';
         const pdfBytes = await generateQuotePDF(
             items, subtotal, vatAmount, total, vatRegime, vatRate,
-            quoteNumber, issueDate, validDate, company, client, signature, mailLang
+            quoteNumber, issueDate, validDate, company, client, signature, mailLang, mailTemplate
         );
         const resend = new Resend(process.env.RESEND_API_KEY);
 

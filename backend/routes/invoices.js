@@ -324,7 +324,8 @@ router.get('/:id/pdf', authenticateToken, async (req, res) => {
             invoice.notes,
             company,
             client,
-            s.language || 'fr'
+            s.language || 'fr',
+            s.pdf_template || 'classic'
         );
 
         res.setHeader('Content-Type', 'application/pdf');
