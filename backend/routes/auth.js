@@ -8,6 +8,7 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const { Resend } = require('resend');
 const { pool } = require('../db');
+const { authenticateToken } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -285,5 +286,54 @@ async function sendWelcomeEmail(req, email) {
         console.error('Erreur envoi welcome email:', err.message);
     }
 }
+
+// ------------------------------------------------------------
+// POST /api/auth/change-password
+// Change le mot de passe d'un utilisateur connecté
+// ------------------------------------------------------------
+router.post('/change-password', authenticateToken, async (req, res) => {
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+        return res.status(400).json({ error: 'Mot de passe actuel et nouveau mot de passe requis.' });
+    }
+    if (newPassword.length < 6) {
+        return res.status(400).json({ error: 'Le nouveau mot de passe doit contenir au moins 6 caractères.' });
+    }
+    if (currentPassword === newPassword) {
+        return res.status(400).json({ error: 'Le nouveau mot de passe doit être différent de l\'actuel.' });
+    }
+
+    try {
+        // Récupérer l'utilisateur RÉEL (pas le compte partagé)
+        const result = await pool.query(
+            'SELECT id, password_hash FROM users WHERE id = $1',
+            [req.user.userId]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Utilisateur introuvable.' });
+        }
+
+        const user = result.rows[0];
+        const validPassword = await bcrypt.compare(currentPassword, user.password_hash);
+
+        if (!validPassword) {
+            return res.status(401).json({ error: 'Mot de passe actuel incorrect.' });
+        }
+
+        // Hasher et enregistrer le nouveau
+        const newHash = await bcrypt.hash(newPassword, 10);
+        await pool.query(
+            'UPDATE users SET password_hash = $1 WHERE id = $2',
+            [newHash, user.id]
+        );
+
+        res.json({ success: true, message: 'Mot de passe modifié avec succès.' });
+    } catch (err) {
+        console.error('Erreur change-password:', err);
+        res.status(500).json({ error: 'Erreur serveur.' });
+    }
+});
 
 module.exports = router;

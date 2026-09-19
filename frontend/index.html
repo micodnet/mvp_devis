@@ -881,6 +881,30 @@
             </form>
         </div>
         <div class="card">
+            <div class="card-title">🔒 Changer mon mot de passe</div>
+            <p style="color:#94a3b8;font-size:13px;margin-bottom:20px;line-height:1.6;">
+                Pour des raisons de sécurité, saisissez votre mot de passe actuel avant d'en définir un nouveau.
+            </p>
+            <form id="changePasswordForm">
+                <div class="form-group">
+                    <label>Mot de passe actuel *</label>
+                    <input type="password" id="currentPassword" required placeholder="••••••••" autocomplete="current-password" />
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Nouveau mot de passe *</label>
+                        <input type="password" id="newPassword" required placeholder="••••••••" minlength="6" autocomplete="new-password" />
+                    </div>
+                    <div class="form-group">
+                        <label>Confirmer le nouveau mot de passe *</label>
+                        <input type="password" id="confirmNewPassword" required placeholder="••••••••" minlength="6" autocomplete="new-password" />
+                    </div>
+                </div>
+                <div class="error-msg" id="changePasswordError" style="margin-bottom:12px;"></div>
+                <button type="submit" class="btn-save" id="changePasswordBtn">🔒 Changer le mot de passe</button>
+            </form>
+        </div>
+        <div class="card">
             <div class="card-title">📥 Portabilité de vos données (RGPD)</div>
             <p style="color:#94a3b8;font-size:13px;margin-bottom:16px;line-height:1.6;">
                 Conformément à l'article 20 du RGPD, vous pouvez télécharger l'intégralité de vos données (compte, paramètres, clients, produits, devis) dans un fichier JSON lisible.
@@ -3029,6 +3053,58 @@ async function checkInviteToken() {
         return true;
     }
 }
+
+// ================================================================
+// 13.8. CHANGEMENT DE MOT DE PASSE
+// ================================================================
+document.getElementById('changePasswordForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const errEl = document.getElementById('changePasswordError');
+    errEl.style.display = 'none';
+
+    const currentPassword = document.getElementById('currentPassword').value;
+    const newPassword = document.getElementById('newPassword').value;
+    const confirmNewPassword = document.getElementById('confirmNewPassword').value;
+
+    if (newPassword !== confirmNewPassword) {
+        errEl.textContent = '❌ Les deux nouveaux mots de passe ne correspondent pas.';
+        errEl.style.display = 'block';
+        return;
+    }
+    if (newPassword.length < 6) {
+        errEl.textContent = '❌ Le nouveau mot de passe doit contenir au moins 6 caractères.';
+        errEl.style.display = 'block';
+        return;
+    }
+    if (currentPassword === newPassword) {
+        errEl.textContent = '❌ Le nouveau mot de passe doit être différent de l\'actuel.';
+        errEl.style.display = 'block';
+        return;
+    }
+
+    const btn = document.getElementById('changePasswordBtn');
+    btn.disabled = true;
+    btn.textContent = 'Modification...';
+
+    try {
+        const res = await apiFetch('/api/auth/change-password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ currentPassword, newPassword })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Erreur');
+
+        showToast('✅ Mot de passe modifié avec succès !', 'success');
+        document.getElementById('changePasswordForm').reset();
+    } catch (err) {
+        errEl.textContent = '❌ ' + err.message;
+        errEl.style.display = 'block';
+    } finally {
+        btn.disabled = false;
+        btn.textContent = '🔒 Changer le mot de passe';
+    }
+});
 
 // ================================================================
 // 14. EXPORT RGPD
