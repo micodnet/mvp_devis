@@ -24,8 +24,11 @@ backend/counter.json
 backend/uploads/
 backend/temp/
 backend/backups/
+backend/coverage/
+
 retours.md
 afairelanguage.md
+
 # ============================================================
 # Fichiers générés
 # ============================================================
