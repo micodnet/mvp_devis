@@ -5,19 +5,58 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Générateur de devis IA pour indépendants | Devis Express Pro</title>
     <meta name="description" content="Générez vos devis en 10 secondes grâce à l'IA. Importez vos demandes clients (PDF, Word, Excel), l'IA extrait les articles et crée le PDF. Essai gratuit." />
-    <!-- Open Graph -->
-    <meta property="og:title" content="Devis Express Pro — Générateur de devis par IA" />
-    <meta property="og:description" content="Générez vos devis en 10 secondes. L'IA extrait les articles de vos demandes clients et crée le PDF." />
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://mvp-devis.onrender.com" />
-    <meta property="og:image" content="https://mvp-devis.onrender.com/og-image.png" />
+    <link rel="canonical" href="https://mvp-devis.onrender.com/" />
+    
+    <!-- Signaler à Google les versions linguistiques (même URL, langue via localStorage) -->
+    <link rel="alternate" hreflang="fr" href="https://mvp-devis.onrender.com/" />
+    <link rel="alternate" hreflang="nl" href="https://mvp-devis.onrender.com/" />
+    <link rel="alternate" hreflang="en" href="https://mvp-devis.onrender.com/" />
+    <link rel="alternate" hreflang="x-default" href="https://mvp-devis.onrender.com/" />
 
+    <!-- Open Graph (LinkedIn, Facebook, WhatsApp) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://mvp-devis.onrender.com/" />
+    <meta property="og:title" content="Devis Express Pro — Générateur de devis par IA" />
+    <meta property="og:description" content="Créez vos devis en 10 secondes. L'IA extrait les articles de vos demandes clients et génère un PDF professionnel." />
+    <meta property="og:image" content="https://mvp-devis.onrender.com/og-image.png" />
+    <meta property="og:locale" content="fr_BE" />
+    <meta property="og:locale:alternate" content="nl_BE" />
+    <meta property="og:locale:alternate" content="en_US" />
+    <meta property="og:site_name" content="Devis Express Pro" />
+    
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Devis Express Pro — Générateur de devis par IA" />
-    <meta name="twitter:description" content="Générez vos devis en 10 secondes grâce à l'IA." />
+    <meta name="twitter:description" content="Créez vos devis en 10 secondes grâce à l'IA." />
+    <meta name="twitter:image" content="https://mvp-devis.onrender.com/og-image.png" />
+    
+    <!-- Robots -->
+    <meta name="robots" content="index, follow" />
+    <meta name="author" content="Micodnet" />
+    <meta name="keywords" content="devis, générateur de devis, IA, artisan, indépendant, TPE, PME, Belgique, facture, Peppol" />
+    
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%230b1120'/%3E%3Cpath d='M20 16 h18 l8 8 v24 a4 4 0 0 1 -4 4 h-22 a4 4 0 0 1 -4 -4 v-28 a4 4 0 0 1 4 -4 z' fill='%233b82f6'/%3E%3Cpath d='M38 16 v8 h8' fill='none' stroke='%230b1120' stroke-width='2'/%3E%3Cpath d='M32 28 l-4 10 h5 l-2 8 7 -11 h-5 z' fill='%23f97316'/%3E%3C/svg%3E" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    
+    <!-- JSON-LD Structured Data pour Google -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "Devis Express Pro",
+        "description": "Générateur de devis professionnels assisté par intelligence artificielle. Créez vos devis en 10 secondes à partir de n'importe quelle demande client.",
+        "url": "https://mvp-devis.onrender.com",
+        "applicationCategory": "BusinessApplication",
+        "operatingSystem": "Web",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "EUR",
+            "description": "Plan gratuit avec 3 devis par mois"
+        }
+        
+    }
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="/i18n.js"></script>
     <style>
