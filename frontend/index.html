@@ -3,8 +3,19 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Devis Express Pro — Générateur de devis par IA</title>
-    <meta name="description" content="Transformez n'importe quelle demande client (PDF, Word, Excel) en devis professionnel grâce à l'IA. Gagnez 3 heures par jour." />
+    <title>Générateur de devis IA pour indépendants | Devis Express Pro</title>
+    <meta name="description" content="Générez vos devis en 10 secondes grâce à l'IA. Importez vos demandes clients (PDF, Word, Excel), l'IA extrait les articles et crée le PDF. Essai gratuit." />
+    <!-- Open Graph -->
+    <meta property="og:title" content="Devis Express Pro — Générateur de devis par IA" />
+    <meta property="og:description" content="Générez vos devis en 10 secondes. L'IA extrait les articles de vos demandes clients et crée le PDF." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://mvp-devis.onrender.com" />
+    <meta property="og:image" content="https://mvp-devis.onrender.com/og-image.png" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Devis Express Pro — Générateur de devis par IA" />
+    <meta name="twitter:description" content="Générez vos devis en 10 secondes grâce à l'IA." />
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%230b1120'/%3E%3Cpath d='M20 16 h18 l8 8 v24 a4 4 0 0 1 -4 4 h-22 a4 4 0 0 1 -4 -4 v-28 a4 4 0 0 1 4 -4 z' fill='%233b82f6'/%3E%3Cpath d='M38 16 v8 h8' fill='none' stroke='%230b1120' stroke-width='2'/%3E%3Cpath d='M32 28 l-4 10 h5 l-2 8 7 -11 h-5 z' fill='%23f97316'/%3E%3C/svg%3E" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -431,6 +442,64 @@
             .actions-toggle { width: 100%; justify-content: center; }
             .quote-actions { justify-content: flex-start; }
         }
+
+        /* COOKIE BANNER */
+        #cookieBanner {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            right: 20px;
+            max-width: 500px;
+            background: #161f32;
+            border: 1px solid #2a3a55;
+            border-radius: 16px;
+            padding: 20px 24px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.7);
+            z-index: 5000;
+            display: none;
+            align-items: flex-start;
+            gap: 14px;
+            font-size: 13px;
+            color: #cbd5e1;
+            line-height: 1.6;
+        }
+        #cookieBanner.show { display: flex; }
+        #cookieBanner .cookie-icon { font-size: 24px; flex-shrink: 0; }
+        #cookieBanner .cookie-content { flex: 1; }
+        #cookieBanner .cookie-content strong { color: #fff; }
+        #cookieBanner a { color: #f97316; text-decoration: none; }
+        #cookieBanner a:hover { text-decoration: underline; }
+        #cookieBanner .cookie-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 14px;
+            flex-wrap: wrap;
+        }
+        #cookieBanner button {
+            padding: 8px 18px;
+            border-radius: 60px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            border: none;
+            transition: 0.2s;
+        }
+        #cookieBanner .cookie-accept {
+            background: #f97316;
+            color: #0b1120;
+        }
+        #cookieBanner .cookie-accept:hover { background: #ea580c; }
+        #cookieBanner .cookie-refuse {
+            background: transparent;
+            color: #94a3b8;
+            border: 1px solid #2a3a55;
+        }
+        #cookieBanner .cookie-refuse:hover { background: #1a253b; color: #e2e8f0; }
+
+        @media (max-width: 600px) {
+            #cookieBanner { left: 12px; right: 12px; bottom: 12px; padding: 16px 18px; }
+        }
+
         /* FACTURES */
         .invoice-badge { display:inline-flex; align-items:center; gap:5px; font-size:10px; font-weight:700; padding:4px 12px; border-radius:40px; text-transform:uppercase; letter-spacing:0.3px; }
         .invoice-badge.draft { background:rgba(148,163,184,0.15); color:#94a3b8; border:1px solid rgba(148,163,184,0.3); }
@@ -446,6 +515,7 @@
     <nav class="landing-nav">
         <div class="brand">Devis <span>Express</span> Pro</div>
         <div class="nav-actions">
+            <a href="/pricing.html" class="nav-btn ghost" data-i18n="nav.pricing">Tarifs</a>
             <button class="nav-btn ghost" id="navLoginBtn" data-i18n="nav.login">Se connecter</button>
             <button class="nav-btn solid" id="navSignupBtn" data-i18n="nav.signup">Créer un compte</button>
         </div>
@@ -502,16 +572,16 @@
                 <div class="icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div>
                 <h3 data-i18n="landing.feature4.title">Ce qui est possible actuellement</h3>
                 <p data-i18n="landing.feature4.desc">
-                    -Authentification complète (login, signup, reset password)<br />
-                    -Devis IA (extraction, matching catalogue, PDF, email)<br />
-                    -4 statuts (brouillon/envoyé/accepté/refusé) + édition + duplication<br />
-                    -Catalogue produits (CRUD + import CSV/Excel)<br />
-                    -Carnet clients (CRUD + sélecteur)<br />
-                    -Historique filtrable + recherche<br />
-                    -Dashboard avec graphiques (CA mensuel + répartition statuts)<br />
-                    -Onboarding (checklist + email de bienvenue)<br />
-                    -Stripe (4 plans + quota + portail client)<br />
-                    -Pages légales (mentions, CGU, confidentialité)<br />
+                    -Authentification complète (login, signup, reset password)
+                    -Devis IA (extraction, matching catalogue, PDF, email)
+                    -4 statuts (brouillon/envoyé/accepté/refusé) + édition + duplication
+                    -Catalogue produits (CRUD + import CSV/Excel)
+                    -Carnet clients (CRUD + sélecteur)
+                    -Historique filtrable + recherche
+                    -Dashboard avec graphiques (CA mensuel + répartition statuts)
+                    -Onboarding (checklist + email de bienvenue)
+                    -Stripe (4 plans + quota + portail client)
+                    -Pages légales (mentions, CGU, confidentialité)
                     -Responsive mobile
                 </p>
             </div>
@@ -519,12 +589,12 @@
                 <div class="icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div>
                 <h3 data-i18n="landing.feature5.title">Ce qui est prévu d'ajouter</h3>
                 <p data-i18n="landing.feature5.desc">
-                    -Facturation Peppol<br />
-                    -service multi-langues<br />
-                    -service multi-utilisateurs<br />
-                    -Catalogue services (CRUD + import CSV/Excel)<br />
-                    -Signature électronique<br />
-                    -Prise de devis par photo<br />
+                    -Facturation Peppol
+                    -service multi-langues
+                    -service multi-utilisateurs
+                    -Catalogue services (CRUD + import CSV/Excel)
+                    -Signature électronique
+                    -Prise de devis par photo
                     -Dashboard avec améliorations ()
                 </p>
             </div>
@@ -532,10 +602,10 @@
                 <div class="icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div>
                 <h3 data-i18n="landing.feature6.title">Remerciements</h3>
                 <p data-i18n="landing.feature6.desc">
-                    Je remercie personnellement<br />
-                    toutes les personnes qui auront<br />
-                    de pret ou de loin contribuer au<br />
-                    bon développement de celle ci et pour<br />
+                    Je remercie personnellement
+                    toutes les personnes qui auront
+                    de pret ou de loin contribuer au
+                    bon développement de celle ci et pour
                     vos retours très précieux.
                 </p>
             </div>
@@ -611,6 +681,8 @@
 
     <footer class="landing-footer">
         <div class="footer-links">
+            <a href="/pricing.html" data-i18n="nav.pricing">Tarifs</a>
+            <span class="footer-sep">•</span>
             <a href="/mentions-legales.html" data-i18n="footer.legal">Mentions légales</a>
             <span class="footer-sep">•</span>
             <a href="/cgu.html" data-i18n="footer.cgu">CGU / CGV</a>
@@ -1392,6 +1464,19 @@
 </div>
 
 <div id="toast"></div>
+
+<!-- COOKIE BANNER -->
+<div id="cookieBanner">
+    <div class="cookie-icon">🍪</div>
+    <div class="cookie-content">
+        <strong>Nous utilisons des cookies</strong><br>
+        Uniquement des cookies strictement nécessaires au fonctionnement du service (session, langue). Aucun cookie publicitaire ou de traçage. <a href="/confidentialite.html" target="_blank">En savoir plus</a>.
+        <div class="cookie-actions">
+            <button class="cookie-accept" id="cookieAccept">J'accepte</button>
+            <button class="cookie-refuse" id="cookieRefuse">Refuser</button>
+        </div>
+    </div>
+</div>
 <script>
 // ================================================================
 // 1. UTILS
@@ -1605,15 +1690,27 @@ document.getElementById('resetForm').addEventListener('submit', async (e) => {
 });
 
 (async function startup() {
-    // 1. invitation d'equipe en priorite
+    const params = new URLSearchParams(window.location.search);
+
+    // 1. Invitation d'équipe en priorité
     if (await checkInviteToken()) return;
 
-    // 2. Reset password
-    const params = new URLSearchParams(window.location.search);
+    // 2. Signup direct depuis la page pricing
+    const signupParam = params.get('signup');
+    if (signupParam && !getToken()) {
+        showAuth(true);
+        if (signupParam !== 'free') {
+            localStorage.setItem('pendingPlan', signupParam);
+        }
+        window.history.replaceState({}, document.title, window.location.pathname);
+        return;
+    }
+
+    // 3. Reset password
     const token = params.get('reset');
     if (token) { resetToken = token; showAuth(false,'reset'); return; }
 
-    // 3. retour de stripe chackout
+    // 4. Retour de Stripe Checkout
     const checkout = params.get('checkout');
     if (checkout === 'success' && getToken()) {
         showApp(); showToast('🎉 Abonnement activé !', 'success');
@@ -1621,13 +1718,13 @@ document.getElementById('resetForm').addEventListener('submit', async (e) => {
         setTimeout(() => { loadQuota(); loadSubscriptionBadge(); }, 1000);
         return;
     }
-    if (checkout === 'cancel') { 
-        showApp(); showToast('Paiement annulé.', 'error'); 
-        setTimeout(() => window.history.replaceState({}, document.title, window.location.pathname), 100); 
-        return; 
+    if (checkout === 'cancel') {
+        showApp(); showToast('Paiement annulé.', 'error');
+        setTimeout(() => window.history.replaceState({}, document.title, window.location.pathname), 100);
+        return;
     }
 
-    // 4. normal
+    // 5. Normal
     if (getToken()) showApp(); else showLanding();
 })();
 
@@ -2438,6 +2535,7 @@ function closeAllMenus() {
 document.addEventListener('click', (e) => {
     if (!e.target.closest('.quote-actions')) closeAllMenus();
 });
+
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') closeAllMenus();
 });
@@ -3938,6 +4036,34 @@ async function loadCharts() {
         }
     } catch(e) { console.warn('Erreur chargement graphiques:', e); }
 }
+
+// ================================================================
+// 17. COOKIE BANNER
+// ================================================================
+(function initCookieBanner() {
+    const banner = document.getElementById('cookieBanner');
+    if (!banner) return;
+
+    const consent = localStorage.getItem('devis_cookie_consent');
+    if (!consent) {
+        // Afficher la bannière après un petit délai
+        setTimeout(() => banner.classList.add('show'), 800);
+    }
+
+    document.getElementById('cookieAccept')?.addEventListener('click', () => {
+        localStorage.setItem('devis_cookie_consent', 'accepted');
+        localStorage.setItem('devis_cookie_consent_date', new Date().toISOString());
+        banner.classList.remove('show');
+        showToast('✅ Préférences enregistrées', 'success');
+    });
+
+    document.getElementById('cookieRefuse')?.addEventListener('click', () => {
+        localStorage.setItem('devis_cookie_consent', 'refused');
+        localStorage.setItem('devis_cookie_consent_date', new Date().toISOString());
+        banner.classList.remove('show');
+        showToast('Préférences enregistrées', 'info');
+    });
+})();
 
 // Changement de langue en direct
 document.getElementById('languageSelect')?.addEventListener('change', (e) => {

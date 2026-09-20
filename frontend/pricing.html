@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tarifs — Devis Express Pro</title>
+    <meta name="description" content="Découvrez les tarifs de Devis Express Pro. Commencez gratuitement, passez à un plan supérieur quand vous en avez besoin. À partir de 19€/mois." />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%230b1120'/%3E%3Cpath d='M20 16 h18 l8 8 v24 a4 4 0 0 1 -4 4 h-22 a4 4 0 0 1 -4 -4 v-28 a4 4 0 0 1 4 -4 z' fill='%233b82f6'/%3E%3Cpath d='M38 16 v8 h8' fill='none' stroke='%230b1120' stroke-width='2'/%3E%3Cpath d='M32 28 l-4 10 h5 l-2 8 7 -11 h-5 z' fill='%23f97316'/%3E%3C/svg%3E" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Inter',sans-serif; }
+        body { background:#0b1120; color:#cbd5e1; min-height:100vh; line-height:1.7; }
+        .nav { max-width:1100px; margin:0 auto; padding:24px 24px 0; display:flex; justify-content:space-between; align-items:center; }
+        .nav .brand { font-size:18px; font-weight:700; color:#fff; text-decoration:none; }
+        .nav .brand span { color:#f97316; }
+        .nav a.back { color:#94a3b8; font-size:13px; text-decoration:none; }
+        .nav a.back:hover { color:#f97316; }
+
+        .hero { max-width:900px; margin:60px auto 40px; padding:0 24px; text-align:center; }
+        .hero h1 { font-size:44px; font-weight:800; color:#fff; letter-spacing:-1px; margin-bottom:16px; line-height:1.15; }
+        .hero h1 span { background:linear-gradient(135deg,#f97316,#fb923c); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+        .hero p { font-size:18px; color:#94a3b8; max-width:600px; margin:0 auto; }
+
+        .pricing-grid {
+            display:grid;
+            grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+            gap:24px;
+            max-width:1100px;
+            margin:60px auto 0;
+            padding:0 24px;
+        }
+        .pricing-card {
+            background:#111b2e;
+            border:1px solid #1e2a41;
+            border-radius:24px;
+            padding:32px 28px;
+            position:relative;
+            display:flex;
+            flex-direction:column;
+            transition:0.3s;
+        }
+        .pricing-card:hover { transform:translateY(-4px); border-color:#2a3a55; }
+        .pricing-card.featured {
+            border-color:#f97316;
+            background:linear-gradient(180deg,#161f32,#111b2e);
+            box-shadow:0 20px 60px rgba(249,115,22,0.2);
+            transform:scale(1.02);
+        }
+        .pricing-card.featured:hover { transform:scale(1.02) translateY(-4px); }
+        .popular-badge {
+            position:absolute;
+            top:-14px;
+            left:50%;
+            transform:translateX(-50%);
+            background:#f97316;
+            color:#0b1120;
+            font-size:11px;
+            font-weight:800;
+            padding:6px 16px;
+            border-radius:40px;
+            text-transform:uppercase;
+            letter-spacing:1px;
+        }
+        .plan-name { font-size:14px; font-weight:700; color:#f97316; text-transform:uppercase; letter-spacing:1px; margin-bottom:16px; }
+        .plan-price { font-size:48px; font-weight:800; color:#fff; line-height:1; margin-bottom:8px; }
+        .plan-price .currency { font-size:24px; font-weight:600; vertical-align:top; }
+        .plan-price .period { font-size:15px; font-weight:500; color:#64748b; }
+        .plan-desc { font-size:14px; color:#94a3b8; margin:8px 0 24px; line-height:1.5; min-height:42px; }
+        .plan-features { list-style:none; margin-bottom:28px; flex-grow:1; }
+        .plan-features li {
+            font-size:14px;
+            color:#cbd5e1;
+            padding:8px 0;
+            display:flex;
+            gap:10px;
+            align-items:flex-start;
+        }
+        .plan-features li::before {
+            content:'✓';
+            color:#22c55e;
+            font-weight:700;
+            flex-shrink:0;
+        }
+        .plan-features li.disabled { color:#475569; }
+        .plan-features li.disabled::before { content:'×'; color:#475569; }
+        .plan-cta {
+            width:100%;
+            padding:14px 20px;
+            border-radius:60px;
+            font-weight:700;
+            font-size:15px;
+            cursor:pointer;
+            text-decoration:none;
+            text-align:center;
+            display:block;
+            transition:0.2s;
+            background:#1a253b;
+            color:#e2e8f0;
+            border:1px solid #2a3a55;
+        }
+        .plan-cta:hover { background:#24324b; border-color:#3b82f6; }
+        .pricing-card.featured .plan-cta {
+            background:#f97316;
+            color:#0b1120;
+            border-color:#f97316;
+        }
+        .pricing-card.featured .plan-cta:hover { background:#ea580c; }
+
+        .faq { max-width:800px; margin:80px auto 0; padding:0 24px; }
+        .faq h2 { font-size:28px; font-weight:800; color:#fff; text-align:center; margin-bottom:40px; letter-spacing:-0.5px; }
+        .faq-item {
+            background:#111b2e;
+            border:1px solid #1e2a41;
+            border-radius:16px;
+            padding:20px 24px;
+            margin-bottom:12px;
+        }
+        .faq-item h3 { color:#fff; font-size:16px; font-weight:700; margin-bottom:8px; }
+        .faq-item p { color:#94a3b8; font-size:14px; line-height:1.6; }
+
+        .cta-bottom {
+            max-width:800px;
+            margin:80px auto;
+            padding:60px 40px;
+            background:linear-gradient(135deg,#161f32,#0f1829);
+            border:1px solid #1e2a41;
+            border-radius:24px;
+            text-align:center;
+        }
+        .cta-bottom h2 { font-size:32px; font-weight:800; color:#fff; margin-bottom:16px; letter-spacing:-0.5px; }
+        .cta-bottom p { color:#94a3b8; font-size:16px; margin-bottom:28px; }
+        .cta-bottom a {
+            display:inline-block;
+            background:#f97316;
+            color:#0b1120;
+            padding:16px 36px;
+            border-radius:60px;
+            font-weight:700;
+            font-size:16px;
+            text-decoration:none;
+            box-shadow:0 12px 32px rgba(249,115,22,0.3);
+            transition:0.2s;
+        }
+        .cta-bottom a:hover { background:#ea580c; transform:translateY(-2px); }
+
+        .footer { border-top:1px solid #1e2a41; text-align:center; padding:30px 24px; color:#475569; font-size:13px; margin-top:60px; }
+        .footer a { color:#94a3b8; text-decoration:none; margin:0 8px; }
+        .footer a:hover { color:#f97316; }
+
+        @media (max-width:768px) {
+            .hero h1 { font-size:30px; }
+            .pricing-card.featured { transform:scale(1); }
+            .pricing-card.featured:hover { transform:translateY(-4px); }
+            .cta-bottom { padding:40px 24px; }
+            .cta-bottom h2 { font-size:24px; }
+        }
+    </style>
+</head>
+<body>
+    <nav class="nav">
+        <a href="/" class="brand">Devis <span>Express</span> Pro</a>
+        <a href="/" class="back">← Retour à l'accueil</a>
+    </nav>
+
+    <section class="hero">
+        <h1>Des tarifs <span>simples</span> et transparents</h1>
+        <p>Commencez gratuitement. Passez à un plan supérieur quand votre activité le justifie.</p>
+    </section>
+
+    <div class="pricing-grid">
+        <!-- Plan Free -->
+        <div class="pricing-card">
+            <div class="plan-name">Free</div>
+            <div class="plan-price">0<span class="currency">€</span><span class="period">/mois</span></div>
+            <div class="plan-desc">Pour tester l'outil et découvrir la puissance de l'IA.</div>
+            <ul class="plan-features">
+                <li>3 devis par mois</li>
+                <li>Catalogue produits</li>
+                <li>Carnet clients</li>
+                <li>PDF avec votre logo</li>
+                <li>Historique complet</li>
+            </ul>
+            <a href="/?signup=free" class="plan-cta">Commencer gratuitement</a>
+        </div>
+
+        <!-- Plan Starter -->
+        <div class="pricing-card featured">
+            <div class="popular-badge">Populaire</div>
+            <div class="plan-name">Starter</div>
+            <div class="plan-price">19<span class="currency">€</span><span class="period">/mois</span></div>
+            <div class="plan-desc">Idéal pour les indépendants et artisans avec une activité régulière.</div>
+            <ul class="plan-features">
+                <li>50 devis par mois</li>
+                <li>Catalogue produits</li>
+                <li>Carnet clients</li>
+                <li>Envoi par email</li>
+                <li>TVA (franchise/assujetti)</li>
+                <li>Signature électronique</li>
+                <li>Factures</li>
+                <li>Multi-langue FR/NL/EN</li>
+            </ul>
+            <a href="/?signup=starter" class="plan-cta">Choisir Starter</a>
+        </div>
+
+        <!-- Plan Pro -->
+        <div class="pricing-card">
+            <div class="plan-name">Pro</div>
+            <div class="plan-price">49<span class="currency">€</span><span class="period">/mois</span></div>
+            <div class="plan-desc">Pour les TPE/PME avec une activité commerciale soutenue.</div>
+            <ul class="plan-features">
+                <li>200 devis par mois</li>
+                <li>Tout le plan Starter</li>
+                <li>3 utilisateurs</li>
+                <li>Statistiques avancées</li>
+                <li>Support prioritaire</li>
+                <li>Dashboard complet</li>
+            </ul>
+            <a href="/?signup=pro" class="plan-cta">Choisir Pro</a>
+        </div>
+
+        <!-- Plan Entreprise -->
+        <div class="pricing-card">
+            <div class="plan-name">Entreprise</div>
+            <div class="plan-price">99<span class="currency">€</span><span class="period">/mois</span></div>
+            <div class="plan-desc">Pour les équipes commerciales et les besoins spécifiques.</div>
+            <ul class="plan-features">
+                <li>Devis illimités</li>
+                <li>Tout le plan Pro</li>
+                <li>10 utilisateurs</li>
+                <li>Envoi via Peppol</li>
+                <li>API (bientôt)</li>
+                <li>Support dédié</li>
+            </ul>
+            <a href="/?signup=entreprise" class="plan-cta">Choisir Entreprise</a>
+        </div>
+    </div>
+
+    <section class="faq">
+        <h2>Questions fréquentes</h2>
+
+        <div class="faq-item">
+            <h3>Puis-je changer de plan à tout moment ?</h3>
+            <p>Oui. Vous pouvez passer à un plan supérieur ou inférieur à tout moment depuis votre espace client. Le changement est immédiat et la facturation est calculée au prorata.</p>
+        </div>
+
+        <div class="faq-item">
+            <h3>Y a-t-il un engagement de durée ?</h3>
+            <p>Non. Tous nos plans sont sans engagement. Vous pouvez annuler à tout moment en un clic, sans frais supplémentaires.</p>
+        </div>
+
+        <div class="faq-item">
+            <h3>Quels moyens de paiement acceptez-vous ?</h3>
+            <p>Nous acceptons les cartes bancaires (Visa, Mastercard) via Stripe. Le paiement est 100% sécurisé et vos données bancaires ne sont jamais stockées sur nos serveurs.</p>
+        </div>
+
+        <div class="faq-item">
+            <h3>Que se passe-t-il si je dépasse mon quota de devis ?</h3>
+            <p>Vous ne pourrez plus générer de nouveaux devis jusqu'au mois suivant. Nous vous prévenons par email avant d'atteindre votre limite. Vous pouvez à tout moment passer à un plan supérieur.</p>
+        </div>
+
+        <div class="faq-item">
+            <h3>Mes données sont-elles sécurisées ?</h3>
+            <p>Absolument. Toutes vos données sont isolées par compte utilisateur, chiffrées en transit (HTTPS) et hébergées en Europe. Nous sommes conformes au RGPD.</p>
+        </div>
+
+        <div class="faq-item">
+            <h3>Puis-je utiliser Devis Express Pro en néerlandais ou en anglais ?</h3>
+            <p>Oui. L'interface est disponible en français, néerlandais et anglais. Le PDF du devis s'adapte automatiquement à la langue choisie.</p>
+        </div>
+
+        <div class="faq-item">
+            <h3>Proposez-vous un essai gratuit ?</h3>
+            <p>Le plan Free est gratuit à vie et vous permet de générer 3 devis par mois. C'est le meilleur moyen de tester l'outil avant de vous engager.</p>
+        </div>
+
+        <div class="faq-item">
+            <h3>Que se passe-t-il si j'annule mon abonnement ?</h3>
+            <p>Vous conservez l'accès jusqu'à la fin de la période payée, puis vous êtes basculé automatiquement sur le plan Free. Vos données sont conservées 90 jours.</p>
+        </div>
+    </section>
+
+    <div class="cta-bottom">
+        <h2>Prêt à gagner 3 heures par jour ?</h2>
+        <p>Créez votre compte gratuit en 30 secondes, sans carte bancaire.</p>
+        <a href="/?signup=free">Commencer gratuitement</a>
+    </div>
+
+    <footer class="footer">
+        <div style="margin-bottom:12px;">
+            <a href="/">Accueil</a> •
+            <a href="/pricing.html">Tarifs</a> •
+            <a href="/mentions-legales.html">Mentions légales</a> •
+            <a href="/cgu.html">CGU / CGV</a> •
+            <a href="/confidentialite.html">Confidentialité</a>
+        </div>
+        © 2026 Devis Express Pro — Tous droits réservés
+    </footer>
+</body>
+</html>

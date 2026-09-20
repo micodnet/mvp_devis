@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    <url>
+        <loc>https://mvp-devis.onrender.com/</loc>
+        <priority>1.0</priority>
+        <changefreq>weekly</changefreq>
+    </url>
+    <url>
+        <loc>https://mvp-devis.onrender.com/mentions-legales.html</loc>
+        <priority>0.3</priority>
+    </url>
+    <url>
+        <loc>https://mvp-devis.onrender.com/cgu.html</loc>
+        <priority>0.3</priority>
+    </url>
+    <url>
+        <loc>https://mvp-devis.onrender.com/confidentialite.html</loc>
+        <priority>0.3</priority>
+    </url>
+</urlset>

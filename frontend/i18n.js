@@ -4,6 +4,7 @@
 const TRANSLATIONS = {
     fr: {
         // Navigation
+        "nav.pricing": "Tarifs",
         "nav.login": "Se connecter",
         "nav.signup": "Créer un compte",
         "nav.logout": "Déconnexion",
@@ -401,6 +402,7 @@ const TRANSLATIONS = {
     nl: {
         // Navigation
         "nav.login": "Inloggen",
+        "nav.login": "Inloggen",
         "nav.signup": "Account aanmaken",
         "nav.logout": "Uitloggen",
         "nav.pricing": "Prijzen",
@@ -767,6 +769,7 @@ const TRANSLATIONS = {
 
     en: {
         // Navigation
+        "nav.pricing": "Pricing",
         "nav.login": "Log in",
         "nav.signup": "Sign up",
         "nav.logout": "Logout",
