@@ -23,6 +23,7 @@ const adminRoutes = require('./routes/admin');
 const teamRoutes = require('./routes/team');
 const invoicesRoutes = require('./routes/invoices');
 const servicesRoutes = require('./routes/services');
+const suppliersRoutes = require('./routes/suppliers');
 
 // ⚙️ INTERRUPTEUR DE QUOTA — Mets à `false` pour désactiver les limites pendant les tests
 const ENABLE_QUOTA_LIMITS = false;
@@ -50,6 +51,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/team', teamRoutes);
 app.use('/api/invoices', invoicesRoutes);
 app.use('/api/services', servicesRoutes);
+app.use('/api/suppliers', suppliersRoutes);
 
 // Multer
 const storage = multer.diskStorage({

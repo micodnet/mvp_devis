@@ -778,6 +778,7 @@
         <button class="tab-btn" data-tab="tab-clients" data-i18n="app.tab.clients">👥 Clients</button>
         <button class="tab-btn" data-tab="tab-catalogue" data-i18n="app.tab.products">📦 Catalogue</button>
         <button class="tab-btn" data-tab="tab-services" data-i18n="app.tab.services">🔧 Services</button>
+        <button class="tab-btn" data-tab="tab-suppliers" data-i18n="app.tab.suppliers">🚚 Fournisseurs</button>
         <button class="tab-btn" data-tab="tab-history" data-i18n="app.tab.history">📜 Historique</button>
         <button class="tab-btn" data-tab="tab-invoices" data-i18n="app.tab.invoices">🧾 Factures</button>
         <button class="tab-btn" data-tab="tab-dashboard" data-i18n="app.tab.dashboard">📊 Dashboard</button>
@@ -898,6 +899,20 @@
             </div>
             <input type="text" id="servicesSearch" class="catalog-search" placeholder="🔍 Rechercher un service..." data-i18n-placeholder="services.search" />
             <div id="servicesContent"><p style="color:#64748b; text-align:center; padding:40px;">Chargement...</p></div>
+        </div>
+    </div>
+
+    <!-- FOURNISSEURS -->
+    <div id="tab-suppliers" class="tab-content">
+        <div class="card">
+            <div class="catalog-header">
+                <h2 data-i18n="suppliers.title">🚚 Mes fournisseurs</h2>
+                <div class="catalog-actions">
+                    <button class="btn-primary-sm" id="addSupplierBtn" data-i18n="suppliers.new">+ Nouveau fournisseur</button>
+                </div>
+            </div>
+            <input type="text" id="suppliersSearch" class="catalog-search" placeholder="🔍 Rechercher un fournisseur..." data-i18n-placeholder="suppliers.search" />
+            <div id="suppliersContent"><p style="color:#64748b; text-align:center; padding:40px;">Chargement...</p></div>
         </div>
     </div>
 
@@ -1242,6 +1257,51 @@
         <div class="modal-actions">
             <button class="btn-cancel" id="cancelServiceBtn" data-i18n="btn.cancel">Annuler</button>
             <button class="btn-confirm" id="saveServiceBtn" data-i18n="btn.save">Enregistrer</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="supplierModal">
+    <div class="modal modal-wide">
+        <h3 id="supplierModalTitle" data-i18n="modal.supplier.add">Nouveau fournisseur</h3>
+        <input type="hidden" id="supplierId" />
+        
+        <div class="form-row">
+            <div class="form-group"><label data-i18n="modal.supplier.name">Nom / Raison sociale *</label><input type="text" id="supplierName" required /></div>
+            <div class="form-group"><label data-i18n="modal.supplier.category">Catégorie</label><input type="text" id="supplierCategory" placeholder="Matériaux, Électricité..." /></div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group"><label data-i18n="modal.supplier.contact">Personne de contact</label><input type="text" id="supplierContact" /></div>
+            <div class="form-group"><label data-i18n="modal.supplier.vat">N° TVA</label><input type="text" id="supplierVat" /></div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group"><label data-i18n="modal.supplier.email">Email</label><input type="email" id="supplierEmail" /></div>
+            <div class="form-group"><label data-i18n="modal.supplier.phone">Téléphone</label><input type="text" id="supplierPhone" /></div>
+        </div>
+        
+        <div class="form-group"><label data-i18n="modal.supplier.address">Adresse</label><input type="text" id="supplierAddress" /></div>
+        
+        <div class="form-group"><label data-i18n="modal.supplier.website">Site web</label><input type="text" id="supplierWebsite" placeholder="https://..." /></div>
+        
+        <div class="card-title" style="margin-top:16px;font-size:15px;" data-i18n="modal.supplier.banking">Coordonnées bancaires</div>
+        <div class="form-row">
+            <div class="form-group"><label data-i18n="modal.supplier.iban">IBAN</label><input type="text" id="supplierIban" placeholder="BE68 5390 0754 7034" /></div>
+            <div class="form-group"><label data-i18n="modal.supplier.bic">BIC</label><input type="text" id="supplierBic" placeholder="GEBABEBB" /></div>
+        </div>
+        
+        <div class="card-title" style="margin-top:16px;font-size:15px;" data-i18n="modal.supplier.logistics">Logistique</div>
+        <div class="form-row">
+            <div class="form-group"><label data-i18n="modal.supplier.delivery">Délai de livraison (jours)</label><input type="number" id="supplierDeliveryDays" min="0" max="120" value="7" /></div>
+            <div class="form-group"><label data-i18n="modal.supplier.payment">Délai de paiement (jours)</label><input type="number" id="supplierPaymentTerms" min="0" max="120" value="30" /></div>
+        </div>
+        
+        <div class="form-group"><label data-i18n="modal.supplier.notes">Notes internes</label><input type="text" id="supplierNotes" placeholder="Contact préféré, particularités..." /></div>
+        
+        <div class="modal-actions">
+            <button class="btn-cancel" id="cancelSupplierBtn" data-i18n="btn.cancel">Annuler</button>
+            <button class="btn-confirm" id="saveSupplierBtn" data-i18n="btn.save">Enregistrer</button>
         </div>
     </div>
 </div>
@@ -1823,6 +1883,7 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
         if (btn.dataset.tab === 'tab-clients') loadClients();
         if (btn.dataset.tab === 'tab-team') loadTeam();
         if (btn.dataset.tab === 'tab-invoices') loadInvoices();
+        if (btn.dataset.tab === 'tab-suppliers') loadSuppliers();
     });
 });
 
@@ -2356,6 +2417,148 @@ confirmImportServicesBtn?.addEventListener('click', async () => {
         confirmImportServicesBtn.textContent = 'Importer';
     }
 });
+
+// ================================================================
+// 8.95. FOURNISSEURS
+// ================================================================
+let suppliersList = [];
+
+async function loadSuppliers() {
+    const content = document.getElementById('suppliersContent');
+    if (!content) return;
+    content.innerHTML = '<p style="color:#64748b; text-align:center; padding:40px;">Chargement...</p>';
+    try {
+        const res = await apiFetch('/api/suppliers');
+        suppliersList = await res.json();
+        renderSuppliers();
+    } catch(err) {
+        content.innerHTML = '<p style="color:#f87171; text-align:center; padding:40px;">Erreur.</p>';
+    }
+}
+
+function renderSuppliers() {
+    const content = document.getElementById('suppliersContent');
+    const search = (document.getElementById('suppliersSearch').value || '').toLowerCase().trim();
+    let filtered = suppliersList;
+    if (search) {
+        filtered = suppliersList.filter(s =>
+            (s.name || '').toLowerCase().includes(search) ||
+            (s.email || '').toLowerCase().includes(search) ||
+            (s.contactName || '').toLowerCase().includes(search) ||
+            (s.category || '').toLowerCase().includes(search)
+        );
+    }
+    if (suppliersList.length === 0) {
+        content.innerHTML = `
+            <div class="catalog-empty">
+                <div class="big-icon">🚚</div><h3>Votre carnet fournisseurs est vide</h3>
+                <p>Ajoutez vos fournisseurs pour gérer vos commandes et votre stock.</p>
+                <div style="margin-top:20px;"><button class="btn-primary-sm" onclick="document.getElementById('addSupplierBtn').click()">+ Nouveau fournisseur</button></div>
+            </div>`;
+        return;
+    }
+    if (filtered.length === 0) { content.innerHTML = `<p style="color:#64748b; text-align:center; padding:40px;">Aucun résultat.</p>`; return; }
+
+    let html = `<table class="catalog-table"><thead><tr>
+        <th>Nom</th>
+        <th>Contact</th>
+        <th>Email</th>
+        <th style="width:140px;">Catégorie</th>
+        <th style="width:100px;text-align:center;">Livraison</th>
+        <th style="width:180px;text-align:right;">Actions</th>
+    </tr></thead><tbody>`;
+    filtered.forEach(s => {
+        html += `<tr>
+            <td><strong>${escapeHtml(s.name)}</strong></td>
+            <td>${s.contactName ? escapeHtml(s.contactName) : (s.phone ? escapeHtml(s.phone) : '<span style="color:#475569;">—</span>')}</td>
+            <td>${s.email ? escapeHtml(s.email) : '<span style="color:#475569;">—</span>'}</td>
+            <td>${s.category ? escapeHtml(s.category) : '<span style="color:#475569;">—</span>'}</td>
+            <td style="text-align:center;color:#94a3b8;font-size:12px;">${s.deliveryDays || 7}j</td>
+            <td><div class="row-actions">
+                <button onclick="editSupplier(${s.id})">Modifier</button>
+                <button class="delete" onclick="deleteSupplier(${s.id})">Suppr.</button>
+            </div></td>
+        </tr>`;
+    });
+    html += '</tbody></table>';
+    html += `<p style="color:#64748b;font-size:13px;margin-top:16px;text-align:right;">${filtered.length} fournisseur${filtered.length>1?'s':''}</p>`;
+    content.innerHTML = html;
+}
+
+document.getElementById('suppliersSearch')?.addEventListener('input', renderSuppliers);
+
+const supplierModal = document.getElementById('supplierModal');
+function openSupplierModal(mode = 'add', supplier = null) {
+    document.getElementById('supplierModalTitle').textContent = mode === 'add' ? 'Nouveau fournisseur' : 'Modifier le fournisseur';
+    document.getElementById('supplierId').value = supplier ? supplier.id : '';
+    document.getElementById('supplierName').value = supplier ? supplier.name : '';
+    document.getElementById('supplierCategory').value = supplier ? (supplier.category || '') : '';
+    document.getElementById('supplierContact').value = supplier ? (supplier.contactName || '') : '';
+    document.getElementById('supplierVat').value = supplier ? (supplier.vatNumber || '') : '';
+    document.getElementById('supplierEmail').value = supplier ? (supplier.email || '') : '';
+    document.getElementById('supplierPhone').value = supplier ? (supplier.phone || '') : '';
+    document.getElementById('supplierAddress').value = supplier ? (supplier.address || '') : '';
+    document.getElementById('supplierWebsite').value = supplier ? (supplier.website || '') : '';
+    document.getElementById('supplierIban').value = supplier ? (supplier.iban || '') : '';
+    document.getElementById('supplierBic').value = supplier ? (supplier.bic || '') : '';
+    document.getElementById('supplierDeliveryDays').value = supplier ? (supplier.deliveryDays || 7) : 7;
+    document.getElementById('supplierPaymentTerms').value = supplier ? (supplier.paymentTerms || 30) : 30;
+    document.getElementById('supplierNotes').value = supplier ? (supplier.notes || '') : '';
+    supplierModal.classList.add('show');
+}
+function closeSupplierModal() { supplierModal.classList.remove('show'); }
+
+document.getElementById('addSupplierBtn')?.addEventListener('click', () => openSupplierModal('add'));
+document.getElementById('cancelSupplierBtn')?.addEventListener('click', closeSupplierModal);
+supplierModal?.addEventListener('click', (e) => { if (e.target === supplierModal) closeSupplierModal(); });
+
+document.getElementById('saveSupplierBtn')?.addEventListener('click', async () => {
+    const id = document.getElementById('supplierId').value;
+    const data = {
+        name: document.getElementById('supplierName').value.trim(),
+        category: document.getElementById('supplierCategory').value.trim(),
+        contactName: document.getElementById('supplierContact').value.trim(),
+        vatNumber: document.getElementById('supplierVat').value.trim(),
+        email: document.getElementById('supplierEmail').value.trim(),
+        phone: document.getElementById('supplierPhone').value.trim(),
+        address: document.getElementById('supplierAddress').value.trim(),
+        website: document.getElementById('supplierWebsite').value.trim(),
+        iban: document.getElementById('supplierIban').value.trim(),
+        bic: document.getElementById('supplierBic').value.trim(),
+        deliveryDays: parseInt(document.getElementById('supplierDeliveryDays').value) || 7,
+        paymentTerms: parseInt(document.getElementById('supplierPaymentTerms').value) || 30,
+        notes: document.getElementById('supplierNotes').value.trim()
+    };
+    if (!data.name) { showToast('Nom requis.', 'error'); return; }
+
+    const btn = document.getElementById('saveSupplierBtn');
+    btn.disabled = true; btn.textContent = 'Enregistrement...';
+    try {
+        const url = id ? `/api/suppliers/${id}` : '/api/suppliers';
+        const method = id ? 'PUT' : 'POST';
+        const res = await apiFetch(url, { method, headers:{'Content-Type':'application/json'}, body: JSON.stringify(data) });
+        const result = await res.json();
+        if (!res.ok) throw new Error(result.error || 'Erreur');
+        showToast(id ? '✅ Fournisseur modifié !' : '✅ Fournisseur créé !', 'success');
+        closeSupplierModal();
+        loadSuppliers();
+    } catch (err) { showToast('Erreur : ' + err.message, 'error'); }
+    finally { btn.disabled = false; btn.textContent = 'Enregistrer'; }
+});
+
+window.editSupplier = function(id) {
+    const s = suppliersList.find(x => x.id === id);
+    if (s) openSupplierModal('edit', s);
+};
+window.deleteSupplier = async function(id) {
+    if (!confirm('Supprimer ce fournisseur ?')) return;
+    try {
+        const res = await apiFetch(`/api/suppliers/${id}`, { method: 'DELETE' });
+        if (!res.ok) throw new Error('Erreur');
+        showToast('🗑 Fournisseur supprimé.', 'success');
+        loadSuppliers();
+    } catch (err) { showToast('Erreur : ' + err.message, 'error'); }
+};
 
 // ================================================================
 // 9. CATALOGUE
