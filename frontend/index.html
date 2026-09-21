@@ -777,6 +777,7 @@
         <button class="tab-btn active" data-tab="tab-devis" data-i18n="app.tab.quotes">📄 Devis</button>
         <button class="tab-btn" data-tab="tab-clients" data-i18n="app.tab.clients">👥 Clients</button>
         <button class="tab-btn" data-tab="tab-catalogue" data-i18n="app.tab.products">📦 Catalogue</button>
+        <button class="tab-btn" data-tab="tab-services" data-i18n="app.tab.services">🔧 Services</button>
         <button class="tab-btn" data-tab="tab-history" data-i18n="app.tab.history">📜 Historique</button>
         <button class="tab-btn" data-tab="tab-invoices" data-i18n="app.tab.invoices">🧾 Factures</button>
         <button class="tab-btn" data-tab="tab-dashboard" data-i18n="app.tab.dashboard">📊 Dashboard</button>
@@ -882,6 +883,21 @@
             </div>
             <input type="text" id="catalogSearch" class="catalog-search" placeholder="🔍 Rechercher un produit..." data-i18n-placeholder="catalog.search" />
             <div id="catalogContent"><p style="color:#64748b; text-align:center; padding:40px;">Chargement...</p></div>
+        </div>
+    </div>
+
+    <!-- SERVICES -->
+    <div id="tab-services" class="tab-content">
+        <div class="card">
+            <div class="catalog-header">
+                <h2 data-i18n="services.title">🔧 Mes services</h2>
+                <div class="catalog-actions">
+                    <button class="btn-secondary" id="importServicesBtn" data-i18n="catalog.import">📥 Importer</button>
+                    <button class="btn-primary-sm" id="addServiceBtn" data-i18n="catalog.add">+ Ajouter</button>
+                </div>
+            </div>
+            <input type="text" id="servicesSearch" class="catalog-search" placeholder="🔍 Rechercher un service..." data-i18n-placeholder="services.search" />
+            <div id="servicesContent"><p style="color:#64748b; text-align:center; padding:40px;">Chargement...</p></div>
         </div>
     </div>
 
@@ -1195,6 +1211,55 @@
         <div class="modal-actions">
             <button class="btn-cancel" id="cancelProductBtn" data-i18n="btn.cancel">Annuler</button>
             <button class="btn-confirm" id="saveProductBtn" data-i18n="btn.save">Enregistrer</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="serviceModal">
+    <div class="modal">
+        <h3 id="serviceModalTitle" data-i18n="modal.service.add">Ajouter un service</h3>
+        <input type="hidden" id="serviceId" />
+        <div class="form-row">
+            <div class="form-group"><label data-i18n="modal.product.ref">Référence</label><input type="text" id="serviceRef" placeholder="SER-001" /></div>
+            <div class="form-group"><label data-i18n="modal.product.unit">Unité</label><input type="text" id="serviceUnit" placeholder="h, m², forfait" value="forfait" /></div>
+        </div>
+        <div class="form-group"><label data-i18n="modal.product.name">Nom *</label><input type="text" id="serviceName" required /></div>
+        <div class="form-group"><label data-i18n="modal.product.desc">Description</label><input type="text" id="serviceDescription" /></div>
+        <div class="form-row">
+            <div class="form-group"><label data-i18n="modal.product.price">Prix HT (€) *</label><input type="number" id="servicePrice" step="0.01" min="0" required /></div>
+            <div class="form-group"><label>Prix de revient (€)</label><input type="number" id="serviceCostPrice" step="0.01" min="0" placeholder="Optionnel" /></div>
+        </div>
+        <div class="form-row">
+            <div class="form-group"><label data-i18n="modal.product.cat">Catégorie</label><input type="text" id="serviceCategory" placeholder="Main d'œuvre, Déplacement..." /></div>
+            <div class="form-group">
+                <label style="display:block;color:#94a3b8;font-weight:500;font-size:13px;margin-bottom:4px;">Type</label>
+                <select id="serviceIsLabor">
+                    <option value="false">Prestation / Service</option>
+                    <option value="true">Main d'œuvre</option>
+                </select>
+            </div>
+        </div>
+        <div class="modal-actions">
+            <button class="btn-cancel" id="cancelServiceBtn" data-i18n="btn.cancel">Annuler</button>
+            <button class="btn-confirm" id="saveServiceBtn" data-i18n="btn.save">Enregistrer</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="importServicesModal">
+    <div class="modal">
+        <h3 data-i18n="modal.import.title">📥 Importer un catalogue</h3>
+        <p style="color:#94a3b8;font-size:13px;margin-bottom:18px;line-height:1.6;">Déposez un fichier <strong>CSV</strong> ou <strong>Excel</strong>. Colonnes reconnues : nom, référence, prix, unité, catégorie, description.</p>
+        <div class="drop-zone" id="importServicesDropZone" style="padding:24px;">
+            <div class="icon" style="font-size:32px;">📁</div>
+            <p data-i18n="modal.import.drop">Déposez votre fichier ici</p>
+            <span data-i18n="modal.import.or">ou cliquez pour parcourir</span>
+            <input type="file" id="importServicesFileInput" style="display:none;" accept=".csv,.xlsx,.xls" />
+            <div id="importServicesFileName" style="margin-top:8px;color:#3b82f6;font-weight:500;"></div>
+        </div>
+        <div class="modal-actions">
+            <button class="btn-cancel" id="cancelImportServicesBtn" data-i18n="btn.cancel">Annuler</button>
+            <button class="btn-confirm" id="confirmImportServicesBtn" disabled data-i18n="btn.import">Importer</button>
         </div>
     </div>
 </div>
@@ -1754,6 +1819,7 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
         if (btn.dataset.tab === 'tab-dashboard') loadDashboard();
         if (btn.dataset.tab === 'tab-subscription') loadSubscription();
         if (btn.dataset.tab === 'tab-catalogue') loadCatalog();
+        if (btn.dataset.tab === 'tab-services') loadServices();
         if (btn.dataset.tab === 'tab-clients') loadClients();
         if (btn.dataset.tab === 'tab-team') loadTeam();
         if (btn.dataset.tab === 'tab-invoices') loadInvoices();
@@ -2098,6 +2164,198 @@ window.deleteClient = async function(id) {
         await loadClients();
     } catch (err) { showToast('Erreur : ' + err.message, 'error'); }
 };
+
+// ================================================================
+// 8.9. SERVICES
+// ================================================================
+let servicesList = [];
+
+async function loadServices() {
+    const content = document.getElementById('servicesContent');
+    if (!content) return;
+    content.innerHTML = '<p style="color:#64748b; text-align:center; padding:40px;">Chargement...</p>';
+    try {
+        const res = await apiFetch('/api/services');
+        servicesList = await res.json();
+        renderServices();
+    } catch(err) {
+        content.innerHTML = '<p style="color:#f87171; text-align:center; padding:40px;">Erreur.</p>';
+    }
+}
+
+function renderServices() {
+    const content = document.getElementById('servicesContent');
+    const search = (document.getElementById('servicesSearch').value || '').toLowerCase().trim();
+    let filtered = servicesList;
+    if (search) {
+        filtered = servicesList.filter(s =>
+            (s.name || '').toLowerCase().includes(search) ||
+            (s.ref || '').toLowerCase().includes(search) ||
+            (s.category || '').toLowerCase().includes(search)
+        );
+    }
+    if (servicesList.length === 0) {
+        content.innerHTML = `
+            <div class="catalog-empty">
+                <div class="big-icon">🔧</div><h3>Votre liste de services est vide</h3>
+                <p>Ajoutez vos prestations et frais de main d'œuvre pour les utiliser dans vos devis.</p>
+                <div style="margin-top:20px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+                    <button class="btn-secondary" onclick="document.getElementById('importServicesBtn').click()">📥 Importer</button>
+                    <button class="btn-primary-sm" onclick="document.getElementById('addServiceBtn').click()">+ Ajouter</button>
+                </div>
+            </div>`;
+        return;
+    }
+    if (filtered.length === 0) { content.innerHTML = `<p style="color:#64748b; text-align:center; padding:40px;">Aucun résultat.</p>`; return; }
+
+    let html = `<table class="catalog-table"><thead><tr>
+        <th style="width:120px;">Réf.</th>
+        <th>Nom</th>
+        <th style="width:120px;">Catégorie</th>
+        <th style="width:100px;text-align:right;">Prix HT</th>
+        <th style="width:80px;text-align:center;">Unité</th>
+        <th style="width:100px;text-align:center;">Type</th>
+        <th style="width:180px;text-align:right;">Actions</th>
+    </tr></thead><tbody>`;
+    filtered.forEach(s => {
+        html += `<tr>
+            <td>${s.ref ? `<span class="product-ref">${escapeHtml(s.ref)}</span>` : '<span style="color:#475569;">—</span>'}</td>
+            <td><strong>${escapeHtml(s.name)}</strong>${s.description ? `<br><span style="color:#64748b;font-size:12px;">${escapeHtml(s.description)}</span>` : ''}</td>
+            <td>${s.category ? escapeHtml(s.category) : '<span style="color:#475569;">—</span>'}</td>
+            <td style="text-align:right;" class="product-price">${s.unitPrice.toFixed(2)} €</td>
+            <td style="text-align:center;color:#94a3b8;">${escapeHtml(s.unit || 'forfait')}</td>
+            <td style="text-align:center;">${s.isLabor ? '<span style="font-size:10px;font-weight:700;padding:3px 10px;border-radius:40px;background:rgba(249,115,22,0.15);color:#f97316;border:1px solid rgba(249,115,22,0.3);">MAIN D\'ŒUVRE</span>' : '<span style="color:#64748b;font-size:12px;">Prestation</span>'}</td>
+            <td><div class="row-actions">
+                <button onclick="editService(${s.id})">Modifier</button>
+                <button class="delete" onclick="deleteService(${s.id})">Suppr.</button>
+            </div></td>
+        </tr>`;
+    });
+    html += '</tbody></table>';
+    html += `<p style="color:#64748b;font-size:13px;margin-top:16px;text-align:right;">${filtered.length} service${filtered.length>1?'s':''}</p>`;
+    content.innerHTML = html;
+}
+
+document.getElementById('servicesSearch')?.addEventListener('input', renderServices);
+
+const serviceModal = document.getElementById('serviceModal');
+function openServiceModal(mode = 'add', service = null) {
+    document.getElementById('serviceModalTitle').textContent = mode === 'add' ? 'Ajouter un service' : 'Modifier le service';
+    document.getElementById('serviceId').value = service ? service.id : '';
+    document.getElementById('serviceRef').value = service ? (service.ref || '') : '';
+    document.getElementById('serviceName').value = service ? service.name : '';
+    document.getElementById('serviceDescription').value = service ? (service.description || '') : '';
+    document.getElementById('serviceUnit').value = service ? (service.unit || 'forfait') : 'forfait';
+    document.getElementById('servicePrice').value = service ? service.unitPrice : '';
+    document.getElementById('serviceCostPrice').value = service ? (service.costPrice || '') : '';
+    document.getElementById('serviceCategory').value = service ? (service.category || '') : '';
+    document.getElementById('serviceIsLabor').value = service && service.isLabor ? 'true' : 'false';
+    serviceModal.classList.add('show');
+}
+function closeServiceModal() { serviceModal.classList.remove('show'); }
+
+document.getElementById('addServiceBtn')?.addEventListener('click', () => openServiceModal('add'));
+document.getElementById('cancelServiceBtn')?.addEventListener('click', closeServiceModal);
+serviceModal?.addEventListener('click', (e) => { if (e.target === serviceModal) closeServiceModal(); });
+
+document.getElementById('saveServiceBtn')?.addEventListener('click', async () => {
+    const id = document.getElementById('serviceId').value;
+    const data = {
+        ref: document.getElementById('serviceRef').value.trim(),
+        name: document.getElementById('serviceName').value.trim(),
+        description: document.getElementById('serviceDescription').value.trim(),
+        unit: document.getElementById('serviceUnit').value.trim() || 'forfait',
+        unitPrice: parseFloat(document.getElementById('servicePrice').value),
+        costPrice: parseFloat(document.getElementById('serviceCostPrice').value) || 0,
+        category: document.getElementById('serviceCategory').value.trim(),
+        isLabor: document.getElementById('serviceIsLabor').value === 'true'
+    };
+    if (!data.name) { showToast('Nom requis.', 'error'); return; }
+    if (isNaN(data.unitPrice) || data.unitPrice < 0) { showToast('Prix invalide.', 'error'); return; }
+
+    const btn = document.getElementById('saveServiceBtn');
+    btn.disabled = true; btn.textContent = 'Enregistrement...';
+    try {
+        const url = id ? `/api/services/${id}` : '/api/services';
+        const method = id ? 'PUT' : 'POST';
+        const res = await apiFetch(url, { method, headers:{'Content-Type':'application/json'}, body: JSON.stringify(data) });
+        const result = await res.json();
+        if (!res.ok) throw new Error(result.error || 'Erreur');
+        showToast(id ? '✅ Service modifié !' : '✅ Service ajouté !', 'success');
+        closeServiceModal();
+        loadServices();
+    } catch (err) { showToast('Erreur : ' + err.message, 'error'); }
+    finally { btn.disabled = false; btn.textContent = 'Enregistrer'; }
+});
+
+window.editService = function(id) {
+    const s = servicesList.find(x => x.id === id);
+    if (s) openServiceModal('edit', s);
+};
+window.deleteService = async function(id) {
+    if (!confirm('Supprimer ce service ?')) return;
+    try {
+        const res = await apiFetch(`/api/services/${id}`, { method: 'DELETE' });
+        if (!res.ok) throw new Error('Erreur');
+        showToast('🗑 Service supprimé.', 'success');
+        loadServices();
+    } catch (err) { showToast('Erreur : ' + err.message, 'error'); }
+};
+
+// Import Services
+const importServicesModal = document.getElementById('importServicesModal');
+const importServicesDropZone = document.getElementById('importServicesDropZone');
+const importServicesFileInput = document.getElementById('importServicesFileInput');
+const importServicesFileName = document.getElementById('importServicesFileName');
+const confirmImportServicesBtn = document.getElementById('confirmImportServicesBtn');
+let importServicesFile = null;
+
+document.getElementById('importServicesBtn')?.addEventListener('click', () => {
+    importServicesFile = null;
+    importServicesFileName.textContent = '';
+    confirmImportServicesBtn.disabled = true;
+    importServicesModal.classList.add('show');
+});
+document.getElementById('cancelImportServicesBtn')?.addEventListener('click', () => importServicesModal.classList.remove('show'));
+importServicesModal?.addEventListener('click', (e) => { if (e.target === importServicesModal) importServicesModal.classList.remove('show'); });
+
+importServicesDropZone?.addEventListener('click', () => importServicesFileInput.click());
+importServicesDropZone?.addEventListener('dragover', (e) => { e.preventDefault(); importServicesDropZone.classList.add('dragover'); });
+importServicesDropZone?.addEventListener('dragleave', () => importServicesDropZone.classList.remove('dragover'));
+importServicesDropZone?.addEventListener('drop', (e) => {
+    e.preventDefault(); importServicesDropZone.classList.remove('dragover');
+    if (e.dataTransfer.files.length) handleImportServicesFile(e.dataTransfer.files[0]);
+});
+importServicesFileInput?.addEventListener('change', (e) => {
+    if (e.target.files.length) handleImportServicesFile(e.target.files[0]);
+});
+
+function handleImportServicesFile(file) {
+    const ext = file.name.split('.').pop().toLowerCase();
+    if (!['csv','xlsx','xls'].includes(ext)) { showToast('Format non supporté.', 'error'); return; }
+    importServicesFile = file;
+    importServicesFileName.textContent = `📎 ${file.name}`;
+    confirmImportServicesBtn.disabled = false;
+}
+
+confirmImportServicesBtn?.addEventListener('click', async () => {
+    if (!importServicesFile) return;
+    confirmImportServicesBtn.disabled = true;
+    confirmImportServicesBtn.textContent = 'Import en cours...';
+    const fd = new FormData(); fd.append('file', importServicesFile);
+    try {
+        const res = await apiFetch('/api/services/import', { method: 'POST', body: fd });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Erreur');
+        showToast(`✅ ${data.imported} services importés !`, 'success');
+        importServicesModal.classList.remove('show');
+        loadServices();
+    } catch (err) { showToast('Erreur : ' + err.message, 'error'); }
+    finally {
+        confirmImportServicesBtn.disabled = false;
+        confirmImportServicesBtn.textContent = 'Importer';
+    }
+});
 
 // ================================================================
 // 9. CATALOGUE

@@ -22,6 +22,7 @@ const quotesRoutes = require('./routes/quotes');
 const adminRoutes = require('./routes/admin');
 const teamRoutes = require('./routes/team');
 const invoicesRoutes = require('./routes/invoices');
+const servicesRoutes = require('./routes/services');
 
 // ⚙️ INTERRUPTEUR DE QUOTA — Mets à `false` pour désactiver les limites pendant les tests
 const ENABLE_QUOTA_LIMITS = false;
@@ -48,6 +49,7 @@ app.use('/api/quotes', quotesRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/team', teamRoutes);
 app.use('/api/invoices', invoicesRoutes);
+app.use('/api/services', servicesRoutes);
 
 // Multer
 const storage = multer.diskStorage({
@@ -245,16 +247,30 @@ app.post('/api/generate-quote', authenticateToken, upload.single('file'), async 
         }
         logs.push(`Texte extrait (${text.length} caractères).`);
 
-        // Charge le catalogue produits de CET utilisateur
+        // Charger produits ET services du catalogue
         const productsResult = await pool.query(
             'SELECT ref, name, unit_price FROM products WHERE user_id = $1',
             [req.user.id]
         );
-        const userProducts = productsResult.rows.map(p => ({
-            ref: p.ref,
-            name: p.name,
-            unitPrice: parseFloat(p.unit_price),
-        }));
+        const servicesResult = await pool.query(
+            'SELECT ref, name, unit_price FROM services WHERE user_id = $1 AND active = TRUE',
+            [req.user.id]
+        );
+
+        const userProducts = [
+            ...productsResult.rows.map(p => ({
+                ref: p.ref,
+                name: p.name,
+                unitPrice: parseFloat(p.unit_price),
+                type: 'product'
+            })),
+            ...servicesResult.rows.map(s => ({
+                ref: s.ref,
+                name: s.name,
+                unitPrice: parseFloat(s.unit_price),
+                type: 'service'
+            }))
+        ];
 
         const result = await extractItemsFromText(text, userProducts);
         const items = result.items;
