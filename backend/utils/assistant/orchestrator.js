@@ -13,6 +13,11 @@ if (process.env.GROQ_API_KEY) {
     });
 }
 
+const GROQ_MODELS = [
+    'openai/gpt-oss-20b',
+    'openai/gpt-oss-120b',
+];
+
 // ------------------------------------------------------------
 // Appelle l'outil correspondant à l'intention
 // ------------------------------------------------------------
@@ -42,42 +47,54 @@ async function executeIntent(intent, args, userId) {
 // ------------------------------------------------------------
 async function formatResponse(userMessage, intent, data) {
     if (!groqClient) {
-        // Fallback : réponse brute JSON
-        return `Voici les données :\n${JSON.stringify(data, null, 2)}`;
+        if (data) return `Données :\n${JSON.stringify(data, null, 2)}`;
+        return 'L\'assistant n\'est pas disponible pour le moment.';
     }
 
     let systemContext = '';
+
     if (intent === 'help') {
-        systemContext = `L'utilisateur demande de l'aide. Tu peux lui expliquer les fonctionnalités disponibles : consulter le catalogue, les clients, les services, les fournisseurs, les devis, les factures, le stock. Tu peux aussi répondre à des questions générales sur l'application. Réponds en français, de façon claire et chaleureuse.`;
+        systemContext = `Tu es l'assistant de Devis Express Pro. L'utilisateur demande de l'aide.
+Tu peux lui expliquer ces fonctionnalités :
+- Créer des devis (onglet Devis, upload d'un PDF/Word/Excel)
+- Gérer le catalogue produits
+- Gérer les services et la main d'œuvre
+- Gérer les clients et les fournisseurs
+- Gérer le stock (alertes, mouvements, commandes fournisseurs)
+- Gérer les factures
+- Gérer l'équipe (invitations, rôles)
+- Créer des devis depuis la description d'un chantier
+Réponds en français, chaleureusement, de façon concise.`;
     } else if (data) {
-        systemContext = `Tu es un assistant pour une application de gestion de devis.
-        L'utilisateur a demandé : "${userMessage}"
+        // ⚠️ CONTEXTE CRUCIAL : dire à l'IA qu'elle A DÉJÀ les données
+        systemContext = `Tu es l'assistant interne de Devis Express Pro.
+L'utilisateur vient de poser cette question : "${userMessage}"
 
-        Voici les données réelles retournées par la base de données :
-        \`\`\`json
-        ${JSON.stringify(data, null, 2)}
-        \`\`\`
+⚠️ Tu as DÉJÀ interrogé la base de données de l'utilisateur et tu as les résultats ci-dessous.
+NE DIS JAMAIS que tu n'as pas accès aux données. Tu les as.
 
-        Formule une réponse naturelle, concise et utile en français. 
-        - Si c'est une liste, présente-la de manière lisible (avec des puces ou un tableau simple si pertinent).
-        - Mets en avant les chiffres importants.
-        - Ne réinvente pas les données. Utilise uniquement ce qui est fourni.
-        - Si le résultat est vide, dis-le poliment.
-        - Ne mets pas de JSON dans ta réponse.`;
+Voici les données réelles de SA base :
+\`\`\`json
+${JSON.stringify(data, null, 2)}
+\`\`\`
+
+Ta mission : formuler une réponse naturelle, claire et concise en français.
+Règles STRICTES :
+- Utilise uniquement les données ci-dessus, ne les invente pas.
+- Si c'est une liste, présente-la avec des puces ou un tableau simple.
+- Mets en avant les chiffres importants.
+- Si le résultat est vide, dis-le poliment.
+- Ne mets JAMAIS de JSON brut dans ta réponse.
+- Ne dis JAMAIS "je n'ai pas accès à vos données" — tu les as déjà.
+- Réponds directement à la question.`;
     } else {
-        systemContext = `Tu es un assistant conversationnel pour une application de gestion de devis. Réponds en français de façon utile et chaleureuse.`;
+        systemContext = `Tu es l'assistant conversationnel de Devis Express Pro, une application de gestion de devis, factures, stock et clients pour indépendants et TPE.
+Réponds en français de façon naturelle, brève et chaleureuse.
+Si l'utilisateur te salue, salue-le simplement en retour.`;
     }
 
-    const models = [
-        'openai/gpt-oss-20b',
-        'openai/gpt-oss-120b',
-        'llama-3.1-8b-instant',
-        'llama3-70b-8192',
-        'gemma2-9b-it',
-    ];
-
     let lastError = null;
-    for (const model of models) {
+    for (const model of GROQ_MODELS) {
         try {
             const completion = await groqClient.chat.completions.create({
                 model: model,
@@ -86,7 +103,7 @@ async function formatResponse(userMessage, intent, data) {
                     { role: 'user', content: userMessage }
                 ],
                 temperature: 0.3,
-                max_tokens: 800,
+                max_tokens: 1200,
             });
             console.log(`✅ Assistant: réponse via ${model}`);
             return completion.choices[0].message.content.trim();
@@ -95,13 +112,14 @@ async function formatResponse(userMessage, intent, data) {
             lastError = err;
         }
     }
+
     console.warn('Format Groq: tous les modèles ont échoué.');
-    if (data) return `Données : ${JSON.stringify(data)}`;
+    if (data) return `Voici les données brutes :\n${JSON.stringify(data, null, 2)}`;
     return 'Je n\'ai pas pu générer de réponse. Réessayez.';
 }
 
 // ------------------------------------------------------------
-// Point d'entrée : reçoit le message, renvoie la réponse
+// Point d'entrée
 // ------------------------------------------------------------
 async function chat(userMessage, userId) {
     const start = Date.now();

@@ -11,7 +11,6 @@ if (process.env.GROQ_API_KEY) {
     });
 }
 
-// Toutes les intentions possibles
 const INTENTS = [
     'list_products',
     'find_product',
@@ -29,70 +28,83 @@ const INTENTS = [
     'chat'
 ];
 
+// Modèles qui existent réellement sur Groq (à jour sept. 2026)
+const GROQ_MODELS = [
+    'openai/gpt-oss-20b',
+    'openai/gpt-oss-120b',
+];
+
+// Extrait le JSON d'une réponse même si elle contient du texte autour
+function extractJSON(text) {
+    if (!text) throw new Error('Réponse vide');
+    const cleaned = text.replace(/```json/g, '').replace(/```/g, '').trim();
+    const start = cleaned.indexOf('{');
+    const end = cleaned.lastIndexOf('}');
+    if (start === -1 || end === -1) throw new Error('Pas de JSON trouvé');
+    const jsonStr = cleaned.substring(start, end + 1);
+    return JSON.parse(jsonStr);
+}
+
 async function detectIntent(message) {
-    if (!groqClient) return { intent: 'chat', args: {} };
+    if (!groqClient) {
+        console.warn('Routeur: pas de client Groq, fallback chat');
+        return { intent: 'chat', args: {} };
+    }
 
-    const prompt = `Tu es un routeur. Classe le message de l'utilisateur dans UNE SEULE catégorie.
+    const prompt = `Tu es un routeur de messages pour une application de gestion de devis.
 
-Catégories possibles :
-- list_products : veut voir la liste des produits
-- find_product : cherche un produit précis
-- list_services : veut voir la liste des services
-- list_clients : veut voir la liste des clients
-- find_client : cherche un client précis
-- list_suppliers : veut voir la liste des fournisseurs
-- list_quotes : veut voir la liste des devis
-- quote_stats : veut des statistiques sur les devis (CA, conversion, etc)
-- list_invoices : veut voir la liste des factures
-- invoice_stats : veut des stats sur les factures (payé, en retard, etc)
-- stock_alerts : demande sur le stock, les alertes, les ruptures
-- general_stats : demande un résumé général, un état des lieux
-- help : demande de l'aide, comment faire quelque chose
-- chat : discussion générale, salutation, question hors sujet
+Classe le message ci-dessous dans UNE SEULE catégorie parmi cette liste :
+list_products, find_product, list_services, list_clients, find_client, list_suppliers, list_quotes, quote_stats, list_invoices, invoice_stats, stock_alerts, general_stats, help, chat
+
+Règles :
+- "Combien de produits", "mes produits", "catalogue" → list_products
+- "Cherche un produit X", "trouve X" → find_product
+- "Mes services", "prestations" → list_services
+- "Mes clients", "liste clients" → list_clients
+- "Cherche le client X" → find_client
+- "Mes fournisseurs" → list_suppliers
+- "Mes devis", "liste devis" → list_quotes
+- "Chiffre d'affaires", "stats devis", "taux de conversion" → quote_stats
+- "Mes factures" → list_invoices
+- "Factures payées", "impayés", "retard" → invoice_stats
+- "Stock", "alerte stock", "rupture" → stock_alerts
+- "Résumé", "vue d'ensemble", "activité" → general_stats
+- "Comment faire", "aide" → help
+- Sinon → chat
 
 Message : """${message}"""
 
-Réponds UNIQUEMENT en JSON : {"intent": "nom_categorie", "args": {"query": "terme_recherche_si_applicable"}}
+Réponds UNIQUEMENT avec ce JSON (aucun autre texte) :
+{"intent":"nom_categorie","args":{"query":"terme_recherche_ou_vide"}}`;
 
-Ne mets AUCUN texte en dehors du JSON.`;
+    let lastError = null;
+    for (const model of GROQ_MODELS) {
+        try {
+            const completion = await groqClient.chat.completions.create({
+                model: model,
+                messages: [{ role: 'user', content: prompt }],
+                temperature: 0,
+                max_tokens: 500, // Augmenté (le modèle "réfléchit" avant de répondre)
+                response_format: { type: 'json_object' }, // Force une réponse JSON valide
+            });
+            const content = completion.choices[0].message.content;
+            const parsed = extractJSON(content);
 
-    try {
-        const models = [
-            'openai/gpt-oss-20b',
-            'openai/gpt-oss-120b',
-            'llama-3.1-8b-instant',
-            'llama3-70b-8192',
-            'gemma2-9b-it',
-        ];
-
-        let lastError = null;
-        for (const model of models) {
-            try {
-                const completion = await groqClient.chat.completions.create({
-                    model: model,
-                    messages: [{ role: 'user', content: prompt }],
-                    temperature: 0,
-                    max_tokens: 150,
-                });
-                let content = completion.choices[0].message.content.trim();
-                content = content.replace(/```json/g, '').replace(/```/g, '').trim();
-                const parsed = JSON.parse(content);
-
-                if (!INTENTS.includes(parsed.intent)) {
-                    return { intent: 'chat', args: {} };
-                }
-                return parsed;
-            } catch (err) {
-                console.warn(`Routeur Groq (${model}) échec: ${err.message}`);
-                lastError = err;
+            if (!INTENTS.includes(parsed.intent)) {
+                return { intent: 'chat', args: {} };
             }
+            return {
+                intent: parsed.intent,
+                args: parsed.args || {}
+            };
+        } catch (err) {
+            console.warn(`Routeur Groq (${model}) échec: ${err.message}`);
+            lastError = err;
         }
-        console.warn('Routeur Groq: tous les modèles ont échoué.');
-        return { intent: 'chat', args: {} };
-    } catch (err) {
-        console.warn('Routeur Groq échec:', err.message);
-        return { intent: 'chat', args: {} };
     }
+
+    console.warn('Routeur Groq: tous les modèles ont échoué, fallback chat.');
+    return { intent: 'chat', args: {} };
 }
 
 module.exports = { detectIntent, INTENTS };
