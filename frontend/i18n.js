@@ -160,6 +160,9 @@ const TRANSLATIONS = {
         "app.tab.dashboard": "📊 Dashboard",
         "app.tab.team": "👥 Équipe",
         "app.tab.settings": "⚙️ Paramètres",
+        "app.tab.assistant": "💬 Assistant",
+        "assistant.title": "Assistant IA",
+        "assistant.placeholder": "Posez votre question...",
         "app.tab.subscription": "💳 Abonnement",
 
         // Onglet Devis
@@ -577,6 +580,9 @@ const TRANSLATIONS = {
         "app.tab.dashboard": "📊 Dashboard",
         "app.tab.team": "👥 Team",
         "app.tab.settings": "⚙️ Instellingen",
+        "app.tab.assistant": "💬 Assistent",
+        "assistant.title": "AI-assistent",
+        "assistant.placeholder": "Stel uw vraag...",
         "app.tab.subscription": "💳 Abonnement",
 
         "quotes.start_hint_title": "Configureer eerst uw bedrijf",
@@ -975,6 +981,9 @@ const TRANSLATIONS = {
         "app.tab.dashboard": "📊 Dashboard",
         "app.tab.team": "👥 Team",
         "app.tab.settings": "⚙️ Settings",
+        "app.tab.assistant": "💬 Assistant",
+        "assistant.title": "AI Assistant",
+        "assistant.placeholder": "Ask your question...",
         "app.tab.subscription": "💳 Subscription",
 
         "quotes.start_hint_title": "Start by configuring your company",

@@ -546,6 +546,259 @@
         .invoice-badge.paid { background:rgba(34,197,94,0.15); color:#22c55e; border:1px solid rgba(34,197,94,0.3); }
         .invoice-badge.overdue { background:rgba(249,115,22,0.15); color:#f97316; border:1px solid rgba(249,115,22,0.3); }
         .invoice-badge.cancelled { background:rgba(248,113,113,0.15); color:#f87171; border:1px solid rgba(248,113,113,0.3); }
+    
+        /* ============================================================ */
+        /* ASSISTANT IA                                                  */
+        /* ============================================================ */
+
+        /* Bulle flottante */
+        #assistantBubble {
+            position: fixed;
+            bottom: 100px;
+            right: 24px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg,#f97316,#fb923c);
+            color: #0b1120;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            box-shadow: 0 12px 32px rgba(249,115,22,0.4);
+            z-index: 4000;
+            transition: 0.25s;
+        }
+        #assistantBubble:hover { transform: scale(1.08); box-shadow: 0 16px 40px rgba(249,115,22,0.5); }
+        #assistantBubble.hidden { display: none; }
+
+        /* Fenêtre de chat flottante */
+        #assistantPanel {
+            position: fixed;
+            bottom: 100px;
+            right: 24px;
+            width: 400px;
+            max-width: calc(100vw - 32px);
+            height: 600px;
+            max-height: calc(100vh - 140px);
+            background: #111b2e;
+            border: 1px solid #2a3a55;
+            border-radius: 20px;
+            box-shadow: 0 30px 80px rgba(0,0,0,0.7);
+            z-index: 4001;
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        #assistantPanel.show { display: flex; }
+
+        .assistant-header {
+            background: #0b1120;
+            padding: 14px 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #1e2a41;
+            flex-shrink: 0;
+        }
+        .assistant-header .title {
+            color: #fff;
+            font-weight: 700;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .assistant-header .title .dot {
+            width: 8px;
+            height: 8px;
+            background: #22c55e;
+            border-radius: 50%;
+            animation: pulseDot 1.5s infinite;
+        }
+        @keyframes pulseDot {
+            0%,100% { opacity: 0.4; }
+            50% { opacity: 1; }
+        }
+        .assistant-header .actions {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+        .assistant-header button {
+            background: #1a253b;
+            border: 1px solid #2a3a55;
+            color: #94a3b8;
+            width: 30px;
+            height: 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s;
+        }
+        .assistant-header button:hover { background: #24324b; color: #fff; }
+
+        .assistant-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            background: #0b1120;
+        }
+        .assistant-messages::-webkit-scrollbar { width: 6px; }
+        .assistant-messages::-webkit-scrollbar-track { background: #111b2e; }
+        .assistant-messages::-webkit-scrollbar-thumb { background: #2a3a55; border-radius: 10px; }
+
+        .msg {
+            max-width: 85%;
+            padding: 12px 16px;
+            border-radius: 16px;
+            font-size: 14px;
+            line-height: 1.6;
+            word-wrap: break-word;
+            white-space: pre-wrap;
+        }
+        .msg.user {
+            align-self: flex-end;
+            background: #f97316;
+            color: #0b1120;
+            border-bottom-right-radius: 4px;
+            font-weight: 500;
+        }
+        .msg.assistant {
+            align-self: flex-start;
+            background: #1a253b;
+            color: #e2e8f0;
+            border: 1px solid #2a3a55;
+            border-bottom-left-radius: 4px;
+        }
+        .msg.assistant.loading {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            color: #94a3b8;
+            font-style: italic;
+        }
+        .msg.assistant.loading::after {
+            content: '';
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border: 2px solid #2a3a55;
+            border-top-color: #f97316;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+        .msg.system {
+            align-self: center;
+            background: transparent;
+            color: #64748b;
+            font-size: 12px;
+            padding: 4px 12px;
+            text-align: center;
+            max-width: 90%;
+            border: none;
+        }
+
+        .assistant-suggestions {
+            padding: 0 18px 12px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            background: #0b1120;
+            flex-shrink: 0;
+        }
+        .assistant-suggestions button {
+            background: #1a253b;
+            border: 1px solid #2a3a55;
+            color: #cbd5e1;
+            padding: 6px 12px;
+            border-radius: 40px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .assistant-suggestions button:hover { background: #24324b; border-color: #f97316; color: #fff; }
+
+        .assistant-input-area {
+            padding: 12px 14px 14px;
+            border-top: 1px solid #1e2a41;
+            background: #111b2e;
+            display: flex;
+            gap: 8px;
+            align-items: flex-end;
+            flex-shrink: 0;
+        }
+        #assistantInput {
+            flex: 1;
+            background: #0b1120;
+            border: 1px solid #2a3a55;
+            color: #e2e8f0;
+            padding: 10px 14px;
+            border-radius: 14px;
+            font-size: 14px;
+            font-family: inherit;
+            resize: none;
+            max-height: 100px;
+            line-height: 1.4;
+            outline: none;
+        }
+        #assistantInput:focus { border-color: #f97316; }
+        .assistant-input-area button {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            flex-shrink: 0;
+            transition: 0.2s;
+        }
+        #assistantSend {
+            background: #f97316;
+            color: #0b1120;
+        }
+        #assistantSend:hover { background: #ea580c; }
+        #assistantSend:disabled { background: #334155; color: #94a3b8; cursor: not-allowed; }
+        #assistantMic {
+            background: #1a253b;
+            border: 1px solid #2a3a55;
+            color: #94a3b8;
+            font-size: 18px;
+        }
+        #assistantMic:hover { background: #24324b; color: #f97316; }
+        #assistantMic.recording {
+            background: #dc2626;
+            color: #fff;
+            animation: pulseMic 1s infinite;
+        }
+        @keyframes pulseMic {
+            0%,100% { box-shadow: 0 0 0 0 rgba(220,38,38,0.7); }
+            50% { box-shadow: 0 0 0 10px rgba(220,38,38,0); }
+        }
+
+        @media (max-width: 600px) {
+            #assistantPanel {
+                bottom: 0;
+                right: 0;
+                left: 0;
+                width: 100%;
+                height: 85vh;
+                border-radius: 20px 20px 0 0;
+                max-width: none;
+            }
+            #assistantBubble { bottom: 84px; right: 16px; width: 54px; height: 54px; font-size: 22px; }
+        }
     </style>
 </head>
 <body>
@@ -785,6 +1038,7 @@
         <button class="tab-btn" data-tab="tab-dashboard" data-i18n="app.tab.dashboard">📊 Dashboard</button>
         <button class="tab-btn" data-tab="tab-team" data-i18n="app.tab.team">👥 Équipe</button>
         <button class="tab-btn" data-tab="tab-settings" data-i18n="app.tab.settings">⚙️ Paramètres</button>
+        <button class="tab-btn" data-tab="tab-assistant" data-i18n="app.tab.assistant">💬 Assistant</button>
         <button class="tab-btn" data-tab="tab-subscription" data-i18n="app.tab.subscription">💳 Abonnement</button>
     </div>
 
@@ -1204,6 +1458,34 @@
             </p>
             <div id="teamContent">
                 <p style="color:#64748b;text-align:center;padding:40px;" data-i18n="team.loading">Chargement...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ASSISTANT (VUE ONGLET) -->
+    <div id="tab-assistant" class="tab-content">
+        <div class="card" style="padding:0; overflow:hidden; height:calc(100vh - 260px); min-height:520px; display:flex; flex-direction:column;">
+            <div class="assistant-header" style="border-radius:20px 20px 0 0;">
+                <div class="title">
+                    <span class="dot"></span>
+                    <span data-i18n="assistant.title">Assistant IA</span>
+                </div>
+                <div class="actions">
+                    <button id="assistantTabClear" title="Effacer la conversation">🗑</button>
+                </div>
+            </div>
+            <div class="assistant-messages" id="assistantTabMessages" style="flex:1;"></div>
+            <div class="assistant-suggestions" id="assistantTabSuggestions">
+                <button data-suggestion="Combien j'ai de produits ?">Combien j'ai de produits ?</button>
+                <button data-suggestion="Quel est mon chiffre d'affaires ?">Mon chiffre d'affaires</button>
+                <button data-suggestion="Cherche le client Dupont">Chercher un client</button>
+                <button data-suggestion="Est-ce que j'ai des alertes de stock ?">Alertes stock</button>
+                <button data-suggestion="Fais-moi un résumé de mon activité">Résumé activité</button>
+            </div>
+            <div class="assistant-input-area" style="border-radius:0 0 20px 20px;">
+                <textarea id="assistantTabInput" rows="1" placeholder="Posez votre question..." data-i18n-placeholder="assistant.placeholder"></textarea>
+                <button id="assistantTabMic" title="Vocal (bientôt)">🎤</button>
+                <button id="assistantTabSend" title="Envoyer">➤</button>
             </div>
         </div>
     </div>
@@ -1680,6 +1962,36 @@
             <button class="btn-cancel" id="cancelInvoiceBtn" data-i18n="btn.cancel">Annuler</button>
             <button class="btn-confirm" id="saveInvoiceBtn" data-i18n="btn.save">Enregistrer</button>
         </div>
+    </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- ASSISTANT IA - BULLE FLOTTANTE                                -->
+<!-- ============================================================ -->
+<button id="assistantBubble" title="Assistant IA">💬</button>
+
+<div id="assistantPanel">
+    <div class="assistant-header">
+        <div class="title">
+            <span class="dot"></span>
+            <span data-i18n="assistant.title">Assistant IA</span>
+        </div>
+        <div class="actions">
+            <button id="assistantClear" title="Effacer la conversation">🗑</button>
+            <button id="assistantClose" title="Fermer">✕</button>
+        </div>
+    </div>
+    <div class="assistant-messages" id="assistantMessages"></div>
+    <div class="assistant-suggestions" id="assistantSuggestions">
+        <button data-suggestion="Combien j'ai de produits ?">Combien j'ai de produits ?</button>
+        <button data-suggestion="Quel est mon chiffre d'affaires ?">Mon chiffre d'affaires</button>
+        <button data-suggestion="Cherche le client Dupont">Chercher un client</button>
+        <button data-suggestion="Est-ce que j'ai des alertes de stock ?">Alertes stock</button>
+    </div>
+    <div class="assistant-input-area">
+        <textarea id="assistantInput" rows="1" placeholder="Posez votre question..." data-i18n-placeholder="assistant.placeholder"></textarea>
+        <button id="assistantMic" title="Vocal (bientôt)">🎤</button>
+        <button id="assistantSend" title="Envoyer">➤</button>
     </div>
 </div>
 
@@ -4932,6 +5244,251 @@ document.getElementById('languageSelect')?.addEventListener('change', (e) => {
     if (typeof updateAuthUI === 'function') updateAuthUI();
     showToast('🌍 ' + (lang === 'fr' ? 'Langue : Français' : lang === 'nl' ? 'Taal : Nederlands' : 'Language: English'), 'success');
 });
+
+// ================================================================
+// 19. ASSISTANT IA
+// ================================================================
+(function initAssistant() {
+    const STORAGE_KEY = 'devis_assistant_history';
+    const MAX_HISTORY = 40; // 20 messages user + 20 assistant
+    let isSending = false;
+
+    // ---------- Références DOM ----------
+    const bubble = document.getElementById('assistantBubble');
+    const panel = document.getElementById('assistantPanel');
+    const messages = document.getElementById('assistantMessages');
+    const input = document.getElementById('assistantInput');
+    const sendBtn = document.getElementById('assistantSend');
+    const micBtn = document.getElementById('assistantMic');
+    const closeBtn = document.getElementById('assistantClose');
+    const clearBtn = document.getElementById('assistantClear');
+
+    const tabMessages = document.getElementById('assistantTabMessages');
+    const tabInput = document.getElementById('assistantTabInput');
+    const tabSendBtn = document.getElementById('assistantTabSend');
+    const tabMicBtn = document.getElementById('assistantTabMic');
+    const tabClearBtn = document.getElementById('assistantTabClear');
+
+    if (!panel || !messages) return;
+
+    // ---------- Historique ----------
+    function loadHistory() {
+        try {
+            return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+        } catch (e) { return []; }
+    }
+
+    function saveHistory(history) {
+        const trimmed = history.slice(-MAX_HISTORY);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(trimmed));
+    }
+
+    function clearHistory() {
+        localStorage.removeItem(STORAGE_KEY);
+        messages.innerHTML = '';
+        if (tabMessages) tabMessages.innerHTML = '';
+        renderWelcome();
+    }
+
+    function renderWelcome() {
+        const welcomeHtml = `
+            <div class="msg assistant">
+            Bonjour 👋 Je suis votre assistant. Posez-moi une question sur :
+            • votre catalogue
+            • vos clients
+            • vos devis et factures
+            • votre stock
+
+            Ou cliquez sur une suggestion ci-dessous.
+            </div>
+        `;
+        messages.innerHTML = welcomeHtml;
+        if (tabMessages) tabMessages.innerHTML = welcomeHtml;
+    }
+
+    function addMessage(role, text, options = {}) {
+        const html = `<div class="msg ${role}${options.loading ? ' loading' : ''}">${escapeHtml(text)}</div>`;
+        messages.insertAdjacentHTML('beforeend', html);
+        if (tabMessages) tabMessages.insertAdjacentHTML('beforeend', html);
+        messages.scrollTop = messages.scrollHeight;
+        if (tabMessages) tabMessages.scrollTop = tabMessages.scrollHeight;
+    }
+
+    function removeLastLoading() {
+        const loadings = messages.querySelectorAll('.msg.loading');
+        loadings.forEach(el => el.remove());
+        if (tabMessages) {
+            const loadings2 = tabMessages.querySelectorAll('.msg.loading');
+            loadings2.forEach(el => el.remove());
+        }
+    }
+
+    function renderFromHistory() {
+        const history = loadHistory();
+        messages.innerHTML = '';
+        if (tabMessages) tabMessages.innerHTML = '';
+        if (history.length === 0) {
+            renderWelcome();
+            return;
+        }
+        history.forEach(m => {
+            const html = `<div class="msg ${m.role}">${escapeHtml(m.text)}</div>`;
+            messages.insertAdjacentHTML('beforeend', html);
+            if (tabMessages) tabMessages.insertAdjacentHTML('beforeend', html);
+        });
+        messages.scrollTop = messages.scrollHeight;
+        if (tabMessages) tabMessages.scrollTop = tabMessages.scrollHeight;
+    }
+
+    // ---------- Envoi d'un message ----------
+    async function sendMessage(text) {
+        if (!text || !text.trim() || isSending) return;
+        const trimmed = text.trim();
+        if (trimmed.length > 2000) {
+            addMessage('system', '⚠️ Message trop long (2000 caractères max).');
+            return;
+        }
+
+        isSending = true;
+        sendBtn.disabled = true;
+        tabSendBtn && (tabSendBtn.disabled = true);
+
+        // Ajouter le message user
+        addMessage('user', trimmed);
+
+        // Sauvegarder dans l'historique
+        const history = loadHistory();
+        history.push({ role: 'user', text: trimmed, date: new Date().toISOString() });
+        saveHistory(history);
+
+        // Reset input
+        input.value = '';
+        if (tabInput) tabInput.value = '';
+        autoResize();
+
+        // Loading
+        addMessage('assistant', '', { loading: true });
+
+        try {
+            const res = await apiFetch('/api/assistant/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: trimmed })
+            });
+            removeLastLoading();
+
+            if (!res.ok) {
+                const err = await res.json();
+                throw new Error(err.error || 'Erreur serveur');
+            }
+
+            const data = await res.json();
+            addMessage('assistant', data.response || 'Pas de réponse.');
+
+            // Log discret avec l'intention détectée
+            if (data.intent && data.durationMs) {
+                addMessage('system', `⚡ ${data.intent} · ${(data.durationMs/1000).toFixed(1)}s`);
+            }
+
+            const h = loadHistory();
+            h.push({ role: 'assistant', text: data.response || '', date: new Date().toISOString() });
+            saveHistory(h);
+
+        } catch (err) {
+            removeLastLoading();
+            addMessage('assistant', '❌ Désolé, une erreur est survenue : ' + err.message);
+        } finally {
+            isSending = false;
+            sendBtn.disabled = false;
+            tabSendBtn && (tabSendBtn.disabled = false);
+        }
+    }
+
+    // ---------- Auto-resize du textarea ----------
+    function autoResize() {
+        [input, tabInput].forEach(el => {
+            if (!el) return;
+            el.style.height = 'auto';
+            el.style.height = Math.min(el.scrollHeight, 100) + 'px';
+        });
+    }
+
+    [input, tabInput].forEach(el => {
+        if (el) el.addEventListener('input', autoResize);
+    });
+
+    // ---------- Événements ----------
+    bubble.addEventListener('click', () => {
+        panel.classList.add('show');
+        bubble.classList.add('hidden');
+        setTimeout(() => input.focus(), 100);
+    });
+
+    closeBtn.addEventListener('click', () => {
+        panel.classList.remove('show');
+        bubble.classList.remove('hidden');
+    });
+
+    clearBtn.addEventListener('click', () => {
+        if (confirm('Effacer la conversation ?')) clearHistory();
+    });
+
+    tabClearBtn && tabClearBtn.addEventListener('click', () => {
+        if (confirm('Effacer la conversation ?')) clearHistory();
+    });
+
+    sendBtn.addEventListener('click', () => sendMessage(input.value));
+    tabSendBtn && tabSendBtn.addEventListener('click', () => sendMessage(tabInput.value));
+
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage(input.value);
+        }
+    });
+
+    tabInput && tabInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage(tabInput.value);
+        }
+    });
+
+    // Bouton micro : placeholder (sera activé au Module 5)
+    [micBtn, tabMicBtn].forEach(btn => {
+        if (btn) btn.addEventListener('click', () => {
+            alert('🎤 La saisie vocale arrive bientôt.\nElle sera activée dans la prochaine mise à jour.');
+        });
+    });
+
+    // Suggestions cliquables
+    document.querySelectorAll('[data-suggestion]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const text = btn.getAttribute('data-suggestion');
+            if (panel.classList.contains('show')) {
+                input.value = text;
+            } else {
+                tabInput.value = text;
+            }
+            sendMessage(text);
+        });
+    });
+
+    // Charger l'historique au démarrage
+    renderFromHistory();
+
+    // Ouvrir l'assistant si l'onglet tab-assistant est activé
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            if (btn.dataset.tab === 'tab-assistant') {
+                // Synchroniser les messages
+                renderFromHistory();
+                setTimeout(() => tabInput && tabInput.focus(), 100);
+            }
+        });
+    });
+
+})();
 </script>
 </body>
 </html>
