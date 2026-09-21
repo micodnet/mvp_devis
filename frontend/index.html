@@ -779,6 +779,7 @@
         <button class="tab-btn" data-tab="tab-catalogue" data-i18n="app.tab.products">📦 Catalogue</button>
         <button class="tab-btn" data-tab="tab-services" data-i18n="app.tab.services">🔧 Services</button>
         <button class="tab-btn" data-tab="tab-suppliers" data-i18n="app.tab.suppliers">🚚 Fournisseurs</button>
+        <button class="tab-btn" data-tab="tab-stock" data-i18n="app.tab.stock">📦 Stock</button>
         <button class="tab-btn" data-tab="tab-history" data-i18n="app.tab.history">📜 Historique</button>
         <button class="tab-btn" data-tab="tab-invoices" data-i18n="app.tab.invoices">🧾 Factures</button>
         <button class="tab-btn" data-tab="tab-dashboard" data-i18n="app.tab.dashboard">📊 Dashboard</button>
@@ -913,6 +914,37 @@
             </div>
             <input type="text" id="suppliersSearch" class="catalog-search" placeholder="🔍 Rechercher un fournisseur..." data-i18n-placeholder="suppliers.search" />
             <div id="suppliersContent"><p style="color:#64748b; text-align:center; padding:40px;">Chargement...</p></div>
+        </div>
+    </div>
+
+    <!-- STOCK -->
+    <div id="tab-stock" class="tab-content">
+        <div class="card">
+            <div class="catalog-header">
+                <h2 data-i18n="stock.title">📦 Gestion du stock</h2>
+                <div class="catalog-actions">
+                    <button class="btn-secondary" id="generatePOBtn" data-i18n="stock.generate_po">🛒 Générer commandes</button>
+                    <button class="btn-primary-sm" id="newMovementBtn" data-i18n="stock.new_movement">+ Mouvement manuel</button>
+                </div>
+            </div>
+
+            <!-- Alertes de stock -->
+            <div id="stockAlerts" style="display:none; background:linear-gradient(135deg,#2a1a14,#1f1220);border:1px solid #7c2d12;border-left:4px solid #f97316;border-radius:14px;padding:18px 22px;margin-bottom:20px;">
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+                    <span style="font-size:24px;">⚠️</span>
+                    <strong style="color:#f97316;font-size:15px;"><span id="stockAlertCount">0</span> produit(s) en alerte de stock</strong>
+                </div>
+                <div id="stockAlertsList" style="display:flex;flex-direction:column;gap:8px;"></div>
+            </div>
+
+            <!-- Sous-onglets -->
+            <div class="history-filters" id="stockFilters" style="margin-bottom:20px;">
+                <button class="history-filter active" data-sfilter="products">Produits</button>
+                <button class="history-filter" data-sfilter="movements">Mouvements</button>
+                <button class="history-filter" data-sfilter="orders">Commandes fournisseurs</button>
+            </div>
+
+            <div id="stockContent"><p style="color:#64748b;">Chargement...</p></div>
         </div>
     </div>
 
@@ -1219,10 +1251,33 @@
         </div>
         <div class="form-group"><label data-i18n="modal.product.name">Nom *</label><input type="text" id="productName" required /></div>
         <div class="form-group"><label data-i18n="modal.product.desc">Description</label><input type="text" id="productDescription" /></div>
-        <div class="form-row">
+                <div class="form-row">
             <div class="form-group"><label data-i18n="modal.product.price">Prix HT (€) *</label><input type="number" id="productPrice" step="0.01" min="0" required /></div>
             <div class="form-group"><label data-i18n="modal.product.cat">Catégorie</label><input type="text" id="productCategory" /></div>
         </div>
+        
+        <div class="card-title" style="margin-top:16px;font-size:15px;">📦 Stock</div>
+        <div class="form-group">
+            <label class="checkbox-accept" style="margin:0;">
+                <input type="checkbox" id="productTrackStock" style="margin-top:0;" />
+                <div class="text">Suivre le stock pour ce produit</div>
+            </label>
+        </div>
+        <div id="stockFields" style="display:none;">
+            <div class="form-row">
+                <div class="form-group"><label>Stock actuel</label><input type="number" id="productStockQuantity" step="0.01" min="0" value="0" /></div>
+                <div class="form-group"><label>Seuil d'alerte</label><input type="number" id="productStockAlert" step="0.01" min="0" value="0" /></div>
+            </div>
+            <div class="form-row">
+                <div class="form-group"><label>Stock maximum</label><input type="number" id="productStockMax" step="0.01" min="0" value="0" /></div>
+                <div class="form-group"><label>Quantité à recommander</label><input type="number" id="productReorderQty" step="0.01" min="0" value="0" /></div>
+            </div>
+            <div class="form-group">
+                <label>Fournisseur</label>
+                <select id="productSupplier"><option value="">— Aucun —</option></select>
+            </div>
+        </div>
+        
         <div class="modal-actions">
             <button class="btn-cancel" id="cancelProductBtn" data-i18n="btn.cancel">Annuler</button>
             <button class="btn-confirm" id="saveProductBtn" data-i18n="btn.save">Enregistrer</button>
@@ -1302,6 +1357,33 @@
         <div class="modal-actions">
             <button class="btn-cancel" id="cancelSupplierBtn" data-i18n="btn.cancel">Annuler</button>
             <button class="btn-confirm" id="saveSupplierBtn" data-i18n="btn.save">Enregistrer</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="movementModal">
+    <div class="modal">
+        <h3 data-i18n="modal.movement.add">Nouveau mouvement de stock</h3>
+        <div class="form-group">
+            <label>Produit *</label>
+            <select id="movementProduct" required><option value="">— Sélectionner —</option></select>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Type *</label>
+                <select id="movementType">
+                    <option value="in">Entrée (+)</option>
+                    <option value="out">Sortie (-)</option>
+                    <option value="adjustment">Ajustement (fixe)</option>
+                </select>
+            </div>
+            <div class="form-group"><label>Quantité *</label><input type="number" id="movementQuantity" step="0.01" required /></div>
+        </div>
+        <div class="form-group"><label>Motif</label><input type="text" id="movementReason" placeholder="Inventaire, casse, retour..." /></div>
+        <div class="form-group"><label>Référence</label><input type="text" id="movementReference" placeholder="N° bon de livraison..." /></div>
+        <div class="modal-actions">
+            <button class="btn-cancel" id="cancelMovementBtn" data-i18n="btn.cancel">Annuler</button>
+            <button class="btn-confirm" id="saveMovementBtn" data-i18n="btn.save">Enregistrer</button>
         </div>
     </div>
 </div>
@@ -1884,6 +1966,7 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
         if (btn.dataset.tab === 'tab-team') loadTeam();
         if (btn.dataset.tab === 'tab-invoices') loadInvoices();
         if (btn.dataset.tab === 'tab-suppliers') loadSuppliers();
+        if (btn.dataset.tab === 'tab-stock') loadStock();
     });
 });
 
@@ -2561,6 +2644,276 @@ window.deleteSupplier = async function(id) {
 };
 
 // ================================================================
+// 8.99. STOCK
+// ================================================================
+let stockFilter = 'products';
+let stockMovements = [];
+let purchaseOrders = [];
+let stockAlertsData = [];
+
+document.querySelectorAll('#stockFilters .history-filter').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('#stockFilters .history-filter').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        stockFilter = btn.dataset.sfilter;
+        renderStock();
+    });
+});
+
+async function loadStock() {
+    const content = document.getElementById('stockContent');
+    if (!content) return;
+    content.innerHTML = '<p style="color:#64748b; text-align:center; padding:40px;">Chargement...</p>';
+
+    try {
+        // Charger alertes, mouvements et commandes en parallèle
+        const [alertsRes, movementsRes, ordersRes, productsRes] = await Promise.all([
+            apiFetch('/api/stock/alerts'),
+            apiFetch('/api/stock/movements?limit=100'),
+            apiFetch('/api/stock/purchase-orders'),
+            apiFetch('/api/products')
+        ]);
+
+        stockAlertsData = await alertsRes.json();
+        stockMovements = await movementsRes.json();
+        purchaseOrders = await ordersRes.json();
+        catalogProducts = await productsRes.json();
+
+        renderStockAlerts();
+        renderStock();
+    } catch(err) {
+        console.error(err);
+        content.innerHTML = '<p style="color:#f87171; text-align:center; padding:40px;">Erreur.</p>';
+    }
+}
+
+function renderStockAlerts() {
+    const box = document.getElementById('stockAlerts');
+    const count = document.getElementById('stockAlertCount');
+    const list = document.getElementById('stockAlertsList');
+    if (!box || !stockAlertsData || stockAlertsData.length === 0) {
+        if (box) box.style.display = 'none';
+        return;
+    }
+    box.style.display = 'block';
+    count.textContent = stockAlertsData.length;
+    list.innerHTML = stockAlertsData.map(a => `
+        <div style="display:flex;justify-content:space-between;padding:8px 12px;background:#0b1120;border:1px solid #1e2a41;border-radius:10px;font-size:13px;flex-wrap:wrap;gap:8px;">
+            <div>
+                <strong style="color:#e2e8f0;">${escapeHtml(a.name)}</strong>
+                ${a.ref ? `<span style="color:#64748b;font-size:11px;margin-left:6px;">(${escapeHtml(a.ref)})</span>` : ''}
+            </div>
+            <div style="color:#f97316;font-weight:600;">${a.stockQuantity} / seuil: ${a.threshold}</div>
+            <div style="color:#94a3b8;font-size:12px;">${a.supplierName ? 'Fourn.: ' + escapeHtml(a.supplierName) : 'Sans fournisseur'}</div>
+        </div>
+    `).join('');
+}
+
+function renderStock() {
+    const content = document.getElementById('stockContent');
+    if (!content) return;
+
+    if (stockFilter === 'products') return renderStockProducts(content);
+    if (stockFilter === 'movements') return renderStockMovements(content);
+    if (stockFilter === 'orders') return renderStockOrders(content);
+}
+
+function renderStockProducts(content) {
+    const products = catalogProducts.filter(p => p.trackStock === true);
+    if (products.length === 0) {
+        content.innerHTML = `
+            <div class="catalog-empty">
+                <div class="big-icon">📦</div><h3>Aucun produit avec suivi de stock</h3>
+                <p>Activez le suivi dans la fiche d'un produit pour commencer à gérer son stock.</p>
+            </div>`;
+        return;
+    }
+    let html = '<table class="catalog-table"><thead><tr><th>Réf.</th><th>Produit</th><th style="text-align:right;">Stock</th><th style="text-align:right;">Seuil</th><th>Fournisseur</th></tr></thead><tbody>';
+    products.forEach(p => {
+        const isAlert = p.stockQuantity <= p.stockAlertThreshold;
+        html += `<tr>
+            <td>${p.ref ? `<span class="product-ref">${escapeHtml(p.ref)}</span>` : '—'}</td>
+            <td><strong>${escapeHtml(p.name)}</strong></td>
+            <td style="text-align:right;font-weight:600;color:${isAlert ? '#f97316' : '#e2e8f0'};">${p.stockQuantity} ${p.unit || ''}</td>
+            <td style="text-align:right;color:#94a3b8;">${p.stockAlertThreshold}</td>
+            <td style="color:#94a3b8;font-size:12px;">—</td>
+        </tr>`;
+    });
+    html += '</tbody></table>';
+    content.innerHTML = html;
+}
+
+function renderStockMovements(content) {
+    if (stockMovements.length === 0) {
+        content.innerHTML = '<p style="color:#64748b;text-align:center;padding:40px;">Aucun mouvement pour le moment.</p>';
+        return;
+    }
+    const typeLabels = { in: '📥 Entrée', out: '📤 Sortie', adjustment: '⚙️ Ajustement', sale: '💰 Vente', purchase: '🛒 Réception' };
+    let html = '<table class="catalog-table"><thead><tr><th>Date</th><th>Produit</th><th>Type</th><th style="text-align:right;">Quantité</th><th>Motif</th></tr></thead><tbody>';
+    stockMovements.forEach(m => {
+        html += `<tr>
+            <td style="color:#94a3b8;font-size:12px;">${new Date(m.createdAt).toLocaleString('fr-FR')}</td>
+            <td><strong>${escapeHtml(m.productName || 'N/A')}</strong>${m.productRef ? `<br><span style="color:#64748b;font-size:11px;">${escapeHtml(m.productRef)}</span>` : ''}</td>
+            <td>${typeLabels[m.movementType] || m.movementType}</td>
+            <td style="text-align:right;font-weight:600;">${m.quantity}</td>
+            <td style="color:#94a3b8;font-size:12px;">${escapeHtml(m.reason || '—')}</td>
+        </tr>`;
+    });
+    html += '</tbody></table>';
+    content.innerHTML = html;
+}
+
+function renderStockOrders(content) {
+    if (purchaseOrders.length === 0) {
+        content.innerHTML = `
+            <div class="catalog-empty">
+                <div class="big-icon">🛒</div><h3>Aucune commande fournisseur</h3>
+                <p>Cliquez sur "Générer commandes" pour créer automatiquement des bons de commande à partir de vos alertes de stock.</p>
+            </div>`;
+        return;
+    }
+    const statusLabels = { draft: 'Brouillon', sent: 'Envoyée', received: 'Reçue', cancelled: 'Annulée' };
+    const statusColors = { draft: '#94a3b8', sent: '#3b82f6', received: '#22c55e', cancelled: '#f87171' };
+    let html = '<table class="catalog-table"><thead><tr><th>N°</th><th>Fournisseur</th><th>Date</th><th>Attendu</th><th style="text-align:right;">Total</th><th>Statut</th><th style="text-align:right;">Actions</th></tr></thead><tbody>';
+    purchaseOrders.forEach(po => {
+        let actions = '';
+        if (po.status === 'draft') {
+            actions += `<button onclick="markPOSent(${po.id})" style="background:#1a253b;border:1px solid #2a3a55;color:#e2e8f0;padding:5px 12px;border-radius:40px;font-size:11px;cursor:pointer;margin-right:4px;">Marquer envoyée</button>`;
+            actions += `<button class="delete" onclick="deletePO(${po.id})" style="background:#3f1e24;border:1px solid #7f1d1d;color:#f87171;padding:5px 12px;border-radius:40px;font-size:11px;cursor:pointer;">✕</button>`;
+        } else if (po.status === 'sent') {
+            actions += `<button onclick="receivePO(${po.id})" style="background:#22c55e;border:none;color:#0b1120;padding:5px 12px;border-radius:40px;font-size:11px;cursor:pointer;font-weight:700;margin-right:4px;">Réceptionner</button>`;
+        }
+        actions += `<button onclick="downloadPOPdf(${po.id})" style="background:#1a253b;border:1px solid #2a3a55;color:#e2e8f0;padding:5px 12px;border-radius:40px;font-size:11px;cursor:pointer;">PDF</button>`;
+        html += `<tr>
+            <td><strong style="color:#f97316;">${escapeHtml(po.poNumber)}</strong></td>
+            <td>${escapeHtml(po.supplierName || '—')}</td>
+            <td style="color:#94a3b8;font-size:12px;">${po.issueDate}</td>
+            <td style="color:#94a3b8;font-size:12px;">${po.expectedDate || '—'}</td>
+            <td style="text-align:right;font-weight:600;">${po.total.toFixed(2)} €</td>
+            <td><span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:40px;background:rgba(148,163,184,0.15);color:${statusColors[po.status]};">${statusLabels[po.status] || po.status}</span></td>
+            <td style="text-align:right;">${actions}</td>
+        </tr>`;
+    });
+    html += '</tbody></table>';
+    content.innerHTML = html;
+}
+
+// ============================================================
+// Actions Stock
+// ============================================================
+const movementModal = document.getElementById('movementModal');
+
+document.getElementById('newMovementBtn')?.addEventListener('click', () => {
+    const sel = document.getElementById('movementProduct');
+    sel.innerHTML = '<option value="">— Sélectionner —</option>';
+    catalogProducts.filter(p => p.trackStock).forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = p.id;
+        opt.textContent = `${p.name} (${p.stockQuantity} en stock)`;
+        sel.appendChild(opt);
+    });
+    document.getElementById('movementQuantity').value = '';
+    document.getElementById('movementReason').value = '';
+    document.getElementById('movementReference').value = '';
+    document.getElementById('movementType').value = 'in';
+    movementModal.classList.add('show');
+});
+
+document.getElementById('cancelMovementBtn')?.addEventListener('click', () => movementModal.classList.remove('show'));
+movementModal?.addEventListener('click', (e) => { if (e.target === movementModal) movementModal.classList.remove('show'); });
+
+document.getElementById('saveMovementBtn')?.addEventListener('click', async () => {
+    const data = {
+        productId: parseInt(document.getElementById('movementProduct').value),
+        movementType: document.getElementById('movementType').value,
+        quantity: parseFloat(document.getElementById('movementQuantity').value),
+        reason: document.getElementById('movementReason').value.trim(),
+        reference: document.getElementById('movementReference').value.trim()
+    };
+    if (!data.productId || !data.quantity) { showToast('Produit et quantité requis.', 'error'); return; }
+
+    const btn = document.getElementById('saveMovementBtn');
+    btn.disabled = true; btn.textContent = 'Enregistrement...';
+    try {
+        const res = await apiFetch('/api/stock/movements', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+        const result = await res.json();
+        if (!res.ok) throw new Error(result.error || 'Erreur');
+        showToast('✅ Mouvement enregistré', 'success');
+        movementModal.classList.remove('show');
+        loadStock();
+    } catch (err) { showToast('Erreur : ' + err.message, 'error'); }
+    finally { btn.disabled = false; btn.textContent = 'Enregistrer'; }
+});
+
+document.getElementById('generatePOBtn')?.addEventListener('click', async () => {
+    if (!confirm('Générer automatiquement les commandes fournisseurs à partir des alertes de stock ?')) return;
+    showToast('Génération en cours...', 'info');
+    try {
+        const res = await apiFetch('/api/stock/generate-po', { method: 'POST' });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Erreur');
+        if (data.generated === 0) {
+            showToast('Aucune alerte avec fournisseur associé.', 'info');
+        } else {
+            showToast(`✅ ${data.generated} commande(s) créée(s)`, 'success');
+        }
+        loadStock();
+    } catch (err) { showToast('Erreur : ' + err.message, 'error'); }
+});
+
+window.markPOSent = async function(id) {
+    try {
+        const res = await apiFetch(`/api/stock/purchase-orders/${id}/status`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: 'sent' })
+        });
+        if (!res.ok) throw new Error('Erreur');
+        showToast('✅ Commande marquée envoyée', 'success');
+        loadStock();
+    } catch (err) { showToast('Erreur : ' + err.message, 'error'); }
+};
+
+window.receivePO = async function(id) {
+    if (!confirm('Réceptionner cette commande ? Le stock sera mis à jour automatiquement.')) return;
+    try {
+        const res = await apiFetch(`/api/stock/purchase-orders/${id}/receive`, { method: 'POST' });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Erreur');
+        showToast(`✅ ${data.items} produit(s) réceptionné(s)`, 'success');
+        loadStock();
+    } catch (err) { showToast('Erreur : ' + err.message, 'error'); }
+};
+
+window.deletePO = async function(id) {
+    if (!confirm('Supprimer ce brouillon de commande ?')) return;
+    try {
+        const res = await apiFetch(`/api/stock/purchase-orders/${id}`, { method: 'DELETE' });
+        if (!res.ok) throw new Error('Erreur');
+        showToast('🗑 Commande supprimée', 'success');
+        loadStock();
+    } catch (err) { showToast('Erreur : ' + err.message, 'error'); }
+};
+
+window.downloadPOPdf = function(id) {
+    apiFetch(`/api/stock/purchase-orders/${id}/pdf`)
+        .then(res => res.blob())
+        .then(blob => {
+            const u = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = u;
+            a.download = `BC_${id}.pdf`;
+            document.body.appendChild(a); a.click(); a.remove();
+            window.URL.revokeObjectURL(u);
+        })
+        .catch(err => showToast('Erreur : ' + err.message, 'error'));
+};
+
+// ================================================================
 // 9. CATALOGUE
 // ================================================================
 let catalogProducts = [];
@@ -2634,8 +2987,34 @@ function openProductModal(mode = 'add', product = null) {
     document.getElementById('productUnit').value = product ? (product.unit || 'u') : 'u';
     document.getElementById('productPrice').value = product ? product.unitPrice : '';
     document.getElementById('productCategory').value = product ? (product.category || '') : '';
+    
+    // Stock
+    const trackStock = product ? product.trackStock === true : false;
+    document.getElementById('productTrackStock').checked = trackStock;
+    document.getElementById('stockFields').style.display = trackStock ? 'block' : 'none';
+    document.getElementById('productStockQuantity').value = product ? (product.stockQuantity || 0) : 0;
+    document.getElementById('productStockAlert').value = product ? (product.stockAlertThreshold || 0) : 0;
+    document.getElementById('productStockMax').value = product ? (product.stockMax || 0) : 0;
+    document.getElementById('productReorderQty').value = product ? (product.reorderQuantity || 0) : 0;
+    
+    // Remplir le select fournisseurs
+    const supplierSelect = document.getElementById('productSupplier');
+    supplierSelect.innerHTML = '<option value="">— Aucun —</option>';
+    suppliersList.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s.id;
+        opt.textContent = s.name;
+        if (product && product.supplierId === s.id) opt.selected = true;
+        supplierSelect.appendChild(opt);
+    });
+    
     productModal.classList.add('show');
 }
+
+// Afficher/masquer les champs de stock
+document.getElementById('productTrackStock')?.addEventListener('change', (e) => {
+    document.getElementById('stockFields').style.display = e.target.checked ? 'block' : 'none';
+});
 function closeProductModal() { productModal.classList.remove('show'); }
 document.getElementById('addProductBtn').addEventListener('click', () => openProductModal('add'));
 document.getElementById('cancelProductBtn').addEventListener('click', closeProductModal);
@@ -2643,13 +3022,20 @@ productModal.addEventListener('click', (e) => { if (e.target === productModal) c
 
 document.getElementById('saveProductBtn').addEventListener('click', async () => {
     const id = document.getElementById('productId').value;
+    const trackStock = document.getElementById('productTrackStock').checked;
     const data = {
         ref: document.getElementById('productRef').value.trim(),
         name: document.getElementById('productName').value.trim(),
         description: document.getElementById('productDescription').value.trim(),
         unit: document.getElementById('productUnit').value.trim() || 'u',
         unitPrice: parseFloat(document.getElementById('productPrice').value),
-        category: document.getElementById('productCategory').value.trim()
+        category: document.getElementById('productCategory').value.trim(),
+        trackStock: trackStock,
+        stockQuantity: trackStock ? parseFloat(document.getElementById('productStockQuantity').value) || 0 : 0,
+        stockAlertThreshold: trackStock ? parseFloat(document.getElementById('productStockAlert').value) || 0 : 0,
+        stockMax: trackStock ? parseFloat(document.getElementById('productStockMax').value) || 0 : 0,
+        reorderQuantity: trackStock ? parseFloat(document.getElementById('productReorderQty').value) || 0 : 0,
+        supplierId: trackStock && document.getElementById('productSupplier').value ? parseInt(document.getElementById('productSupplier').value) : null
     };
     if (!data.name) { showToast('Nom requis.', 'error'); return; }
     if (isNaN(data.unitPrice) || data.unitPrice < 0) { showToast('Prix invalide.', 'error'); return; }

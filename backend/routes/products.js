@@ -29,6 +29,13 @@ router.get('/', authenticateToken, async (req, res) => {
             unit: p.unit,
             unitPrice: parseFloat(p.unit_price),
             category: p.category,
+            trackStock: p.track_stock || false,
+            stockQuantity: parseFloat(p.stock_quantity) || 0,
+            stockAlertThreshold: parseFloat(p.stock_alert_threshold) || 0,
+            stockMax: parseFloat(p.stock_max) || 0,
+            reorderQuantity: parseFloat(p.reorder_quantity) || 0,
+            supplierId: p.supplier_id,
+            costPrice: parseFloat(p.cost_price) || 0,
         })));
     } catch (err) {
         console.error(err);
@@ -40,7 +47,10 @@ router.get('/', authenticateToken, async (req, res) => {
 // POST /api/products — Créer un produit
 // ============================================================
 router.post('/', authenticateToken, async (req, res) => {
-    const { ref, name, description, unit, unitPrice, category } = req.body;
+    const {
+        ref, name, description, unit, unitPrice, category,
+        trackStock, stockQuantity, stockAlertThreshold, stockMax, reorderQuantity, supplierId
+    } = req.body;
 
     if (!name || !name.trim()) {
         return res.status(400).json({ error: 'Le nom du produit est requis.' });
@@ -52,10 +62,27 @@ router.post('/', authenticateToken, async (req, res) => {
 
     try {
         const result = await pool.query(`
-            INSERT INTO products (user_id, ref, name, description, unit, unit_price, category)
-            VALUES ($1, $2, $3, $4, $5, $6, $7)
+            INSERT INTO products (
+                user_id, ref, name, description, unit, unit_price, category,
+                track_stock, stock_quantity, stock_alert_threshold, stock_max, reorder_quantity, supplier_id
+            )
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
             RETURNING *
-        `, [req.user.id, ref || null, name.trim(), description || null, unit || 'u', price, category || null]);
+        `, [
+            req.user.id,
+            ref || null,
+            name.trim(),
+            description || null,
+            unit || 'u',
+            price,
+            category || null,
+            trackStock === true,
+            parseFloat(stockQuantity) || 0,
+            parseFloat(stockAlertThreshold) || 0,
+            parseFloat(stockMax) || 0,
+            parseFloat(reorderQuantity) || 0,
+            supplierId ? parseInt(supplierId) : null
+        ]);
 
         const p = result.rows[0];
         res.status(201).json({
@@ -66,6 +93,12 @@ router.post('/', authenticateToken, async (req, res) => {
             unit: p.unit,
             unitPrice: parseFloat(p.unit_price),
             category: p.category,
+            trackStock: p.track_stock || false,
+            stockQuantity: parseFloat(p.stock_quantity) || 0,
+            stockAlertThreshold: parseFloat(p.stock_alert_threshold) || 0,
+            stockMax: parseFloat(p.stock_max) || 0,
+            reorderQuantity: parseFloat(p.reorder_quantity) || 0,
+            supplierId: p.supplier_id,
         });
     } catch (err) {
         console.error(err);
@@ -80,7 +113,10 @@ router.put('/:id', authenticateToken, async (req, res) => {
     const productId = parseInt(req.params.id);
     if (!productId) return res.status(400).json({ error: 'ID invalide.' });
 
-    const { ref, name, description, unit, unitPrice, category } = req.body;
+    const {
+        ref, name, description, unit, unitPrice, category,
+        trackStock, stockQuantity, stockAlertThreshold, stockMax, reorderQuantity, supplierId
+    } = req.body;
 
     if (!name || !name.trim()) {
         return res.status(400).json({ error: 'Le nom du produit est requis.' });
@@ -93,10 +129,28 @@ router.put('/:id', authenticateToken, async (req, res) => {
     try {
         const result = await pool.query(`
             UPDATE products
-            SET ref = $1, name = $2, description = $3, unit = $4, unit_price = $5, category = $6, updated_at = NOW()
-            WHERE id = $7 AND user_id = $8
+            SET ref = $1, name = $2, description = $3, unit = $4, unit_price = $5, category = $6,
+                track_stock = $7, stock_quantity = $8, stock_alert_threshold = $9,
+                stock_max = $10, reorder_quantity = $11, supplier_id = $12,
+                updated_at = NOW()
+            WHERE id = $13 AND user_id = $14
             RETURNING *
-        `, [ref || null, name.trim(), description || null, unit || 'u', price, category || null, productId, req.user.id]);
+        `, [
+            ref || null,
+            name.trim(),
+            description || null,
+            unit || 'u',
+            price,
+            category || null,
+            trackStock === true,
+            parseFloat(stockQuantity) || 0,
+            parseFloat(stockAlertThreshold) || 0,
+            parseFloat(stockMax) || 0,
+            parseFloat(reorderQuantity) || 0,
+            supplierId ? parseInt(supplierId) : null,
+            productId,
+            req.user.id
+        ]);
 
         if (result.rows.length === 0) {
             return res.status(404).json({ error: 'Produit non trouvé.' });
@@ -110,6 +164,12 @@ router.put('/:id', authenticateToken, async (req, res) => {
             unit: p.unit,
             unitPrice: parseFloat(p.unit_price),
             category: p.category,
+            trackStock: p.track_stock || false,
+            stockQuantity: parseFloat(p.stock_quantity) || 0,
+            stockAlertThreshold: parseFloat(p.stock_alert_threshold) || 0,
+            stockMax: parseFloat(p.stock_max) || 0,
+            reorderQuantity: parseFloat(p.reorder_quantity) || 0,
+            supplierId: p.supplier_id,
         });
     } catch (err) {
         console.error(err);
