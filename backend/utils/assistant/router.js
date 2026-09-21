@@ -57,20 +57,38 @@ Réponds UNIQUEMENT en JSON : {"intent": "nom_categorie", "args": {"query": "ter
 Ne mets AUCUN texte en dehors du JSON.`;
 
     try {
-        const completion = await groqClient.chat.completions.create({
-            model: 'llama-3.3-70b-versatile',
-            messages: [{ role: 'user', content: prompt }],
-            temperature: 0,
-            max_tokens: 150,
-        });
-        let content = completion.choices[0].message.content.trim();
-        content = content.replace(/```json/g, '').replace(/```/g, '').trim();
-        const parsed = JSON.parse(content);
+        const models = [
+            'openai/gpt-oss-20b',
+            'openai/gpt-oss-120b',
+            'llama-3.1-8b-instant',
+            'llama3-70b-8192',
+            'gemma2-9b-it',
+        ];
 
-        if (!INTENTS.includes(parsed.intent)) {
-            return { intent: 'chat', args: {} };
+        let lastError = null;
+        for (const model of models) {
+            try {
+                const completion = await groqClient.chat.completions.create({
+                    model: model,
+                    messages: [{ role: 'user', content: prompt }],
+                    temperature: 0,
+                    max_tokens: 150,
+                });
+                let content = completion.choices[0].message.content.trim();
+                content = content.replace(/```json/g, '').replace(/```/g, '').trim();
+                const parsed = JSON.parse(content);
+
+                if (!INTENTS.includes(parsed.intent)) {
+                    return { intent: 'chat', args: {} };
+                }
+                return parsed;
+            } catch (err) {
+                console.warn(`Routeur Groq (${model}) échec: ${err.message}`);
+                lastError = err;
+            }
         }
-        return parsed;
+        console.warn('Routeur Groq: tous les modèles ont échoué.');
+        return { intent: 'chat', args: {} };
     } catch (err) {
         console.warn('Routeur Groq échec:', err.message);
         return { intent: 'chat', args: {} };

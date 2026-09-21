@@ -51,39 +51,53 @@ async function formatResponse(userMessage, intent, data) {
         systemContext = `L'utilisateur demande de l'aide. Tu peux lui expliquer les fonctionnalités disponibles : consulter le catalogue, les clients, les services, les fournisseurs, les devis, les factures, le stock. Tu peux aussi répondre à des questions générales sur l'application. Réponds en français, de façon claire et chaleureuse.`;
     } else if (data) {
         systemContext = `Tu es un assistant pour une application de gestion de devis.
-L'utilisateur a demandé : "${userMessage}"
+        L'utilisateur a demandé : "${userMessage}"
 
-Voici les données réelles retournées par la base de données :
-\`\`\`json
-${JSON.stringify(data, null, 2)}
-\`\`\`
+        Voici les données réelles retournées par la base de données :
+        \`\`\`json
+        ${JSON.stringify(data, null, 2)}
+        \`\`\`
 
-Formule une réponse naturelle, concise et utile en français. 
-- Si c'est une liste, présente-la de manière lisible (avec des puces ou un tableau simple si pertinent).
-- Mets en avant les chiffres importants.
-- Ne réinvente pas les données. Utilise uniquement ce qui est fourni.
-- Si le résultat est vide, dis-le poliment.
-- Ne mets pas de JSON dans ta réponse.`;
+        Formule une réponse naturelle, concise et utile en français. 
+        - Si c'est une liste, présente-la de manière lisible (avec des puces ou un tableau simple si pertinent).
+        - Mets en avant les chiffres importants.
+        - Ne réinvente pas les données. Utilise uniquement ce qui est fourni.
+        - Si le résultat est vide, dis-le poliment.
+        - Ne mets pas de JSON dans ta réponse.`;
     } else {
         systemContext = `Tu es un assistant conversationnel pour une application de gestion de devis. Réponds en français de façon utile et chaleureuse.`;
     }
 
-    try {
-        const completion = await groqClient.chat.completions.create({
-            model: 'llama-3.3-70b-versatile',
-            messages: [
-                { role: 'system', content: systemContext },
-                { role: 'user', content: userMessage }
-            ],
-            temperature: 0.3,
-            max_tokens: 800,
-        });
-        return completion.choices[0].message.content.trim();
-    } catch (err) {
-        console.warn('Format Groq échec:', err.message);
-        if (data) return `Données : ${JSON.stringify(data)}`;
-        return 'Je n\'ai pas pu générer de réponse. Réessayez.';
+    const models = [
+        'openai/gpt-oss-20b',
+        'openai/gpt-oss-120b',
+        'llama-3.1-8b-instant',
+        'llama3-70b-8192',
+        'gemma2-9b-it',
+    ];
+
+    let lastError = null;
+    for (const model of models) {
+        try {
+            const completion = await groqClient.chat.completions.create({
+                model: model,
+                messages: [
+                    { role: 'system', content: systemContext },
+                    { role: 'user', content: userMessage }
+                ],
+                temperature: 0.3,
+                max_tokens: 800,
+            });
+            console.log(`✅ Assistant: réponse via ${model}`);
+            return completion.choices[0].message.content.trim();
+        } catch (err) {
+            console.warn(`Format Groq (${model}) échec: ${err.message}`);
+            lastError = err;
+        }
     }
+    console.warn('Format Groq: tous les modèles ont échoué.');
+    if (data) return `Données : ${JSON.stringify(data)}`;
+    return 'Je n\'ai pas pu générer de réponse. Réessayez.';
 }
 
 // ------------------------------------------------------------
