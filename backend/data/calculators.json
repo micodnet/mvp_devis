@@ -1,0 +1,639 @@
+{
+    "peinture": {
+        "label": "Peinture",
+        "unit": "m²",
+        "detectKeywords": ["peinture", "peindre", "peins", "badigeon", "sous-couche", "enduit", "acrylique", "glycéro"],
+        "defaultConsumption": {
+            "rendementParLitre": 10,
+            "nbCouches": 2,
+            "pertePourcentage": 5
+        },
+        "materials": [
+            {
+                "name": "Peinture acrylique mate",
+                "unit": "L",
+                "formula": "surface * nbCouches / rendementParLitre",
+                "unitPriceRef": "peinture_L",
+                "fallbackPrice": 12.50,
+                "roundUpTo": 1
+            },
+            {
+                "name": "Sous-couche universelle",
+                "unit": "L",
+                "formula": "surface / rendementParLitre",
+                "unitPriceRef": "souscouche_L",
+                "fallbackPrice": 9.50,
+                "roundUpTo": 1
+            },
+            {
+                "name": "Bâche de protection",
+                "unit": "m²",
+                "formula": "surface * 1.2",
+                "unitPriceRef": "bache_m2",
+                "fallbackPrice": 1.20,
+                "roundUpTo": 1
+            },
+            {
+                "name": "Adhésif de masquage",
+                "unit": "ml",
+                "formula": "perimetre * 1.5",
+                "unitPriceRef": "adhesif_ml",
+                "fallbackPrice": 0.80,
+                "roundUpTo": 1
+            }
+        ],
+        "labor": {
+            "rendementParHeure": 12,
+            "tauxHoraireDefault": 45,
+            "description": "12 m²/heure en moyenne (préparation + 2 couches)"
+        }
+    },
+
+    "carrelage_sol": {
+        "label": "Carrelage sol",
+        "unit": "m²",
+        "detectKeywords": ["carrelage", "carrelé", "carreler", "faïence", "grès", "céramique", "sol"],
+        "defaultConsumption": {
+            "pertePourcentage": 10
+        },
+        "materials": [
+            {
+                "name": "Carrelage (avec 10% de perte)",
+                "unit": "m²",
+                "formula": "surface * 1.10",
+                "unitPriceRef": "carrelage_m2",
+                "fallbackPrice": 25.00,
+                "roundUpTo": 0.5
+            },
+            {
+                "name": "Colle à carrelage",
+                "unit": "kg",
+                "formula": "surface * 4",
+                "unitPriceRef": "colle_kg",
+                "fallbackPrice": 0.80,
+                "roundUpTo": 5
+            },
+            {
+                "name": "Joint de carrelage",
+                "unit": "kg",
+                "formula": "surface * 0.5",
+                "unitPriceRef": "joint_kg",
+                "fallbackPrice": 3.50,
+                "roundUpTo": 1
+            },
+            {
+                "name": "Croisillons",
+                "unit": "sachet",
+                "formula": "surface / 10",
+                "unitPriceRef": "croisillons_sachet",
+                "fallbackPrice": 4.00,
+                "roundUpTo": 1
+            }
+        ],
+        "labor": {
+            "rendementParHeure": 3,
+            "tauxHoraireDefault": 45,
+            "description": "3 m²/heure (pose complète avec joints)"
+        }
+    },
+
+    "carrelage_mur": {
+        "label": "Carrelage mural",
+        "unit": "m²",
+        "detectKeywords": ["faïence murale", "carrelage mural", "mur de douche", "crédence"],
+        "defaultConsumption": {
+            "pertePourcentage": 10
+        },
+        "materials": [
+            {
+                "name": "Faïence murale (avec 10% perte)",
+                "unit": "m²",
+                "formula": "surface * 1.10",
+                "unitPriceRef": "faience_m2",
+                "fallbackPrice": 30.00,
+                "roundUpTo": 0.5
+            },
+            {
+                "name": "Colle à carrelage murale",
+                "unit": "kg",
+                "formula": "surface * 4",
+                "unitPriceRef": "colle_kg",
+                "fallbackPrice": 0.80,
+                "roundUpTo": 5
+            },
+            {
+                "name": "Joint hydrofuge",
+                "unit": "kg",
+                "formula": "surface * 0.5",
+                "unitPriceRef": "joint_hydro_kg",
+                "fallbackPrice": 5.00,
+                "roundUpTo": 1
+            }
+        ],
+        "labor": {
+            "rendementParHeure": 2.5,
+            "tauxHoraireDefault": 45,
+            "description": "2,5 m²/heure"
+        }
+    },
+
+    "parquet": {
+        "label": "Parquet",
+        "unit": "m²",
+        "detectKeywords": ["parquet", "lame", "stratifié", "flottant", "bois massif", "contre-collé"],
+        "defaultConsumption": {
+            "pertePourcentage": 8
+        },
+        "materials": [
+            {
+                "name": "Parquet (avec 8% perte)",
+                "unit": "m²",
+                "formula": "surface * 1.08",
+                "unitPriceRef": "parquet_m2",
+                "fallbackPrice": 35.00,
+                "roundUpTo": 0.5
+            },
+            {
+                "name": "Sous-couche isolante",
+                "unit": "m²",
+                "formula": "surface * 1.05",
+                "unitPriceRef": "souscouche_m2",
+                "fallbackPrice": 3.50,
+                "roundUpTo": 1
+            },
+            {
+                "name": "Plinthes",
+                "unit": "ml",
+                "formula": "perimetre * 1.05",
+                "unitPriceRef": "plinthe_ml",
+                "fallbackPrice": 8.00,
+                "roundUpTo": 0.5
+            },
+            {
+                "name": "Barre de seuil",
+                "unit": "u",
+                "formula": "1",
+                "unitPriceRef": "barre_seuil_u",
+                "fallbackPrice": 15.00,
+                "roundUpTo": 1
+            }
+        ],
+        "labor": {
+            "rendementParHeure": 4,
+            "tauxHoraireDefault": 45,
+            "description": "4 m²/heure"
+        }
+    },
+
+    "cloison_placo": {
+        "label": "Cloison en plaques de plâtre",
+        "unit": "m²",
+        "detectKeywords": ["cloison", "placo", "plaque de plâtre", "ba13", "placoplatre", "séparation", "brique plâtrière"],
+        "defaultConsumption": {
+            "pertePourcentage": 10
+        },
+        "materials": [
+            {
+                "name": "Plaque de plâtre BA13",
+                "unit": "plaque",
+                "formula": "surface * 2 / 2.88",
+                "unitPriceRef": "ba13_plaque",
+                "fallbackPrice": 8.50,
+                "roundUpTo": 1,
+                "note": "1 plaque = 1.20m x 2.40m = 2.88 m². On double la surface (2 faces)."
+            },
+            {
+                "name": "Rail R48 (bas)",
+                "unit": "ml",
+                "formula": "longueur * 2",
+                "unitPriceRef": "rail_r48_ml",
+                "fallbackPrice": 3.50,
+                "roundUpTo": 1
+            },
+            {
+                "name": "Montant M48 (vertical)",
+                "unit": "u",
+                "formula": "ceil(longueur / 0.6) + 1",
+                "unitPriceRef": "montant_m48_u",
+                "fallbackPrice": 4.20,
+                "roundUpTo": 1,
+                "note": "Entraxe 60 cm + 1 de départ"
+            },
+            {
+                "name": "Laine de verre (isolant)",
+                "unit": "m²",
+                "formula": "surface * 1.05",
+                "unitPriceRef": "laine_verre_m2",
+                "fallbackPrice": 4.50,
+                "roundUpTo": 1
+            },
+            {
+                "name": "Vis TTPC 25mm",
+                "unit": "boîte",
+                "formula": "surface * 25 / 500",
+                "unitPriceRef": "vis_boite",
+                "fallbackPrice": 12.00,
+                "roundUpTo": 1,
+                "note": "25 vis/m², 500 vis/boîte"
+            },
+            {
+                "name": "Bande à joint",
+                "unit": "ml",
+                "formula": "surface * 1.5",
+                "unitPriceRef": "bande_ml",
+                "fallbackPrice": 0.50,
+                "roundUpTo": 5
+            },
+            {
+                "name": "Enduit à joint",
+                "unit": "kg",
+                "formula": "surface * 0.4",
+                "unitPriceRef": "enduit_joint_kg",
+                "fallbackPrice": 1.80,
+                "roundUpTo": 5
+            }
+        ],
+        "labor": {
+            "rendementParHeure": 2.5,
+            "tauxHoraireDefault": 45,
+            "description": "2,5 m²/heure (montage + bandes + enduit)"
+        }
+    },
+
+    "doublage_placo": {
+        "label": "Doublage mural placo",
+        "unit": "m²",
+        "detectKeywords": ["doublage", "contre-cloison", "doubler un mur", "isolation murale intérieure"],
+        "defaultConsumption": {
+            "pertePourcentage": 10
+        },
+        "materials": [
+            {
+                "name": "Plaque de plâtre BA13",
+                "unit": "plaque",
+                "formula": "surface / 2.88",
+                "unitPriceRef": "ba13_plaque",
+                "fallbackPrice": 8.50,
+                "roundUpTo": 1
+            },
+            {
+                "name": "Fourrure / rail",
+                "unit": "ml",
+                "formula": "longueur * 3",
+                "unitPriceRef": "fourrure_ml",
+                "fallbackPrice": 2.80,
+                "roundUpTo": 1,
+                "note": "3 fourrures au m² (entraxe 40cm)"
+            },
+            {
+                "name": "Laine de verre",
+                "unit": "m²",
+                "formula": "surface * 1.05",
+                "unitPriceRef": "laine_verre_m2",
+                "fallbackPrice": 4.50,
+                "roundUpTo": 1
+            },
+            {
+                "name": "Vis TTPC 25mm",
+                "unit": "boîte",
+                "formula": "surface * 20 / 500",
+                "unitPriceRef": "vis_boite",
+                "fallbackPrice": 12.00,
+                "roundUpTo": 1
+            },
+            {
+                "name": "Bande + enduit à joint (forfait)",
+                "unit": "forfait",
+                "formula": "surface / 10",
+                "unitPriceRef": "forfait_joint",
+                "fallbackPrice": 12.00,
+                "roundUpTo": 1
+            }
+        ],
+        "labor": {
+            "rendementParHeure": 3.5,
+            "tauxHoraireDefault": 45,
+            "description": "3,5 m²/heure"
+        }
+    },
+
+    "plafond_suspendu": {
+        "label": "Plafond suspendu en placo",
+        "unit": "m²",
+        "detectKeywords": ["plafond suspendu", "faux plafond", "plafond placo", "plafond ba13", "plafonnage"],
+        "defaultConsumption": {
+            "pertePourcentage": 10
+        },
+        "materials": [
+            {
+                "name": "Plaque de plâtre BA13 (plafond)",
+                "unit": "plaque",
+                "formula": "surface / 2.88",
+                "unitPriceRef": "ba13_plaque",
+                "fallbackPrice": 8.50,
+                "roundUpTo": 1
+            },
+            {
+                "name": "Fourrure (profil porteur)",
+                "unit": "ml",
+                "formula": "surface / 0.6",
+                "unitPriceRef": "fourrure_ml",
+                "fallbackPrice": 2.80,
+                "roundUpTo": 1,
+                "note": "Entraxe 60 cm"
+            },
+            {
+                "name": "Suspentes",
+                "unit": "u",
+                "formula": "ceil(surface / 1.2)",
+                "unitPriceRef": "suspente_u",
+                "fallbackPrice": 1.50,
+                "roundUpTo": 1,
+                "note": "1 suspente par m² environ (espacement 1.2m x 1m)"
+            },
+            {
+                "name": "Rail périphérique",
+                "unit": "ml",
+                "formula": "perimetre * 1.1",
+                "unitPriceRef": "rail_periph_ml",
+                "fallbackPrice": 3.20,
+                "roundUpTo": 1
+            },
+            {
+                "name": "Vis TTPC 25mm",
+                "unit": "boîte",
+                "formula": "surface * 25 / 500",
+                "unitPriceRef": "vis_boite",
+                "fallbackPrice": 12.00,
+                "roundUpTo": 1
+            },
+            {
+                "name": "Bande + enduit à joint (forfait plafond)",
+                "unit": "forfait",
+                "formula": "surface / 8",
+                "unitPriceRef": "forfait_joint",
+                "fallbackPrice": 15.00,
+                "roundUpTo": 1
+            }
+        ],
+        "labor": {
+            "rendementParHeure": 2,
+            "tauxHoraireDefault": 45,
+            "description": "2 m²/heure (structure + plaques + finitions)"
+        }
+    },
+
+    "isolation_combles": {
+        "label": "Isolation de combles",
+        "unit": "m²",
+        "detectKeywords": ["isolation combles", "isoler les combles", "laine de verre combles", "soufflage"],
+        "defaultConsumption": {
+            "pertePourcentage": 5
+        },
+        "materials": [
+            {
+                "name": "Isolant (laine de verre / roche)",
+                "unit": "m²",
+                "formula": "surface * 1.05",
+                "unitPriceRef": "isolant_m2",
+                "fallbackPrice": 6.50,
+                "roundUpTo": 1
+            },
+            {
+                "name": "Pare-vapeur",
+                "unit": "m²",
+                "formula": "surface * 1.10",
+                "unitPriceRef": "parevapeur_m2",
+                "fallbackPrice": 1.20,
+                "roundUpTo": 1
+            },
+            {
+                "name": "Adhésif pare-vapeur",
+                "unit": "ml",
+                "formula": "perimetre + surface * 0.3",
+                "unitPriceRef": "adhesif_pv_ml",
+                "fallbackPrice": 2.00,
+                "roundUpTo": 1
+            }
+        ],
+        "labor": {
+            "rendementParHeure": 15,
+            "tauxHoraireDefault": 40,
+            "description": "15 m²/heure (déroulage + agrafage)"
+        }
+    },
+
+    "maconnerie_bloc": {
+        "label": "Maçonnerie (blocs béton)",
+        "unit": "m²",
+        "detectKeywords": ["maçonnerie", "bloc béton", "parpaing", "agglo", "mur en bloc"],
+        "defaultConsumption": {
+            "pertePourcentage": 5
+        },
+        "materials": [
+            {
+                "name": "Blocs béton 20x20x50",
+                "unit": "u",
+                "formula": "surface * 12.5",
+                "unitPriceRef": "bloc_beton_u",
+                "fallbackPrice": 1.80,
+                "roundUpTo": 1,
+                "note": "12,5 blocs par m² (avec joints)"
+            },
+            {
+                "name": "Mortier colle (sac de 25 kg)",
+                "unit": "sac",
+                "formula": "surface * 0.8",
+                "unitPriceRef": "mortier_sac",
+                "fallbackPrice": 6.00,
+                "roundUpTo": 1,
+                "note": "~20 kg de mortier par m²"
+            },
+            {
+                "name": "Fer à béton (chaînage)",
+                "unit": "ml",
+                "formula": "longueur * 2",
+                "unitPriceRef": "fer_ml",
+                "fallbackPrice": 2.50,
+                "roundUpTo": 1
+            }
+        ],
+        "labor": {
+            "rendementParHeure": 1.5,
+            "tauxHoraireDefault": 50,
+            "description": "1,5 m²/heure (pose + joints)"
+        }
+    },
+
+    "electricite_prise": {
+        "label": "Installation électrique (prise)",
+        "unit": "u",
+        "detectKeywords": ["prise électrique", "poser une prise", "ajouter une prise", "installation électrique"],
+        "defaultConsumption": {
+            "pertePourcentage": 0
+        },
+        "materials": [
+            {
+                "name": "Prise complète (encastrée)",
+                "unit": "u",
+                "formula": "quantite",
+                "unitPriceRef": "prise_u",
+                "fallbackPrice": 8.00,
+                "roundUpTo": 1
+            },
+            {
+                "name": "Câble électrique 2.5mm²",
+                "unit": "ml",
+                "formula": "quantite * 15",
+                "unitPriceRef": "cable_ml",
+                "fallbackPrice": 1.20,
+                "roundUpTo": 5,
+                "note": "15m en moyenne par prise (ramené au tableau)"
+            },
+            {
+                "name": "Gaine ICTA",
+                "unit": "ml",
+                "formula": "quantite * 15",
+                "unitPriceRef": "gaine_ml",
+                "fallbackPrice": 0.60,
+                "roundUpTo": 5
+            },
+            {
+                "name": "Boîte d'encastrement",
+                "unit": "u",
+                "formula": "quantite",
+                "unitPriceRef": "boite_u",
+                "fallbackPrice": 2.00,
+                "roundUpTo": 1
+            }
+        ],
+        "labor": {
+            "rendementParHeure": 0.5,
+            "tauxHoraireDefault": 60,
+            "description": "1 prise / 2 heures (avec tirage de câble)"
+        }
+    },
+
+    "plomberie_point_eau": {
+        "label": "Plomberie (point d'eau)",
+        "unit": "u",
+        "detectKeywords": ["plomberie", "point d'eau", "installer un lavabo", "pose sanitaire", "raccordement"],
+        "defaultConsumption": {
+            "pertePourcentage": 0
+        },
+        "materials": [
+            {
+                "name": "Tube PER (aller + retour)",
+                "unit": "ml",
+                "formula": "quantite * 20",
+                "unitPriceRef": "per_ml",
+                "fallbackPrice": 1.50,
+                "roundUpTo": 5
+            },
+            {
+                "name": "Raccords et coudes",
+                "unit": "u",
+                "formula": "quantite * 8",
+                "unitPriceRef": "raccord_u",
+                "fallbackPrice": 2.50,
+                "roundUpTo": 1
+            },
+            {
+                "name": "Robinet d'arrêt",
+                "unit": "u",
+                "formula": "quantite * 2",
+                "unitPriceRef": "robinet_arret_u",
+                "fallbackPrice": 12.00,
+                "roundUpTo": 1
+            },
+            {
+                "name": "Siphon et évacuation",
+                "unit": "u",
+                "formula": "quantite",
+                "unitPriceRef": "siphon_u",
+                "fallbackPrice": 15.00,
+                "roundUpTo": 1
+            }
+        ],
+        "labor": {
+            "rendementParHeure": 0.33,
+            "tauxHoraireDefault": 65,
+            "description": "1 point d'eau / 3 heures"
+        }
+    },
+
+    "toiture_tuiles": {
+        "label": "Toiture (tuiles)",
+        "unit": "m²",
+        "detectKeywords": ["toiture", "tuiles", "couvrir le toit", "rénovation toiture"],
+        "defaultConsumption": {
+            "pertePourcentage": 7
+        },
+        "materials": [
+            {
+                "name": "Tuiles (avec 7% perte)",
+                "unit": "u",
+                "formula": "surface * 12 * 1.07",
+                "unitPriceRef": "tuile_u",
+                "fallbackPrice": 1.20,
+                "roundUpTo": 10,
+                "note": "12 tuiles par m²"
+            },
+            {
+                "name": "Liteaux",
+                "unit": "ml",
+                "formula": "surface * 3.5",
+                "unitPriceRef": "liteau_ml",
+                "fallbackPrice": 1.80,
+                "roundUpTo": 5
+            },
+            {
+                "name": "Écran sous-toiture",
+                "unit": "m²",
+                "formula": "surface * 1.10",
+                "unitPriceRef": "ecran_m2",
+                "fallbackPrice": 2.50,
+                "roundUpTo": 1
+            }
+        ],
+        "labor": {
+            "rendementParHeure": 1,
+            "tauxHoraireDefault": 55,
+            "description": "1 m²/heure (pose complète)"
+        }
+    },
+
+    "finition_enduit": {
+        "label": "Finition enduit / ratissage",
+        "unit": "m²",
+        "detectKeywords": ["ratissage", "enduit de finition", "enduit lissage", "finition murale"],
+        "defaultConsumption": {
+            "pertePourcentage": 5
+        },
+        "materials": [
+            {
+                "name": "Enduit de lissage (sac 25kg)",
+                "unit": "sac",
+                "formula": "surface * 1.2 / 25",
+                "unitPriceRef": "enduit_lissage_sac",
+                "fallbackPrice": 18.00,
+                "roundUpTo": 1,
+                "note": "~1.2 kg/m²"
+            },
+            {
+                "name": "Papier abrasif (rouleau)",
+                "unit": "u",
+                "formula": "surface / 20",
+                "unitPriceRef": "abrasif_u",
+                "fallbackPrice": 8.00,
+                "roundUpTo": 1
+            }
+        ],
+        "labor": {
+            "rendementParHeure": 8,
+            "tauxHoraireDefault": 40,
+            "description": "8 m²/heure (ratissage + ponçage)"
+        }
+    }
+
+}

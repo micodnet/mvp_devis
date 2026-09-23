@@ -40,22 +40,22 @@
     
     <!-- JSON-LD Structured Data pour Google -->
     <script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "SoftwareApplication",
-        "name": "Devis Express Pro",
-        "description": "Générateur de devis professionnels assisté par intelligence artificielle. Créez vos devis en 10 secondes à partir de n'importe quelle demande client.",
-        "url": "https://mvp-devis.onrender.com",
-        "applicationCategory": "BusinessApplication",
-        "operatingSystem": "Web",
-        "offers": {
-            "@type": "Offer",
-            "price": "0",
-            "priceCurrency": "EUR",
-            "description": "Plan gratuit avec 3 devis par mois"
+        {
+            "@context": "https://schema.org",
+            "@type": "SoftwareApplication",
+            "name": "Devis Express Pro",
+            "description": "Générateur de devis professionnels assisté par intelligence artificielle. Créez vos devis en 10 secondes à partir de n'importe quelle demande client.",
+            "url": "https://mvp-devis.onrender.com",
+            "applicationCategory": "BusinessApplication",
+            "operatingSystem": "Web",
+            "offers": {
+                "@type": "Offer",
+                "price": "0",
+                "priceCurrency": "EUR",
+                "description": "Plan gratuit avec 3 devis par mois"
+            }
+            
         }
-        
-    }
     </script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="/i18n.js"></script>
@@ -627,6 +627,76 @@
             gap: 6px;
             align-items: center;
         }
+                /* Toggles de l'assistant (mode vocal continu, envoi direct) */
+        .assistant-toggles {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            flex-shrink: 0;
+        }
+        .assistant-toggle {
+            background: #1a253b;
+            border: 1px solid #2a3a55;
+            color: #94a3b8;
+            height: 30px;
+            min-width: 0;
+            padding: 0 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: 0.2s;
+            white-space: nowrap;
+            line-height: 1;
+            box-sizing: border-box;
+            flex-shrink: 0;
+        }
+        .assistant-toggle:hover {
+            background: #24324b;
+            color: #fff;
+        }
+        .assistant-toggle.active {
+            background: rgba(249,115,22,0.15);
+            border-color: #f97316;
+            color: #f97316;
+        }
+        .assistant-toggle .led {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #475569;
+            transition: 0.2s;
+            flex-shrink: 0;
+        }
+        .assistant-toggle.active .led {
+            background: #22c55e;
+            box-shadow: 0 0 6px #22c55e;
+        }
+        .assistant-toggle .label {
+            display: inline-block;
+            line-height: 1;
+        }
+
+        /* Séparateur visuel avant les toggles */
+        .assistant-header .actions .assistant-toggles {
+            border-left: 1px solid #1e2a41;
+            padding-left: 10px;
+            margin-left: 4px;
+        }
+
+        @media (max-width: 500px) {
+            .assistant-toggle .label {
+                display: none;
+            }
+            .assistant-toggle {
+                padding: 0 8px;
+                min-width: 32px;
+            }
+        }
         .assistant-header button {
             background: #1a253b;
             border: 1px solid #2a3a55;
@@ -736,7 +806,7 @@
             align-items: flex-end;
             flex-shrink: 0;
         }
-        #assistantInput {
+        #assistantInput, #assistantTabInput {
             flex: 1;
             background: #0b1120;
             border: 1px solid #2a3a55;
@@ -763,6 +833,7 @@
             font-size: 16px;
             flex-shrink: 0;
             transition: 0.2s;
+            position: relative;
         }
         #assistantSend {
             background: #f97316;
@@ -782,6 +853,67 @@
             color: #fff;
             animation: pulseMic 1s infinite;
         }
+                /* Indicateur visuel d'enregistrement */
+        #assistantMic.recording,
+        #assistantTabMic.recording {
+            background: #dc2626 !important;
+            color: #fff !important;
+            animation: pulseMic 1s infinite;
+        }
+        #assistantMic.recording::after,
+        #assistantTabMic.recording::after {
+            content: '';
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            width: 12px;
+            height: 12px;
+            background: #dc2626;
+            border-radius: 50%;
+            animation: pulseDot 1s infinite;
+        }
+        /* Tooltip vocal */
+        .voice-hint {
+            position: fixed;
+            bottom: 130px;
+            right: 90px;
+            background: #161f32;
+            border: 1px solid #f97316;
+            color: #f97316;
+            padding: 8px 16px;
+            border-radius: 40px;
+            font-size: 12px;
+            font-weight: 600;
+            z-index: 4100;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+        .voice-hint.show {
+            opacity: 1;
+        }
+        /* Message d'erreur vocal */
+        .voice-error {
+            position: fixed;
+            bottom: 130px;
+            right: 90px;
+            background: #1f1220;
+            border: 1px solid #7f1d1d;
+            color: #f87171;
+            padding: 10px 16px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 500;
+            z-index: 4100;
+            max-width: 300px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+        .voice-error.show {
+            opacity: 1;
+        }
         @keyframes pulseMic {
             0%,100% { box-shadow: 0 0 0 0 rgba(220,38,38,0.7); }
             50% { box-shadow: 0 0 0 10px rgba(220,38,38,0); }
@@ -799,6 +931,80 @@
             }
             #assistantBubble { bottom: 84px; right: 16px; width: 54px; height: 54px; font-size: 22px; }
         }
+
+        /* Carte d'action en attente de confirmation */
+        .msg.action-draft {
+            align-self: flex-start;
+            background: #1a253b;
+            border: 1px solid #f97316;
+            color: #e2e8f0;
+            max-width: 90%;
+            border-radius: 16px;
+            padding: 16px 18px;
+        }
+        .msg.action-draft .draft-title {
+            font-weight: 700;
+            color: #f97316;
+            font-size: 13px;
+            margin-bottom: 10px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+        .msg.action-draft .draft-summary {
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+        .msg.action-draft .draft-preview {
+            background: #0b1120;
+            border-radius: 10px;
+            padding: 12px 14px;
+            margin-bottom: 14px;
+            font-size: 13px;
+            line-height: 1.7;
+            border: 1px solid #2a3a55;
+        }
+        .msg.action-draft .draft-preview .row {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            border-bottom: 1px solid rgba(42,58,85,0.5);
+            padding: 4px 0;
+        }
+        .msg.action-draft .draft-preview .row:last-child { border-bottom: none; }
+        .msg.action-draft .draft-preview .key { color: #94a3b8; }
+        .msg.action-draft .draft-preview .val { color: #e2e8f0; font-weight: 500; text-align: right; }
+        .msg.action-draft .draft-actions {
+            display: flex;
+            gap: 8px;
+        }
+        .msg.action-draft .draft-actions button {
+            flex: 1;
+            padding: 10px 16px;
+            border-radius: 60px;
+            border: none;
+            font-weight: 700;
+            font-size: 13px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .msg.action-draft .draft-actions .confirm {
+            background: #f97316;
+            color: #0b1120;
+        }
+        .msg.action-draft .draft-actions .confirm:hover { background: #ea580c; }
+        .msg.action-draft .draft-actions .cancel {
+            background: #1a253b;
+            border: 1px solid #2a3a55;
+            color: #cbd5e1;
+        }
+        .msg.action-draft .draft-actions .cancel:hover { background: #3f1e24; color: #f87171; border-color: #7f1d1d; }
+        .msg.action-draft.done {
+            border-color: #22c55e;
+            background: rgba(34,197,94,0.05);
+        }
+        .msg.action-draft.done .draft-title { color: #22c55e; }
     </style>
 </head>
 <body>
@@ -1471,6 +1677,20 @@
                     <span data-i18n="assistant.title">Assistant IA</span>
                 </div>
                 <div class="actions">
+                    <div class="assistant-toggles">
+                        <button class="assistant-toggle active" id="toggleVocalContinueTab" title="Mode vocal continu (Ctrl+M pour parler)">
+                            <span class="led"></span>
+                            <span class="label">🎤 Continu</span>
+                        </button>
+                        <button class="assistant-toggle" id="toggleEnvoiDirectTab" title="Envoyer automatiquement après dictée">
+                            <span class="led"></span>
+                            <span class="label">⚡ Auto</span>
+                        </button>
+                        <button class="assistant-toggle" id="toggleAudioResponse" title="Réponse vocale activée/désactivée">
+                            <span class="led"></span>
+                            <span class="label">🔊 Audio</span>
+                        </button>
+                    </div>
                     <button id="assistantTabClear" title="Effacer la conversation">🗑</button>
                 </div>
             </div>
@@ -1478,7 +1698,7 @@
             <div class="assistant-suggestions" id="assistantTabSuggestions">
                 <button data-suggestion="Combien j'ai de produits ?">Combien j'ai de produits ?</button>
                 <button data-suggestion="Quel est mon chiffre d'affaires ?">Mon chiffre d'affaires</button>
-                <button data-suggestion="Cherche le client Dupont">Chercher un client</button>
+                <button data-suggestion="Cherche la liste de clients">Chercher un client</button>
                 <button data-suggestion="Est-ce que j'ai des alertes de stock ?">Alertes stock</button>
                 <button data-suggestion="Fais-moi un résumé de mon activité">Résumé activité</button>
             </div>
@@ -1977,6 +2197,20 @@
             <span data-i18n="assistant.title">Assistant IA</span>
         </div>
         <div class="actions">
+            <div class="assistant-toggles">
+                <button class="assistant-toggle active" id="toggleVocalContinue" title="Mode vocal continu (Ctrl+M pour parler)">
+                    <span class="led"></span>
+                    <span class="label">🎤 Continu</span>
+                </button>
+                <button class="assistant-toggle" id="toggleEnvoiDirect" title="Envoyer automatiquement après dictée">
+                    <span class="led"></span>
+                    <span class="label">⚡ Auto</span>
+                </button>
+                <button class="assistant-toggle" id="toggleAudioResponse" title="Réponse vocale activée/désactivée">
+                    <span class="led"></span>
+                    <span class="label">🔊 Audio</span>
+                </button>
+            </div>
             <button id="assistantClear" title="Effacer la conversation">🗑</button>
             <button id="assistantClose" title="Fermer">✕</button>
         </div>
@@ -1997,6 +2231,10 @@
 
 <div id="toast"></div>
 
+<!-- Indicateurs vocaux -->
+<div class="voice-hint" id="voiceHint">🎤 Enregistrement en cours...</div>
+<div class="voice-error" id="voiceError"></div>
+
 <!-- COOKIE BANNER -->
 <div id="cookieBanner">
     <div class="cookie-icon">🍪</div>
@@ -2015,7 +2253,7 @@
 // ================================================================
 function getToken() { return localStorage.getItem('devis_token'); }
 function setToken(t) { localStorage.setItem('devis_token', t); }
-function clearToken() { localStorage.removeItem('devis_token'); localStorage.removeItem('devis_user'); }
+function clearToken() { localStorage.removeItem('devis_token'); localStorage.removeItem('devis_user'); localStorage.removeItem('devis_assistant_history'); localStorage.removeItem('devis_assistant_voice_prefs'); localStorage.removeItem('devis_assistant_audio_prefs'); }  // 🆕 Vider l'historique de l'assistant pour la confidentialité
 function getUser() { try { return JSON.parse(localStorage.getItem('devis_user')); } catch(e) { return null; } }
 
 async function apiFetch(url, options = {}) {
@@ -2064,10 +2302,24 @@ const authViewLogin = document.getElementById('authViewLogin');
 const authViewForgot = document.getElementById('authViewForgot');
 const authViewReset = document.getElementById('authViewReset');
 
-function showLanding() { landingScreen.style.display='block'; authScreen.style.display='none'; appContainer.style.display='none'; window.scrollTo(0,0); }
+function showLanding() {
+    landingScreen.style.display = 'block';
+    authScreen.style.display = 'none';
+    appContainer.style.display = 'none';
+    window.scrollTo(0, 0);
+
+    // 🆕 Masquer la bulle de chat sur la landing
+    const bubble = document.getElementById('assistantBubble');
+    const panel = document.getElementById('assistantPanel');
+    if (bubble) bubble.classList.add('hidden');
+    if (panel) panel.classList.remove('show');
+}
 function showAuthView(view) { authViewLogin.style.display = view==='login'?'block':'none'; authViewForgot.style.display = view==='forgot'?'block':'none'; authViewReset.style.display = view==='reset'?'block':'none'; }
 function showAuth(asSignup = false, view = 'login') { landingScreen.style.display='none'; authScreen.style.display='block'; appContainer.style.display='none'; isSignup = asSignup; updateAuthUI(); showAuthView(view); window.scrollTo(0,0); }
 function showApp() {
+    // 🆕 Réafficher la bulle de chat quand on entre dans l'app
+    const bubble = document.getElementById('assistantBubble');
+    if (bubble) bubble.classList.remove('hidden');
     // Appliquer la langue sauvegardée
     if (typeof applyTranslations === 'function') applyTranslations();
     landingScreen.style.display='none'; authScreen.style.display='none'; appContainer.style.display='block';
@@ -2184,7 +2436,24 @@ authForm.addEventListener('submit', async (e) => {
     finally { authSubmitBtn.disabled = false; updateAuthUI(); }
 });
 
-document.getElementById('logoutBtn').addEventListener('click', () => { if (confirm('Se déconnecter ?')) { clearToken(); showLanding(); } });
+document.getElementById('logoutBtn').addEventListener('click', () => {
+    if (confirm('Se déconnecter ?')) {
+        // Vider l'historique visuel du chat AVANT de changer d'écran
+        const messages = document.getElementById('assistantMessages');
+        const tabMessages = document.getElementById('assistantTabMessages');
+        if (messages) messages.innerHTML = '';
+        if (tabMessages) tabMessages.innerHTML = '';
+
+        clearToken();
+        showLanding();
+
+        // Fermer le panneau de l'assistant s'il est ouvert
+        const panel = document.getElementById('assistantPanel');
+        const bubble = document.getElementById('assistantBubble');
+        if (panel) panel.classList.remove('show');
+        if (bubble) bubble.classList.remove('hidden');
+    }
+});
 
 document.getElementById('forgotForm').addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -5307,6 +5576,15 @@ document.getElementById('languageSelect')?.addEventListener('change', (e) => {
     }
 
     function addMessage(role, text, options = {}) {
+        // 🆕 Sécurité : si text est un objet, extraire .message
+        let safeText = text;
+        if (typeof text !== 'string') {
+            if (text && typeof text.message === 'string') {
+                safeText = text.message;
+            } else {
+                safeText = JSON.stringify(text);
+            }
+        }
         const html = `<div class="msg ${role}${options.loading ? ' loading' : ''}">${escapeHtml(text)}</div>`;
         messages.insertAdjacentHTML('beforeend', html);
         if (tabMessages) tabMessages.insertAdjacentHTML('beforeend', html);
@@ -5369,13 +5647,35 @@ document.getElementById('languageSelect')?.addEventListener('change', (e) => {
         // Loading
         addMessage('assistant', '', { loading: true });
 
+        // Lecture audio du message de confirmation
+        //speakText(data.response.message || data.response.draft?.summary || '');
+
         try {
+            // 🆕 Envoyer l'historique récent (5 derniers échanges)
+            const recentHistory = loadHistory().slice(-6).map(m => ({
+                role: m.role,
+                text: m.text
+            }));
+            
             const res = await apiFetch('/api/assistant/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: trimmed })
+                body: JSON.stringify({ 
+                    message: trimmed,
+                    history: recentHistory
+                })
             });
             removeLastLoading();
+
+            if (res.status === 401) {
+                removeLastLoading();
+                addMessage('assistant', '🔒 Votre session a expiré. Reconnectez-vous pour continuer.');
+                setTimeout(() => {
+                    clearToken();
+                    showLanding();
+                }, 1500);
+                return;
+            }
 
             if (!res.ok) {
                 const err = await res.json();
@@ -5383,25 +5683,278 @@ document.getElementById('languageSelect')?.addEventListener('change', (e) => {
             }
 
             const data = await res.json();
-            addMessage('assistant', data.response || 'Pas de réponse.');
 
-            // Log discret avec l'intention détectée
-            if (data.intent && data.durationMs) {
+            // Cas spécial : action à confirmer
+            if (data.response && data.response.isPendingAction) {
+                renderDraftCard(data.response.draft, data.response.message);
                 addMessage('system', `⚡ ${data.intent} · ${(data.durationMs/1000).toFixed(1)}s`);
+                speakText(data.response.message || data.response.draft?.summary || '')
+            } else {
+                addMessage('assistant', data.response || 'Pas de réponse.');
+                // Lecture audio du message de confirmation
+                speakText(data.response);
+                if (data.intent && data.durationMs) {
+                    addMessage('system', `⚡ ${data.intent} · ${(data.durationMs/1000).toFixed(1)}s`);
+                    speakText(data.response.message || data.response.draft?.summary || '');
+                }
             }
 
             const h = loadHistory();
-            h.push({ role: 'assistant', text: data.response || '', date: new Date().toISOString() });
+            h.push({ role: 'assistant', text: typeof data.response === 'string' ? data.response : data.response.message, date: new Date().toISOString() });
             saveHistory(h);
-
         } catch (err) {
             removeLastLoading();
             addMessage('assistant', '❌ Désolé, une erreur est survenue : ' + err.message);
+            // Lecture audio du message de confirmation
+            speakText(err.message);
         } finally {
             isSending = false;
             sendBtn.disabled = false;
             tabSendBtn && (tabSendBtn.disabled = false);
         }
+    }
+
+    // ============================================================
+    // SYNTHÈSE VOCALE (TTS) — Réponse audio
+    // ============================================================
+    const audioPrefs = (() => {
+        try {
+            const raw = localStorage.getItem('devis_assistant_audio_prefs');
+            if (raw) return JSON.parse(raw);
+        } catch (e) {}
+        return { audioEnabled: false };
+    })();
+
+    function saveAudioPrefs() {
+        localStorage.setItem('devis_assistant_audio_prefs', JSON.stringify(audioPrefs));
+    }
+
+    function speakText(text) {
+        if (!audioPrefs.audioEnabled) return;
+        if (!('speechSynthesis' in window)) return;
+
+        // Nettoyer le texte : retirer markdown, emojis, etc.
+        const clean = String(text)
+            .replace(/[*_`#>]/g, '')
+            .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')  // [texte](url) → texte
+            .replace(/[\u{1F300}-\u{1F9FF}]/gu, '')    // emojis
+            .replace(/\n+/g, '. ')
+            .replace(/\s+/g, ' ')
+            .trim();
+
+        if (!clean) return;
+
+        // Annuler toute lecture en cours
+        window.speechSynthesis.cancel();
+
+        const utt = new SpeechSynthesisUtterance(clean);
+        const lang = (typeof getLanguage === 'function' ? getLanguage() : 'fr');
+        utt.lang = lang === 'nl' ? 'nl-BE' : lang === 'en' ? 'en-US' : 'fr-FR';
+        utt.rate = 1.0;
+        utt.pitch = 1.0;
+        utt.volume = 1.0;
+
+        // Choisir une voix si dispo
+        const voices = window.speechSynthesis.getVoices();
+        const preferred = voices.find(v => v.lang === utt.lang && v.localService)
+            || voices.find(v => v.lang === utt.lang)
+            || voices.find(v => v.lang.startsWith(lang));
+        if (preferred) utt.voice = preferred;
+
+        window.speechSynthesis.speak(utt);
+    }
+
+    function stopSpeaking() {
+        if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+    }
+
+    function renderAudioToggles() {
+        [document.getElementById('toggleAudioResponse'), document.getElementById('toggleAudioResponseTab')]
+            .forEach(btn => {
+                if (!btn) return;
+                if (audioPrefs.audioEnabled) btn.classList.add('active');
+                else btn.classList.remove('active');
+            });
+    }
+
+    function setupAudioToggle(btn) {
+        if (!btn) return;
+        btn.addEventListener('click', () => {
+            audioPrefs.audioEnabled = !audioPrefs.audioEnabled;
+            saveAudioPrefs();
+            renderAudioToggles();
+            showToast(audioPrefs.audioEnabled ? '🔊 Réponse vocale activée' : '🔇 Réponse vocale désactivée', 'info');
+            if (!audioPrefs.audioEnabled) stopSpeaking();
+        });
+    }
+
+    setupAudioToggle(document.getElementById('toggleAudioResponse'));
+    setupAudioToggle(document.getElementById('toggleAudioResponseTab'));
+    renderAudioToggles();
+
+    // Précharger les voix (certains navigateurs en ont besoin)
+    if ('speechSynthesis' in window) {
+        window.speechSynthesis.onvoiceschanged = () => {};
+        window.speechSynthesis.getVoices();
+    }
+    // ---------- Carte de confirmation d'action ----------
+    function renderDraftCard(draft, message) {
+        // Logs de calcul (si présents)
+        const logsHtml = draft.payload && draft.payload.logs
+            ? `<div class="draft-logs" style="background:#080e1a;border-radius:8px;padding:10px 12px;margin-top:10px;font-size:11px;color:#94a3b8;line-height:1.7;font-family:monospace;max-height:140px;overflow-y:auto;">
+                ${draft.payload.logs.map(l => `<div>${escapeHtml(l)}</div>`).join('')}
+               </div>`
+            : '';
+
+        // Détail des articles (si présents)
+        let itemsHtml = '';
+        if (draft.payload && draft.payload.items && draft.payload.items.length > 0) {
+            const items = draft.payload.items;
+            itemsHtml = `
+                <div style="margin-top:12px;background:#0b1120;border:1px solid #1e2a41;border-radius:10px;overflow:hidden;">
+                    <div style="padding:8px 12px;background:#111b2e;border-bottom:1px solid #1e2a41;font-size:11px;color:#94a3b8;text-transform:uppercase;font-weight:600;letter-spacing:0.5px;">
+                        Détail des lignes (${items.length})
+                    </div>
+                    <div style="max-height:220px;overflow-y:auto;">
+                        <table style="width:100%;border-collapse:collapse;font-size:12px;">
+                            <thead>
+                                <tr style="background:#0b1120;">
+                                    <th style="text-align:left;padding:6px 10px;color:#64748b;font-weight:600;font-size:10px;text-transform:uppercase;border-bottom:1px solid #1e2a41;">Désignation</th>
+                                    <th style="text-align:center;padding:6px 6px;color:#64748b;font-weight:600;font-size:10px;text-transform:uppercase;border-bottom:1px solid #1e2a41;">Qté</th>
+                                    <th style="text-align:right;padding:6px 10px;color:#64748b;font-weight:600;font-size:10px;text-transform:uppercase;border-bottom:1px solid #1e2a41;">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${items.map(it => `
+                                    <tr>
+                                        <td style="padding:6px 10px;border-bottom:1px solid rgba(30,42,65,0.5);color:#e2e8f0;">${escapeHtml(it.name)}</td>
+                                        <td style="padding:6px 6px;text-align:center;border-bottom:1px solid rgba(30,42,65,0.5);color:#94a3b8;">${it.qty}</td>
+                                        <td style="padding:6px 10px;text-align:right;border-bottom:1px solid rgba(30,42,65,0.5);color:#f97316;font-weight:600;">${it.total.toFixed(2)} €</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        }
+
+        const html = `
+            <div class="msg action-draft" data-draft-id="${Date.now()}">
+                <div class="draft-title">Action proposée</div>
+                <div class="draft-summary">${escapeHtml(draft.summary)}</div>
+                <div class="draft-preview">
+                    ${Object.entries(draft.preview).map(([k,v]) => `
+                        <div class="row">
+                            <span class="key">${escapeHtml(k)}</span>
+                            <span class="val">${escapeHtml(String(v))}</span>
+                        </div>
+                    `).join('')}
+                </div>
+                ${itemsHtml}
+                ${logsHtml}
+                <div class="draft-actions" style="margin-top:12px;">
+                    <button class="cancel">Annuler</button>
+                    <button class="confirm">✓ Confirmer</button>
+                </div>
+            </div>
+        `;
+        messages.insertAdjacentHTML('beforeend', html);
+        if (tabMessages) tabMessages.insertAdjacentHTML('beforeend', html);
+
+        // Attacher les events à la dernière carte insérée
+        const cards = messages.querySelectorAll('.msg.action-draft');
+        const card = cards[cards.length - 1];
+        if (card) attachCardEvents(card, draft);
+
+        if (tabMessages) {
+            const cards2 = tabMessages.querySelectorAll('.msg.action-draft');
+            const card2 = cards2[cards2.length - 1];
+            if (card2) attachCardEvents(card2, draft);
+        }
+
+        messages.scrollTop = messages.scrollHeight;
+        if (tabMessages) tabMessages.scrollTop = tabMessages.scrollHeight;
+    }
+
+    function attachCardEvents(card, draft) {
+        const confirmBtn = card.querySelector('.confirm');
+        const cancelBtn = card.querySelector('.cancel');
+        if (confirmBtn) confirmBtn.addEventListener('click', () => confirmDraft(card, draft));
+        if (cancelBtn) cancelBtn.addEventListener('click', () => cancelDraft(card));
+    }
+
+    async function confirmDraft(card, draft) {
+        // Désactiver les boutons
+        const btns = card.querySelectorAll('button');
+        btns.forEach(b => b.disabled = true);
+        const confirmBtn = card.querySelector('.confirm');
+        const cancelBtn = card.querySelector('.cancel');
+        if (confirmBtn) confirmBtn.textContent = '⏳ Traitement...';
+
+        try {
+            const res = await apiFetch('/api/assistant/confirm', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ draft })
+            });
+            if (res.status === 401) {
+                addMessage('assistant', '🔒 Votre session a expiré. Reconnectez-vous.');
+                setTimeout(() => {
+                    clearToken();
+                    showLanding();
+                }, 1500);
+                return;
+            }
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Erreur');
+
+            // Marquer la carte comme faite
+            card.classList.add('done');
+            const title = card.querySelector('.draft-title');
+            if (title) title.textContent = '✓ Action effectuée';
+            const actions = card.querySelector('.draft-actions');
+            if (actions) actions.remove();
+
+            // Message de succès
+            let successMsg = '✅ Action effectuée avec succès.';
+            if (draft.type === 'create_client') successMsg = `✅ Client "${draft.payload.name}" créé (ID ${data.result.id}).`;
+            if (draft.type === 'create_product') successMsg = `✅ Produit "${draft.payload.name}" créé (ID ${data.result.id}).`;
+            if (draft.type === 'create_service') successMsg = `✅ Service "${draft.payload.name}" créé (ID ${data.result.id}).`;
+            if (draft.type === 'create_supplier') successMsg = `✅ Fournisseur "${draft.payload.name}" créé (ID ${data.result.id}).`;
+            if (draft.type === 'adjust_stock') successMsg = `✅ Stock mis à jour (nouveau stock : ${data.result.newStock}).`;
+            if (draft.type === 'create_quote_simple') {
+                const total = parseFloat(data.result.total) || 0;
+                const lines = data.result.itemsCount || draft.payload.items?.length || 0;
+                successMsg = `✅ Devis ${data.result.quoteNumber} créé — ${lines} ligne${lines > 1 ? 's' : ''}, total HT : ${total.toFixed(2)} €`;
+            }
+            if (draft.type === 'update_quote') {
+                successMsg = `✅ Devis ${data.result.quoteNumber} modifié${data.result.clientName ? ` — client : ${data.result.clientName}` : ''}`;
+            }
+            addMessage('assistant', successMsg);
+            // Lecture audio du message de confirmation
+            speakText(successMsg);
+        } catch (err) {
+            card.classList.remove('done');
+            const title = card.querySelector('.draft-title');
+            if (title) title.textContent = '❌ Échec';
+            btns.forEach(b => b.disabled = false);
+            if (confirmBtn) confirmBtn.textContent = '✓ Confirmer';
+            addMessage('assistant', '❌ Erreur : ' + err.message);
+            // Lecture audio du message de confirmation
+            speakText(err.message);
+        }
+    }
+
+    function cancelDraft(card) {
+        card.classList.remove('done');
+        const title = card.querySelector('.draft-title');
+        if (title) title.textContent = '🚫 Action annulée';
+        const actions = card.querySelector('.draft-actions');
+        if (actions) actions.remove();
+        addMessage('system', 'Action annulée par l\'utilisateur.');
+        // Lecture audio du message de confirmation
+        speakText('Action annulée');
     }
 
     // ---------- Auto-resize du textarea ----------
@@ -5455,10 +6008,472 @@ document.getElementById('languageSelect')?.addEventListener('change', (e) => {
     });
 
     // Bouton micro : placeholder (sera activé au Module 5)
-    [micBtn, tabMicBtn].forEach(btn => {
-        if (btn) btn.addEventListener('click', () => {
-            alert('🎤 La saisie vocale arrive bientôt.\nElle sera activée dans la prochaine mise à jour.');
+    //[micBtn, tabMicBtn].forEach(btn => {
+    //    if (btn) btn.addEventListener('click', () => {
+    //        alert('🎤 La saisie vocale arrive bientôt.\nElle sera activée dans la prochaine mise à jour.');
+    //    });
+    //});
+
+    // ---------- Reconnaissance vocale (Module 5) ----------
+    //const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    //let recognition = null;
+    //let isRecording = false;
+    //let currentMicBtn = null;
+    //let currentTargetInput = null;
+    //let baseTextBeforeRecording = '';
+
+    //const voiceHint = document.getElementById('voiceHint');
+    //const voiceError = document.getElementById('voiceError');
+
+    //function showVoiceHint(text) {
+    //    if (!voiceHint) return;
+    //    voiceHint.textContent = text;
+    //    voiceHint.classList.add('show');
+    //}
+    //function hideVoiceHint() {
+    //    if (voiceHint) voiceHint.classList.remove('show');
+    //}
+    //function showVoiceError(text) {
+    //    if (!voiceError) return;
+    //    voiceError.textContent = text;
+    //    voiceError.classList.add('show');
+    //    setTimeout(() => voiceError.classList.remove('show'), 4000);
+    //}
+
+    // Initialiser la reconnaissance si le navigateur la supporte
+    //if (SpeechRecognition) {
+    //    recognition = new SpeechRecognition();
+    //    recognition.lang = (typeof getLanguage === 'function' ? getLanguage() : 'fr') === 'nl' ? 'nl-BE'
+    //                    : (typeof getLanguage === 'function' ? getLanguage() : 'fr') === 'en' ? 'en-US'
+    //                    : 'fr-FR';
+    //    recognition.continuous = false;     // Une seule phrase à la fois
+    //    recognition.interimResults = true;  // Résultats partiels pour feedback
+    //    recognition.maxAlternatives = 1;
+
+    //    recognition.onstart = () => {
+    //        isRecording = true;
+    //        if (currentMicBtn) currentMicBtn.classList.add('recording');
+    //        showVoiceHint('🎤 Enregistrement en cours...');
+    //    };
+
+    //    recognition.onresult = (event) => {
+    //        let interimTranscript = '';
+    //        let finalTranscript = '';
+
+    //        for (let i = event.resultIndex; i < event.results.length; i++) {
+    //            const transcript = event.results[i][0].transcript;
+    //            if (event.results[i].isFinal) {
+    //                finalTranscript += transcript;
+    //            } else {
+    //                interimTranscript += transcript;
+    //            }
+    //        }
+
+            // Afficher le texte en temps réel dans l'input
+    //        if (currentTargetInput) {
+    //            const combined = (baseTextBeforeRecording + ' ' + finalTranscript + interimTranscript).trim();
+    //            currentTargetInput.value = combined;
+    //            autoResize();
+    //        }
+
+            // Si on a une phrase finale, arrêter et envoyer
+    //        if (finalTranscript) {
+    //            showVoiceHint('✅ Phrase détectée');
+    //        }
+    //    };
+
+    //    recognition.onerror = (event) => {
+     //       console.warn('Erreur reconnaissance vocale:', event.error);
+    //        let msg = 'Erreur de reconnaissance vocale.';
+    //        switch (event.error) {
+    //            case 'no-speech':
+    //                msg = 'Aucune parole détectée. Réessayez.';
+    //                break;
+    //            case 'audio-capture':
+    //                msg = 'Aucun microphone détecté. Vérifiez vos branchements.';
+    //                break;
+    //            case 'not-allowed':
+    //                msg = 'Accès au microphone refusé. Autorisez-le dans votre navigateur.';
+    //                break;
+    //            case 'network':
+    //                msg = 'Erreur réseau. La reconnaissance vocale nécessite une connexion internet.';
+    //                break;
+    //            case 'aborted':
+    //                // Arrêt manuel, pas une erreur
+    //                return;
+    //            default:
+    //                msg = `Erreur : ${event.error}`;
+    //        }
+    //        showVoiceError(msg);
+    //    };
+
+    //    recognition.onend = () => {
+    //        isRecording = false;
+    //        if (currentMicBtn) currentMicBtn.classList.remove('recording');
+   //         hideVoiceHint();
+
+            // Si on a une phrase finale, envoyer automatiquement
+    //        if (currentTargetInput) {
+   //             const finalText = currentTargetInput.value.trim();
+   //             if (finalText && finalText !== baseTextBeforeRecording.trim()) {
+                    // Petit délai pour laisser le temps au DOM de se mettre à jour
+   //                 setTimeout(() => {
+   //                     sendMessage(finalText);
+   //                 }, 200);
+   //             }
+   //         }
+
+   //         currentMicBtn = null;
+   //         currentTargetInput = null;
+   //         baseTextBeforeRecording = '';
+   //     };
+
+   //     recognition.onnomatch = () => {
+   //         showVoiceError('Je n\'ai pas compris. Reformulez.');
+   //     };
+   // }
+
+    // Activer les boutons micro
+    //function setupMicButton(btn, targetInput) {
+    //    if (!btn) return;
+    //    btn.addEventListener('click', () => {
+    //        // Si pas de support : message d'erreur
+    //        if (!SpeechRecognition) {
+    //            alert('🎤 La reconnaissance vocale n\'est pas supportée par votre navigateur.\n\nUtilisez Chrome, Edge, Brave ou Safari.');
+    //            return;
+    //        }
+
+            // Si déjà en train d'enregistrer : arrêter
+    //        if (isRecording) {
+    //            try { recognition.stop(); } catch(e) {}
+    //            return;
+    //        }
+
+            // Démarrer une nouvelle reconnaissance
+    //        baseTextBeforeRecording = targetInput.value || '';
+    //        currentMicBtn = btn;
+    //        currentTargetInput = targetInput;
+
+            // Mettre à jour la langue au cas où l'utilisateur l'a changée
+    //        const lang = typeof getLanguage === 'function' ? getLanguage() : 'fr';
+    //        recognition.lang = lang === 'nl' ? 'nl-BE' : lang === 'en' ? 'en-US' : 'fr-FR';
+    //
+    //        try {
+     //           recognition.start();
+    //        } catch (err) {
+     //           // Peut arriver si une reconnaissance est déjà en cours
+     //           console.warn('Erreur démarrage reconnaissance:', err);
+     //           try { recognition.stop(); } catch(e) {}
+    //            setTimeout(() => {
+    //                try { recognition.start(); } catch(e) {
+     //                   showVoiceError('Impossible de démarrer le micro. Réessayez.');
+     //               }
+     //           }, 200);
+     //       }
+     //   });
+    //}
+
+    // Brancher les deux boutons micro
+    //setupMicButton(micBtn, input);
+    //setupMicButton(tabMicBtn, tabInput);
+
+    // Raccourci clavier : Ctrl + M (ou Cmd + M sur Mac) pour le micro
+    //document.addEventListener('keydown', (e) => {
+    //    if ((e.ctrlKey || e.metaKey) && e.key === 'm') {
+    //        e.preventDefault();
+    //        // Utiliser le micro correspondant au contexte visible
+    //        if (panel && panel.classList.contains('show') && micBtn) {
+    //            micBtn.click();
+   //         } else if (tabMicBtn && document.getElementById('tab-assistant')?.classList.contains('active')) {
+    //            tabMicBtn.click();
+   //         }
+    //    }
+    //});
+
+        // ---------- Reconnaissance vocale (Module 5 - version améliorée) ----------
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    let recognition = null;
+    let isRecording = false;
+    let currentMicBtn = null;
+    let currentTargetInput = null;
+    let baseTextBeforeRecording = '';
+
+    const voiceHint = document.getElementById('voiceHint');
+    const voiceError = document.getElementById('voiceError');
+
+    // ----- Préférences utilisateur (persistées en localStorage) -----
+    const VOICE_PREFS_KEY = 'devis_assistant_voice_prefs';
+    function loadVoicePrefs() {
+        try {
+            const raw = localStorage.getItem(VOICE_PREFS_KEY);
+            if (raw) return JSON.parse(raw);
+        } catch (e) {}
+        return { vocalContinue: true, envoiDirect: false }; // défauts : continu ON, auto OFF
+    }
+    function saveVoicePrefs(prefs) {
+        localStorage.setItem(VOICE_PREFS_KEY, JSON.stringify(prefs));
+    }
+    let voicePrefs = loadVoicePrefs();
+
+    // ----- Application visuelle des toggles -----
+    const toggleVocalContinue = document.getElementById('toggleVocalContinue');
+    const toggleEnvoiDirect = document.getElementById('toggleEnvoiDirect');
+    const toggleVocalContinueTab = document.getElementById('toggleVocalContinueTab');
+    const toggleEnvoiDirectTab = document.getElementById('toggleEnvoiDirectTab');
+
+    function renderVoiceToggles() {
+        const pairs = [
+            [toggleVocalContinue, 'vocalContinue'],
+            [toggleVocalContinueTab, 'vocalContinue'],
+            [toggleEnvoiDirect, 'envoiDirect'],
+            [toggleEnvoiDirectTab, 'envoiDirect']
+        ];
+        pairs.forEach(([btn, key]) => {
+            if (!btn) return;
+            if (voicePrefs[key]) btn.classList.add('active');
+            else btn.classList.remove('active');
         });
+        // Désactiver le toggle Auto si le mode continu est OFF (Auto n'a de sens qu'avec Continu)
+        [toggleEnvoiDirect, toggleEnvoiDirectTab].forEach(btn => {
+            if (!btn) return;
+            if (!voicePrefs.vocalContinue) {
+                btn.disabled = true;
+                btn.style.opacity = '0.4';
+                btn.style.cursor = 'not-allowed';
+                btn.title = 'Activez d\'abord le mode vocal continu';
+            } else {
+                btn.disabled = false;
+                btn.style.opacity = '1';
+                btn.style.cursor = 'pointer';
+                btn.title = 'Envoyer automatiquement après dictée';
+            }
+        });
+    }
+
+    function setupToggle(btn, key) {
+        if (!btn) return;
+        btn.addEventListener('click', () => {
+            voicePrefs[key] = !voicePrefs[key];
+            saveVoicePrefs(voicePrefs);
+            renderVoiceToggles();
+            // Feedback discret
+            const label = key === 'vocalContinue' ? 'Mode vocal continu' : 'Envoi automatique';
+            const state = voicePrefs[key] ? 'activé' : 'désactivé';
+            showToast(`${label} ${state}`, 'info');
+        });
+    }
+    setupToggle(toggleVocalContinue, 'vocalContinue');
+    setupToggle(toggleVocalContinueTab, 'vocalContinue');
+    setupToggle(toggleEnvoiDirect, 'envoiDirect');
+    setupToggle(toggleEnvoiDirectTab, 'envoiDirect');
+
+    // Initialiser l'état visuel au démarrage
+    renderVoiceToggles();
+
+    // ----- Indicateurs visuels -----
+    function showVoiceHint(text) {
+        if (!voiceHint) return;
+        voiceHint.textContent = text;
+        voiceHint.classList.add('show');
+    }
+    function hideVoiceHint() {
+        if (voiceHint) voiceHint.classList.remove('show');
+    }
+    function showVoiceError(text) {
+        if (!voiceError) return;
+        voiceError.textContent = text;
+        voiceError.classList.add('show');
+        setTimeout(() => voiceError.classList.remove('show'), 4000);
+    }
+
+    // ----- Initialisation de la reconnaissance -----
+    if (SpeechRecognition) {
+        recognition = new SpeechRecognition();
+        recognition.lang = 'fr-FR';
+        recognition.continuous = true;         // 🔑 Toujours continu au niveau API
+        recognition.interimResults = true;
+        recognition.maxAlternatives = 1;
+
+        recognition.onstart = () => {
+            isRecording = true;
+            if (currentMicBtn) currentMicBtn.classList.add('recording');
+            showVoiceHint('🎤 Enregistrement en cours... (cliquez sur 🎤 pour arrêter)');
+        };
+
+        recognition.onresult = (event) => {
+            let interimTranscript = '';
+            let finalTranscript = '';
+
+            for (let i = event.resultIndex; i < event.results.length; i++) {
+                const transcript = event.results[i][0].transcript;
+                if (event.results[i].isFinal) {
+                    finalTranscript += transcript + ' ';
+                } else {
+                    interimTranscript += transcript;
+                }
+            }
+
+            if (currentTargetInput) {
+                const combined = (baseTextBeforeRecording + ' ' + finalTranscript + interimTranscript).trim();
+                currentTargetInput.value = combined;
+                autoResize();
+            }
+
+            // Si on a du texte final ET que le mode vocal continu est OFF, on arrête la reconnaissance
+            // (comportement "une phrase = un arrêt"). Mais on n'envoie PAS encore : voir onend.
+            if (finalTranscript && !voicePrefs.vocalContinue) {
+                try { recognition.stop(); } catch(e) {}
+            }
+        };
+
+        recognition.onerror = (event) => {
+            console.warn('Erreur reconnaissance vocale:', event.error);
+            let msg = 'Erreur de reconnaissance vocale.';
+            switch (event.error) {
+                case 'no-speech':
+                    msg = 'Aucune parole détectée. Réessayez.';
+                    break;
+                case 'audio-capture':
+                    msg = 'Aucun microphone détecté. Vérifiez vos branchements.';
+                    break;
+                case 'not-allowed':
+                    msg = 'Accès au microphone refusé. Autorisez-le dans votre navigateur.';
+                    break;
+                case 'network':
+                    msg = 'Erreur réseau. La reconnaissance vocale nécessite une connexion internet.';
+                    break;
+                case 'aborted':
+                    return;
+                default:
+                    msg = `Erreur : ${event.error}`;
+            }
+            showVoiceError(msg);
+        };
+
+        recognition.onend = () => {
+            isRecording = false;
+            if (currentMicBtn) currentMicBtn.classList.remove('recording');
+            hideVoiceHint();
+
+            // Récupérer le texte final dicté
+            if (currentTargetInput) {
+                const finalText = currentTargetInput.value.trim();
+                const changed = finalText && finalText !== baseTextBeforeRecording.trim();
+
+                // Si mode envoi direct ET qu'on a du texte : envoyer
+                if (changed && voicePrefs.envoiDirect) {
+                    setTimeout(() => {
+                        sendMessage(finalText);
+                    }, 200);
+                } else if (changed) {
+                    // Sinon : garder le texte dans l'input pour relecture
+                    showToast('🎤 Texte prêt — relisez puis envoyez', 'info');
+                }
+            }
+
+            currentMicBtn = null;
+            currentTargetInput = null;
+            baseTextBeforeRecording = '';
+        };
+
+        recognition.onnomatch = () => {
+            showVoiceError('Je n\'ai pas compris. Reformulez.');
+        };
+    }
+
+    // ----- Activation des boutons micro -----
+        // ----- Détection de l'état en ligne / hors ligne -----
+    function updateMicAvailability() {
+        const isOnline = navigator.onLine;
+        const buttons = [micBtn, tabMicBtn].filter(Boolean);
+        buttons.forEach(btn => {
+            if (!isOnline) {
+                btn.style.opacity = '0.4';
+                btn.style.cursor = 'not-allowed';
+                btn.title = 'Connexion internet requise pour la dictée vocale';
+            } else {
+                btn.style.opacity = '1';
+                btn.style.cursor = 'pointer';
+                btn.title = 'Dicter un message (Ctrl+M)';
+            }
+        });
+    }
+
+    window.addEventListener('online', () => {
+        updateMicAvailability();
+        showToast('✅ Connexion rétablie — dictée vocale disponible', 'success');
+    });
+    window.addEventListener('offline', () => {
+        updateMicAvailability();
+        showToast('⚠️ Hors ligne — dictée vocale indisponible', 'error');
+    });
+
+    updateMicAvailability(); // état initial
+
+    // ----- Activation des boutons micro -----
+    function setupMicButton(btn, targetInput) {
+        if (!btn) return;
+        btn.addEventListener('click', () => {
+            if (!SpeechRecognition) {
+                alert('🎤 La reconnaissance vocale n\'est pas supportée par votre navigateur.\n\nUtilisez Chrome, Edge, Brave ou Safari.');
+                return;
+            }
+
+            // 🔑 Vérification hors ligne AVANT de lancer
+            if (!navigator.onLine) {
+                showVoiceError('📡 Connexion internet requise pour la dictée vocale.\n\nLa reconnaissance utilise les serveurs de Google/Microsoft.');
+                return;
+            }
+
+            // Si déjà en train d'enregistrer : arrêter
+            if (isRecording) {
+                try { recognition.stop(); } catch(e) {}
+                return;
+            }
+
+            // Démarrer une nouvelle session
+            baseTextBeforeRecording = targetInput.value || '';
+            currentMicBtn = btn;
+            currentTargetInput = targetInput;
+
+            // Langue
+            const lang = typeof getLanguage === 'function' ? getLanguage() : 'fr';
+            recognition.lang = lang === 'nl' ? 'nl-BE' : lang === 'en' ? 'en-US' : 'fr-FR';
+
+            // Mode continu au niveau de l'API :
+            // - Si l'utilisateur veut le mode continu, on garde continuous = true
+            // - Sinon, on met continuous = false (une seule phrase)
+            recognition.continuous = voicePrefs.vocalContinue;
+
+            try {
+                recognition.start();
+            } catch (err) {
+                console.warn('Erreur démarrage reconnaissance:', err);
+                try { recognition.stop(); } catch(e) {}
+                setTimeout(() => {
+                    try { recognition.start(); } catch(e) {
+                        showVoiceError('Impossible de démarrer le micro. Réessayez.');
+                    }
+                }, 200);
+            }
+        });
+    }
+
+    setupMicButton(micBtn, input);
+    setupMicButton(tabMicBtn, tabInput);
+
+    // ----- Raccourci clavier Ctrl+M / Cmd+M -----
+    document.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'm') {
+            e.preventDefault();
+            if (panel && panel.classList.contains('show') && micBtn) {
+                micBtn.click();
+            } else if (tabMicBtn && document.getElementById('tab-assistant')?.classList.contains('active')) {
+                tabMicBtn.click();
+            }
+        }
     });
 
     // Suggestions cliquables
@@ -5484,6 +6499,112 @@ document.getElementById('languageSelect')?.addEventListener('change', (e) => {
                 // Synchroniser les messages
                 renderFromHistory();
                 setTimeout(() => tabInput && tabInput.focus(), 100);
+            }
+        });
+    });
+
+    // ---------- Suggestions d'apprentissage (Module 7) ----------
+    async function loadSuggestions() {
+        try {
+            const res = await apiFetch('/api/assistant/suggestions');
+            if (!res.ok) return;
+            const suggestions = await res.json();
+            if (!Array.isArray(suggestions) || suggestions.length === 0) return;
+
+            // Afficher chaque suggestion (max 2 à la fois)
+            for (const sug of suggestions.slice(0, 2)) {
+                renderSuggestionCard(sug);
+                // Marquer comme "suggested" pour ne pas la répéter
+                await apiFetch(`/api/assistant/suggestions/${sug.id}/mark-suggested`, { method: 'POST' });
+            }
+        } catch (err) {
+            console.warn('Erreur chargement suggestions:', err.message);
+        }
+    }
+
+    function renderSuggestionCard(sug) {
+        const typeLabels = {
+            hourly_rate: 'Taux horaire',
+            margin: 'Marge',
+            vat_rate: 'TVA',
+            payment_terms: 'Conditions de paiement'
+        };
+
+        const contextLabel = sug.context ? ` en ${sug.context}` : '';
+        const message = sug.observationType === 'hourly_rate'
+            ? `J'ai remarqué que vous facturez <strong>${sug.newValue} €/h${contextLabel}</strong> depuis ${sug.count} devis. Voulez-vous que je mémorise ce taux ?`
+            : sug.observationType === 'margin'
+            ? `J'ai remarqué que vous appliquez une marge d'environ <strong>${sug.newValue}%</strong>. Voulez-vous que je la mémorise ?`
+            : sug.observationType === 'vat_rate'
+            ? `J'ai remarqué que vous facturez avec une TVA à <strong>${sug.newValue}%</strong>. Voulez-vous que je mémorise ce taux ?`
+            : `Voulez-vous que je mémorise la préférence <strong>${typeLabels[sug.observationType] || sug.observationType}</strong> à <strong>${sug.newValue}</strong> ?`;
+
+        const html = `
+            <div class="msg assistant suggestion-card" data-suggestion-id="${sug.id}" style="border:1px solid #f97316;background:rgba(249,115,22,0.05);">
+                <div style="font-weight:700;color:#f97316;font-size:12px;text-transform:uppercase;margin-bottom:8px;letter-spacing:0.5px;">💡 Suggestion d'apprentissage</div>
+                <div style="color:#e2e8f0;font-size:14px;line-height:1.6;margin-bottom:12px;">${message}</div>
+                <div style="display:flex;gap:8px;">
+                    <button class="btn-confirm-suggestion" data-action="accept" data-id="${sug.id}" style="flex:1;background:#22c55e;color:#0b1120;border:none;padding:8px 16px;border-radius:40px;font-weight:700;font-size:13px;cursor:pointer;">✓ Mémoriser</button>
+                    <button class="btn-dismiss-suggestion" data-action="dismiss" data-id="${sug.id}" style="flex:1;background:#1a253b;border:1px solid #2a3a55;color:#94a3b8;padding:8px 16px;border-radius:40px;font-weight:600;font-size:13px;cursor:pointer;">✗ Non merci</button>
+                </div>
+            </div>
+        `;
+
+        messages.insertAdjacentHTML('beforeend', html);
+        if (tabMessages) tabMessages.insertAdjacentHTML('beforeend', html);
+        messages.scrollTop = messages.scrollHeight;
+        if (tabMessages) tabMessages.scrollTop = tabMessages.scrollHeight;
+
+        // Attacher les événements aux boutons de la dernière carte
+        const cards = messages.querySelectorAll('.suggestion-card');
+        const lastCard = cards[cards.length - 1];
+        if (lastCard) attachSuggestionEvents(lastCard);
+
+        if (tabMessages) {
+            const cards2 = tabMessages.querySelectorAll('.suggestion-card');
+            const lastCard2 = cards2[cards2.length - 1];
+            if (lastCard2) attachSuggestionEvents(lastCard2);
+        }
+    }
+
+    function attachSuggestionEvents(card) {
+        const acceptBtn = card.querySelector('.btn-confirm-suggestion');
+        const dismissBtn = card.querySelector('.btn-dismiss-suggestion');
+        if (acceptBtn) acceptBtn.addEventListener('click', () => handleSuggestionAction(card, 'accept', acceptBtn.dataset.id));
+        if (dismissBtn) dismissBtn.addEventListener('click', () => handleSuggestionAction(card, 'dismiss', dismissBtn.dataset.id));
+    }
+
+    async function handleSuggestionAction(card, action, suggestionId) {
+        const btns = card.querySelectorAll('button');
+        btns.forEach(b => b.disabled = true);
+
+        try {
+            const res = await apiFetch(`/api/assistant/suggestions/${suggestionId}/${action}`, { method: 'POST' });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Erreur');
+
+            // Retirer la carte
+            card.remove();
+
+            // Toast de confirmation
+            if (action === 'accept') {
+                showToast(`✅ Préférence mémorisée : ${data.value}`, 'success');
+            } else {
+                showToast('Suggestion ignorée', 'info');
+            }
+        } catch (err) {
+            btns.forEach(b => b.disabled = false);
+            showToast('Erreur : ' + err.message, 'error');
+        }
+    }
+
+    // Charger les suggestions après un court délai (au cas où l'assistant s'ouvre)
+    setTimeout(loadSuggestions, 1500);
+    // Recharger les suggestions quand l'utilisateur ouvre l'onglet assistant
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            if (btn.dataset.tab === 'tab-assistant') {
+                setTimeout(loadSuggestions, 300);
             }
         });
     });
