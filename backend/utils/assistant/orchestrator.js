@@ -256,9 +256,9 @@ async function formatResponse(userMessage, intent, data, conversationHistory = [
     let systemContext = '';
 
     if (intent === 'help') {
-        systemContext = `Tu es l'assistant de Devis Express Pro. Réponds en français, chaleureusement, de façon concise.`;
+        systemContext = `Tu es Clara, l'assistante de Devis Express Pro. Réponds en français, chaleureusement, de façon concise.`;
     } else if (data) {
-        systemContext = `Tu es l'assistant interne de Devis Express Pro.
+        systemContext = `Tu es Clara, l'assistante interne de Devis Express Pro.
 L'utilisateur vient de poser cette question : "${userMessage}"
 ⚠️ Tu as DÉJÀ interrogé la base et tu as les résultats ci-dessous.
 Voici les données réelles :
@@ -267,7 +267,7 @@ ${JSON.stringify(data, null, 2)}
 \`\`\`
 Formule une réponse naturelle en français. Utilise uniquement les données. Pas de JSON brut.`;
     } else {
-        systemContext = `${historyContext}Tu es l'assistant conversationnel de Devis Express Pro. Réponds en français, brièvement.`;
+        systemContext = `${historyContext}Tu es Clara, l'assistante conversationnelle de Devis Express Pro. Réponds en français, brièvement.`;
     }
 
     for (const model of GROQ_MODELS) {
@@ -362,7 +362,7 @@ async function chat(userMessage, userId, conversationHistory = []) {
             finalResponse = String(response);
         }
     }
-    
+
     // Si une action est en attente, mémoriser qu'on attend une confirmation
     if (data && data.isPendingAction) {
         try {

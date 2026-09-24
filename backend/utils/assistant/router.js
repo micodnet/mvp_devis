@@ -291,6 +291,7 @@ Le routeur peut ajouter "quoteRef" dans args pour préciser.
 
 ━━━ CONTEXTE CONVERSATIONNEL ━━━
 Si l'assistant a posé une question et que l'utilisateur répond brièvement, c'est un follow-up.
+Tu ne dois pas lire les ponctuations et les characteres speciaux dans une reponse du genre {/*-+:.|@[]!()}, sauf en cas de cas de calcul
 
 Message : "${String(cleanMessage).slice(0, 500)}"
 
