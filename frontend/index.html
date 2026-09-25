@@ -1320,6 +1320,7 @@
         <button class="tab-btn" data-tab="tab-analytics" data-i18n="app.tab.analytics">📈 Analytics</button>
         <button class="tab-btn" data-tab="tab-chantiers" data-i18n="app.tab.chantiers">🏗️ Chantiers</button>
         <button class="tab-btn" data-tab="tab-subcontractors" data-i18n="app.tab.contractors">Sous-traitants</button>
+        <button class="tab-btn" data-tab="tab-api" data-i18n="app.tab.api">🗃 API</button>
         <button class="tab-btn" data-tab="tab-team" data-i18n="app.tab.team">👥 Équipe</button>
         <button class="tab-btn" data-tab="tab-settings" data-i18n="app.tab.settings">⚙️ Paramètres</button>
         <button class="tab-btn" data-tab="tab-assistant" data-i18n="app.tab.assistant">💬 Assistant</button>
@@ -1602,6 +1603,41 @@
                     <canvas id="statusChart"></canvas>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- API -->
+    <div id="tab-api" class="tab-content">
+        <div class="card">
+            <div class="catalog-header">
+                <h2>Mes cles API</h2>
+                <div class="catalog-actions">
+                    <a href="/api/docs" target="_blank" class="btn-secondary">Documentation</a>
+                    <button class="btn-primary-sm" id="newApiKeyBtn">+ Nouvelle cle</button>
+                </div>
+            </div>
+            <p style="color:#94a3b8;font-size:13px;margin-bottom:16px;line-height:1.6;">
+                Utilisez les cles API pour connecter vos outils externes (Zapier, Make, scripts personnalises) a Devis Express Pro.
+                Chaque cle a des permissions limitees et un historique d'appels.
+            </p>
+            <div id="apiKeysList"><p style="color:#64748b;text-align:center;padding:40px;">Chargement...</p></div>
+        </div>
+
+        <div class="card">
+            <div class="catalog-header">
+                <h2>Statistiques d'utilisation</h2>
+            </div>
+            <div id="apiStatsBox" class="stats-grid" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr));">
+                <p style="color:#64748b;">Chargement...</p>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="catalog-header">
+                <h2>Historique des appels</h2>
+                <button class="btn-secondary" id="refreshApiLogsBtn">Rafraichir</button>
+            </div>
+            <div id="apiLogsList"><p style="color:#64748b;text-align:center;padding:40px;">Chargement...</p></div>
         </div>
     </div>
 
@@ -2656,6 +2692,88 @@
         <div class="modal-actions">
             <button class="btn-cancel" id="cancelAssignmentBtn">Annuler</button>
             <button class="btn-confirm" id="saveAssignmentBtn">Enregistrer</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL API KEY -->
+<div class="modal-overlay" id="apiKeyModal">
+    <div class="modal">
+        <h3 id="apiKeyModalTitle">Nouvelle cle API</h3>
+        <input type="hidden" id="apiKeyIdField" />
+
+        <div id="apiKeyFormView">
+            <div class="form-group">
+                <label>Nom de la cle *</label>
+                <input type="text" id="apiKeyName" placeholder="Integration Zapier" required />
+            </div>
+
+            <div class="form-group">
+                <label>Permissions</label>
+                <div style="display:flex;flex-direction:column;gap:8px;margin-top:6px;">
+                    <label style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:#0b1120;border:1px solid #1e2a41;border-radius:10px;cursor:pointer;">
+                        <input type="checkbox" class="api-scope" value="read" checked />
+                        <div>
+                            <div style="color:#fff;font-weight:600;font-size:13px;">Lecture seule</div>
+                            <div style="color:#64748b;font-size:11px;">Consulter devis, factures, clients, produits</div>
+                        </div>
+                    </label>
+                    <label style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:#0b1120;border:1px solid #1e2a41;border-radius:10px;cursor:pointer;">
+                        <input type="checkbox" class="api-scope" value="write" />
+                        <div>
+                            <div style="color:#fff;font-weight:600;font-size:13px;">Ecriture</div>
+                            <div style="color:#64748b;font-size:11px;">Creer et modifier devis, clients, produits</div>
+                        </div>
+                    </label>
+                    <label style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:#0b1120;border:1px solid #1e2a41;border-radius:10px;cursor:pointer;">
+                        <input type="checkbox" class="api-scope" value="admin" />
+                        <div>
+                            <div style="color:#fff;font-weight:600;font-size:13px;">Admin</div>
+                            <div style="color:#64748b;font-size:11px;">Acces complet</div>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Limite par heure</label>
+                    <input type="number" id="apiKeyRateLimit" value="1000" min="10" max="100000" />
+                </div>
+                <div class="form-group">
+                    <label>Date d'expiration (optionnel)</label>
+                    <input type="date" id="apiKeyExpiresAt" />
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn-cancel" id="cancelApiKeyBtn">Annuler</button>
+                <button class="btn-confirm" id="saveApiKeyBtn">Creer la cle</button>
+            </div>
+        </div>
+
+        <div id="apiKeyResultView" style="display:none;">
+            <div style="background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);border-radius:12px;padding:16px;margin-bottom:16px;">
+                <div style="color:#22c55e;font-weight:700;font-size:14px;margin-bottom:6px;">Cle API creee avec succes</div>
+                <div style="color:#cbd5e1;font-size:13px;">Copiez cette cle maintenant. Elle ne sera plus jamais affichee.</div>
+            </div>
+
+            <div class="form-group">
+                <label>Votre cle API</label>
+                <div style="display:flex;gap:8px;">
+                    <input type="text" id="apiKeySecret" readonly style="font-family:monospace;font-size:12px;" />
+                    <button class="btn-secondary" id="copyApiKeyBtn" style="white-space:nowrap;">Copier</button>
+                </div>
+            </div>
+
+            <div style="background:#0b1120;border:1px solid #1e2a41;border-radius:12px;padding:14px;margin-bottom:16px;">
+                <div style="color:#94a3b8;font-size:12px;margin-bottom:8px;font-weight:600;">Exemple d'utilisation :</div>
+                <pre style="color:#f97316;font-size:11px;font-family:monospace;margin:0;white-space:pre-wrap;word-break:break-all;">curl -H "X-API-Key: VOTRE_CLE" https://votre-domaine.com/api/v1/quotes</pre>
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn-confirm" onclick="document.getElementById('apiKeyModal').classList.remove('show')">Fermer</button>
+            </div>
         </div>
     </div>
 </div>
@@ -9554,6 +9672,246 @@ document.getElementById('languageSelect')?.addEventListener('change', (e) => {
                 setTimeout(() => {
                     loadSubcontractors();
                     loadAssignments();
+                }, 100);
+            }
+        });
+    });
+})();
+
+// ================================================================
+// 25. API PUBLIQUE
+// ================================================================
+(function initApiModule() {
+    let allKeys = [];
+    let allLogs = [];
+
+    async function loadApiKeys() {
+        const container = document.getElementById('apiKeysList');
+        if (!container) return;
+        container.innerHTML = '<p style="color:#64748b;text-align:center;padding:40px;">Chargement...</p>';
+
+        try {
+            const res = await apiFetch('/api/api-keys');
+            allKeys = await res.json();
+            renderApiKeys();
+        } catch (err) {
+            container.innerHTML = '<p style="color:#f87171;text-align:center;padding:40px;">Erreur.</p>';
+        }
+    }
+
+    function renderApiKeys() {
+        const container = document.getElementById('apiKeysList');
+        if (!container) return;
+
+        if (allKeys.length === 0) {
+            container.innerHTML = '<div class="catalog-empty"><div class="big-icon">-</div><h3>Aucune cle API</h3><p>Creez une cle pour connecter vos outils externes.</p><div style="margin-top:20px;"><button class="btn-primary-sm" onclick="document.getElementById(\'newApiKeyBtn\').click()">+ Creer une cle</button></div></div>';
+            return;
+        }
+
+        let html = '<div style="overflow-x:auto;"><table class="catalog-table"><thead><tr>' +
+            '<th>Nom</th><th>Prefixe</th><th>Permissions</th><th>Limite</th>' +
+            '<th>Derniere utilisation</th><th>Statut</th><th>Actions</th>' +
+            '</tr></thead><tbody>';
+
+        allKeys.forEach(k => {
+            const isActive = k.active && !k.revokedAt;
+            const statusBadge = isActive
+                ? '<span style="font-size:10px;font-weight:700;padding:3px 10px;border-radius:40px;background:rgba(34,197,94,0.15);color:#22c55e;border:1px solid rgba(34,197,94,0.3);">Active</span>'
+                : '<span style="font-size:10px;font-weight:700;padding:3px 10px;border-radius:40px;background:rgba(248,113,113,0.15);color:#f87171;border:1px solid rgba(248,113,113,0.3);">Revoquee</span>';
+
+            const scopesLabels = (k.scopes || []).map(s => {
+                const map = { read: 'Lecture', write: 'Ecriture', admin: 'Admin' };
+                return map[s] || s;
+            }).join(', ');
+
+            const lastUsed = k.lastUsedAt
+                ? new Date(k.lastUsedAt).toLocaleString('fr-FR')
+                : 'Jamais';
+
+            let actions = '';
+            if (isActive) {
+                actions += '<button onclick="revokeApiKey(' + k.id + ')" style="background:#3f1e24;border:1px solid #7f1d1d;color:#f87171;padding:4px 10px;border-radius:40px;font-size:11px;cursor:pointer;">Revoquer</button>';
+            }
+            actions += '<button onclick="deleteApiKey(' + k.id + ')" style="background:#3f1e24;border:1px solid #7f1d1d;color:#f87171;padding:4px 10px;border-radius:40px;font-size:11px;cursor:pointer;margin-left:4px;">Supprimer</button>';
+
+            html += '<tr>' +
+                '<td><strong>' + escapeHtml(k.name) + '</strong></td>' +
+                '<td><span style="font-family:monospace;font-size:11px;color:#f97316;">' + escapeHtml(k.prefix) + '...</span></td>' +
+                '<td style="font-size:12px;">' + scopesLabels + '</td>' +
+                '<td style="font-size:12px;">' + k.rateLimit + '/h</td>' +
+                '<td style="font-size:11px;color:#94a3b8;">' + lastUsed + '</td>' +
+                '<td>' + statusBadge + '</td>' +
+                '<td>' + actions + '</td>' +
+                '</tr>';
+        });
+
+        html += '</tbody></table></div>';
+        container.innerHTML = html;
+    }
+
+    async function loadApiStats() {
+        const container = document.getElementById('apiStatsBox');
+        if (!container) return;
+
+        try {
+            const res = await apiFetch('/api/api-keys/stats');
+            const stats = await res.json();
+
+            container.innerHTML =
+                '<div class="stat-card"><div class="number">' + stats.last24h.calls + '</div><div class="label">Appels 24h</div></div>' +
+                '<div class="stat-card"><div class="number" style="color:' + (stats.last24h.errors > 0 ? '#f87171' : '#22c55e') + ';">' + stats.last24h.errors + '</div><div class="label">Erreurs 24h</div></div>' +
+                '<div class="stat-card"><div class="number">' + stats.last7days.calls + '</div><div class="label">Appels 7 jours</div></div>';
+        } catch (err) {
+            container.innerHTML = '<p style="color:#f87171;">Erreur.</p>';
+        }
+    }
+
+    async function loadApiLogs() {
+        const container = document.getElementById('apiLogsList');
+        if (!container) return;
+        container.innerHTML = '<p style="color:#64748b;text-align:center;padding:40px;">Chargement...</p>';
+
+        try {
+            const res = await apiFetch('/api/api-keys/logs?limit=100');
+            allLogs = await res.json();
+            renderApiLogs();
+        } catch (err) {
+            container.innerHTML = '<p style="color:#f87171;text-align:center;padding:40px;">Erreur.</p>';
+        }
+    }
+
+    function renderApiLogs() {
+        const container = document.getElementById('apiLogsList');
+        if (!container) return;
+
+        if (allLogs.length === 0) {
+            container.innerHTML = '<p style="color:#64748b;text-align:center;padding:40px;">Aucun appel enregistre.</p>';
+            return;
+        }
+
+        let html = '<div style="overflow-x:auto;max-height:500px;"><table class="catalog-table"><thead><tr>' +
+            '<th>Date</th><th>Cle</th><th>Methode</th><th>Endpoint</th>' +
+            '<th>Statut</th><th>Duree</th><th>IP</th>' +
+            '</tr></thead><tbody>';
+
+        allLogs.forEach(l => {
+            const date = new Date(l.createdAt).toLocaleString('fr-FR');
+            const isError = l.statusCode >= 400;
+            const statusColor = isError ? '#f87171' : '#22c55e';
+
+            html += '<tr>' +
+                '<td style="font-size:11px;color:#94a3b8;">' + date + '</td>' +
+                '<td style="font-size:12px;">' + escapeHtml(l.keyName || '-') + '</td>' +
+                '<td><span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;background:#1a253b;color:#cbd5e1;">' + l.method + '</span></td>' +
+                '<td style="font-family:monospace;font-size:11px;color:#94a3b8;">' + escapeHtml(l.endpoint || '') + '</td>' +
+                '<td><span style="font-weight:700;color:' + statusColor + ';font-size:12px;">' + l.statusCode + '</span></td>' +
+                '<td style="font-size:11px;color:#94a3b8;">' + (l.durationMs || 0) + 'ms</td>' +
+                '<td style="font-size:11px;color:#64748b;">' + (l.ipAddress || '-') + '</td>' +
+                '</tr>';
+        });
+
+        html += '</tbody></table></div>';
+        container.innerHTML = html;
+    }
+
+    // Modal
+    const apiKeyModal = document.getElementById('apiKeyModal');
+
+    function openApiKeyModal() {
+        document.getElementById('apiKeyModalTitle').textContent = 'Nouvelle cle API';
+        document.getElementById('apiKeyName').value = '';
+        document.getElementById('apiKeyRateLimit').value = '1000';
+        document.getElementById('apiKeyExpiresAt').value = '';
+        document.querySelectorAll('.api-scope').forEach(cb => {
+            cb.checked = cb.value === 'read';
+        });
+        document.getElementById('apiKeyFormView').style.display = 'block';
+        document.getElementById('apiKeyResultView').style.display = 'none';
+        apiKeyModal.classList.add('show');
+    }
+
+    document.getElementById('newApiKeyBtn')?.addEventListener('click', openApiKeyModal);
+    document.getElementById('cancelApiKeyBtn')?.addEventListener('click', () => apiKeyModal.classList.remove('show'));
+    apiKeyModal?.addEventListener('click', (e) => { if (e.target === apiKeyModal) apiKeyModal.classList.remove('show'); });
+
+    document.getElementById('saveApiKeyBtn')?.addEventListener('click', async () => {
+        const name = document.getElementById('apiKeyName').value.trim();
+        if (!name) { showToast('Nom requis.', 'error'); return; }
+
+        const scopes = [];
+        document.querySelectorAll('.api-scope:checked').forEach(cb => scopes.push(cb.value));
+        if (scopes.length === 0) { showToast('Selectionnez au moins une permission.', 'error'); return; }
+
+        const rateLimit = parseInt(document.getElementById('apiKeyRateLimit').value) || 1000;
+        const expiresAt = document.getElementById('apiKeyExpiresAt').value || null;
+
+        const btn = document.getElementById('saveApiKeyBtn');
+        btn.disabled = true;
+        btn.textContent = 'Creation...';
+
+        try {
+            const res = await apiFetch('/api/api-keys', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, scopes, rateLimit, expiresAt })
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Erreur');
+
+            document.getElementById('apiKeyFormView').style.display = 'none';
+            document.getElementById('apiKeyResultView').style.display = 'block';
+            document.getElementById('apiKeySecret').value = data.secretKey;
+
+            loadApiKeys();
+        } catch (err) {
+            showToast('Erreur : ' + err.message, 'error');
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Creer la cle';
+        }
+    });
+
+    document.getElementById('copyApiKeyBtn')?.addEventListener('click', () => {
+        const input = document.getElementById('apiKeySecret');
+        input.select();
+        document.execCommand('copy');
+        showToast('Cle copiee dans le presse-papier', 'success');
+    });
+
+    window.revokeApiKey = async function(id) {
+        if (!confirm('Revoquer cette cle ? Les applications qui l\'utilisent cesseront de fonctionner.')) return;
+        try {
+            const res = await apiFetch('/api/api-keys/' + id + '/revoke', { method: 'POST' });
+            if (!res.ok) throw new Error('Erreur');
+            showToast('Cle revoquee', 'success');
+            loadApiKeys();
+        } catch (err) {
+            showToast('Erreur : ' + err.message, 'error');
+        }
+    };
+
+    window.deleteApiKey = async function(id) {
+        if (!confirm('Supprimer definitivement cette cle ?')) return;
+        try {
+            const res = await apiFetch('/api/api-keys/' + id, { method: 'DELETE' });
+            if (!res.ok) throw new Error('Erreur');
+            showToast('Cle supprimee', 'success');
+            loadApiKeys();
+        } catch (err) {
+            showToast('Erreur : ' + err.message, 'error');
+        }
+    };
+
+    document.getElementById('refreshApiLogsBtn')?.addEventListener('click', loadApiLogs);
+
+    // Charger quand on ouvre l'onglet
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            if (btn.dataset.tab === 'tab-api') {
+                setTimeout(() => {
+                    loadApiKeys();
+                    loadApiStats();
+                    loadApiLogs();
                 }, 100);
             }
         });

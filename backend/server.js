@@ -37,6 +37,9 @@ const pushRoutes = require('./routes/push');
 const excelRoutes = require('./routes/excel');
 const currencyRoutes = require('./routes/currency');
 const subcontractorsRoutes = require('./routes/subcontractors');
+const apiKeysRoutes = require('./routes/api-keys');
+const apiPublicRoutes = require('./routes/api-public');
+const apiDocsRoutes = require('./routes/api-docs');
 
 // ⚙️ INTERRUPTEUR DE QUOTA — Mets à `false` pour désactiver les limites pendant les tests
 const ENABLE_QUOTA_LIMITS = false;
@@ -77,6 +80,9 @@ app.use('/api/push', pushRoutes);
 app.use('/api/excel', excelRoutes);
 app.use('/api/currency', currencyRoutes);
 app.use('/api/subcontractors', subcontractorsRoutes);
+app.use('/api/api-keys', apiKeysRoutes);
+app.use('/api/v1', apiPublicRoutes);
+app.use('/api/docs', apiDocsRoutes);
 
 // Multer
 const storage = multer.diskStorage({
