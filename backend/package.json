@@ -12,6 +12,7 @@
     "test:no-db": "jest --testPathIgnorePatterns=db"
   },
   "dependencies": {
+    "axios": "^1.20.0",
     "bcrypt": "^5.1.1",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
@@ -24,6 +25,7 @@
     "pdf-lib": "^1.17.1",
     "pdf-parse": "^1.1.1",
     "pg": "^8.11.3",
+    "qrcode": "^1.5.4",
     "resend": "^6.26.0",
     "stripe": "^22.6.2",
     "xlsx": "^0.18.5"

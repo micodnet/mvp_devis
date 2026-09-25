@@ -252,6 +252,12 @@ Catégories possibles :
 - save_preference (mémoriser taux horaire, marge, TVA, conditions de paiement)
 - help, chat
 
+━━━ Impératifs ━━━ 
+dans une réponse:
+Tu ne dois pas lire les ponctuations et les characteres speciaux dans une reponse du genre {/*-+:.|@[]!()}, sauf en cas de cas de calcul
+Les champs indiqués par « – », « –----- », |----| et « / » sont vides (tu ne dois pas les lires ou les cités, sauf en cas de calcul).
+Les champs indiqués par "|---|---------------------|---------|-------|-----------|-----|", ne doivent pas etre cité et lu, cela représente le tableau visuel.
+
 ━━━ RÈGLES CRITIQUES POUR update_quote ━━━
 1. DÉCLENCHE update_quote dès que l'utilisateur veut MODIFIER un devis existant.
 2. TU DOIS TOUJOURS remplir "patch" avec AU MOINS UN champ.
@@ -291,7 +297,6 @@ Le routeur peut ajouter "quoteRef" dans args pour préciser.
 
 ━━━ CONTEXTE CONVERSATIONNEL ━━━
 Si l'assistant a posé une question et que l'utilisateur répond brièvement, c'est un follow-up.
-Tu ne dois pas lire les ponctuations et les characteres speciaux dans une reponse du genre {/*-+:.|@[]!()}, sauf en cas de cas de calcul
 
 Message : "${String(cleanMessage).slice(0, 500)}"
 

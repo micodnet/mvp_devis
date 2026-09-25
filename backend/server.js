@@ -14,6 +14,8 @@ const { extractTextFromFile } = require('./utils/parser');
 const { extractItemsFromText } = require('./utils/extractor');
 const { generateQuotePDF } = require('./utils/pdf-generator');
 const { checkAndIncrementQuota } = require('./utils/quota');
+const { startRemindersCron } = require('./utils/cron/reminders-cron');
+
 const authRoutes = require('./routes/auth');
 const { router: stripeRoutes, stripeWebhook } = require('./routes/stripe');
 const productsRoutes = require('./routes/products');
@@ -26,6 +28,10 @@ const servicesRoutes = require('./routes/services');
 const suppliersRoutes = require('./routes/suppliers');
 const stockRoutes = require('./routes/stock');
 const assistantRoutes = require('./routes/assistant');
+const peppolRoutes = require('./routes/peppol');
+const signatureRoutes = require('./routes/signature');
+const publicVerifyRoutes = require('./routes/public-verify');
+const statsRoutes = require('./routes/stats');
 
 // ⚙️ INTERRUPTEUR DE QUOTA — Mets à `false` pour désactiver les limites pendant les tests
 const ENABLE_QUOTA_LIMITS = false;
@@ -56,6 +62,10 @@ app.use('/api/services', servicesRoutes);
 app.use('/api/suppliers', suppliersRoutes);
 app.use('/api/stock', stockRoutes);
 app.use('/api/assistant', assistantRoutes);
+app.use('/api/peppol', peppolRoutes);
+app.use('/api/signature', signatureRoutes);
+app.use('/api/public', publicVerifyRoutes);
+app.use('/api/stats', statsRoutes);
 
 // Multer
 const storage = multer.diskStorage({
@@ -1105,6 +1115,8 @@ initDB()
     .then(() => {
         app.listen(port, () => {
             console.log(`Serveur Pro lancé sur http://localhost:${port}`);
+            // Demarre le cron de relances
+            startRemindersCron()
         });
     })
     .catch(err => {

@@ -301,6 +301,33 @@ async function generateQuotePDF(items, subtotal, vatAmount, total, vatRegime, va
         }
     }
 
+    const QRCode = require('qrcode');
+
+    // 🆕 Ajouter le QR code de vérification si le devis est signé
+    if (quoteData.signatureVerificationToken) {
+        try {
+            const verifyUrl = `${process.env.APP_URL || 'https://mvp-devis.onrender.com'}/verify.html?token=${quoteData.signatureVerificationToken}`;
+            
+            // Générer le QR code en base64
+            const qrDataUrl = await QRCode.toDataURL(verifyUrl, { width: 100, margin: 1, color: { dark: '#0b1120', light: '#ffffff' } });
+            
+            // Extraire les données base64
+            const qrBase64 = qrDataUrl.split(',')[1];
+            const qrBytes = Buffer.from(qrBase64, 'base64');
+            
+            // Intégrer dans le PDF
+            const qrImage = await pdfDoc.embedPng(qrBytes);
+            
+            // Positionner le QR code en bas à droite
+            const qrSize = 60;
+            page.drawImage(qrImage, { x: page.getWidth() - qrSize - 40, y: 40, width: qrSize, height: qrSize });
+            
+            // Texte explicatif
+            page.drawText('Scan pour vérifier', { x: page.getWidth() - qrSize - 55, y: 110, size: 7, font: font, color: rgb(0.4, 0.4, 0.4) });
+        } catch (err) { console.warn('Erreur intégration QR code:', err.message); }
+    }
+        
+    
     // ========== PIED DE PAGE ==========
     const footerY = 55;
     page.drawLine({ start: { x: mL, y: footerY + 25 }, end: { x: width - mR, y: footerY + 25 }, thickness: 0.5, color: rgb(0.85, 0.88, 0.92) });

@@ -164,6 +164,8 @@ const TRANSLATIONS = {
         "assistant.title": "Assistant IA",
         "assistant.placeholder": "Posez votre question...",
         "app.tab.subscription": "💳 Abonnement",
+        "app.tab.analytics": "📈 Analytics",
+        "analytics.title": "📈 Analyse détaillée de votre activité",    
 
         // Onglet Devis
         "quotes.start_hint_title": "Commencez par configurer votre entreprise",
@@ -584,6 +586,8 @@ const TRANSLATIONS = {
         "assistant.title": "AI-assistent",
         "assistant.placeholder": "Stel uw vraag...",
         "app.tab.subscription": "💳 Abonnement",
+        "app.tab.analytics": "📈 Analytics",
+        "analytics.title": "📈 Uitgebreide analyse van uw activiteit",
 
         "quotes.start_hint_title": "Configureer eerst uw bedrijf",
         "quotes.start_hint_desc": "Uw naam, adres en btw-nummer verschijnen op al uw offertes. Zonder deze info is de PDF onvolledig.",
@@ -985,6 +989,8 @@ const TRANSLATIONS = {
         "assistant.title": "AI Assistant",
         "assistant.placeholder": "Ask your question...",
         "app.tab.subscription": "💳 Subscription",
+        "app.tab.analytics": "📈 Analytics",
+        "analytics.title": "📈 Detailed analysis of your activity",
 
         "quotes.start_hint_title": "Start by configuring your company",
         "quotes.start_hint_desc": "Your name, address and VAT number will appear on all your quotes. Without this info, the PDF will be incomplete.",

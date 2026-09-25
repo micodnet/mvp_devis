@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vérification de signature — Devis Express Pro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body {
+            background: #0b1120;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            color: #e2e8f0;
+        }
+        .card {
+            background: #161f32;
+            border: 1px solid #2a3a55;
+            border-radius: 24px;
+            padding: 40px 32px;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 40px 80px rgba(0,0,0,0.5);
+        }
+        h1 {
+            font-size: 24px;
+            font-weight: 800;
+            color: #fff;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+        h1 span { color: #f97316; }
+        .sub {
+            color: #94a3b8;
+            font-size: 14px;
+            text-align: center;
+            margin-bottom: 32px;
+        }
+        .status-box {
+            text-align: center;
+            padding: 32px 24px;
+            border-radius: 16px;
+            margin-bottom: 24px;
+        }
+        .status-box.valid {
+            background: rgba(34,197,94,0.1);
+            border: 1px solid rgba(34,197,94,0.3);
+        }
+        .status-box.invalid {
+            background: rgba(248,113,113,0.1);
+            border: 1px solid rgba(248,113,113,0.3);
+        }
+        .status-box.loading {
+            background: rgba(148,163,184,0.1);
+            border: 1px solid #2a3a55;
+        }
+        .status-box .icon {
+            font-size: 56px;
+            margin-bottom: 12px;
+        }
+        .status-box.valid .icon { color: #22c55e; }
+        .status-box.invalid .icon { color: #f87171; }
+        .status-box h2 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .status-box.valid h2 { color: #22c55e; }
+        .status-box.invalid h2 { color: #f87171; }
+        .status-box p { color: #cbd5e1; font-size: 14px; line-height: 1.6; }
+        .info-grid {
+            background: #0b1120;
+            border: 1px solid #1e2a41;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #1e2a41;
+            font-size: 13px;
+        }
+        .info-row:last-child { border-bottom: none; }
+        .info-row .label { color: #94a3b8; }
+        .info-row .value { color: #e2e8f0; font-weight: 500; text-align: right; max-width: 60%; word-break: break-all; }
+        .info-row .value.mono { font-family: monospace; font-size: 11px; color: #f97316; }
+        .footer {
+            text-align: center;
+            color: #64748b;
+            font-size: 12px;
+            margin-top: 24px;
+        }
+        .footer a { color: #f97316; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>Devis <span>Express</span> Pro</h1>
+        <div class="sub">Vérification d'authenticité de signature électronique</div>
+
+        <div id="statusBox" class="status-box loading">
+            <div class="icon">⏳</div>
+            <h2>Vérification en cours...</h2>
+            <p>Analyse de l'intégrité du document...</p>
+        </div>
+
+        <div id="details" style="display:none;">
+            <div class="info-grid" id="infoGrid"></div>
+        </div>
+
+        <div class="footer">
+            Propulsé par <a href="/" target="_blank">Devis Express Pro</a> — Signature conforme eIDAS
+        </div>
+    </div>
+
+    <script>
+        (async function() {
+            const params = new URLSearchParams(window.location.search);
+            const token = params.get('token');
+            const statusBox = document.getElementById('statusBox');
+            const details = document.getElementById('details');
+            const infoGrid = document.getElementById('infoGrid');
+
+            if (!token) {
+                statusBox.className = 'status-box invalid';
+                statusBox.innerHTML = `
+                    <div class="icon">⚠</div>
+                    <h2>Token manquant</h2>
+                    <p>Aucun token de vérification fourni. Scannez le QR code sur le devis.</p>
+                `;
+                return;
+            }
+
+            try {
+                const res = await fetch(`/api/public/verify/${token}`);
+                const data = await res.json();
+
+                if (data.valid) {
+                    statusBox.className = 'status-box valid';
+                    statusBox.innerHTML = `
+                        <div class="icon">✓</div>
+                        <h2>Signature valide</h2>
+                        <p>${data.message}</p>
+                    `;
+                } else {
+                    statusBox.className = 'status-box invalid';
+                    statusBox.innerHTML = `
+                        <div class="icon">✗</div>
+                        <h2>Signature invalide</h2>
+                        <p>${data.message || data.error || 'Le document a été modifié ou n\'est pas signé.'}</p>
+                    `;
+                }
+
+                if (data.quote) {
+                    const q = data.quote;
+                    infoGrid.innerHTML = `
+                        <div class="info-row"><span class="label">N° de devis</span><span class="value">${q.number || '—'}</span></div>
+                        <div class="info-row"><span class="label">Client</span><span class="value">${q.client || '—'}</span></div>
+                        <div class="info-row"><span class="label">Signé par</span><span class="value">${q.signedBy || '—'}</span></div>
+                        <div class="info-row"><span class="label">Date de signature</span><span class="value">${q.signedAt ? new Date(q.signedAt).toLocaleString('fr-FR') : '—'}</span></div>
+                        <div class="info-row"><span class="label">Méthode</span><span class="value">${q.method === 'draw' ? 'Signature manuscrite' : 'Acceptation électronique'}</span></div>
+                        <div class="info-row"><span class="label">Hash SHA-256 enregistré</span><span class="value mono">${(q.hash || '').slice(0, 32)}...</span></div>
+                        ${q.currentHash && q.hash !== q.currentHash ? `
+                        <div class="info-row"><span class="label">Hash actuel</span><span class="value mono" style="color:#f87171;">${q.currentHash.slice(0, 32)}...</span></div>
+                        ` : ''}
+                    `;
+                    details.style.display = 'block';
+                }
+            } catch (err) {
+                statusBox.className = 'status-box invalid';
+                statusBox.innerHTML = `
+                    <div class="icon">⚠</div>
+                    <h2>Erreur de vérification</h2>
+                    <p>${err.message}</p>
+                `;
+            }
+        })();
+    </script>
+</body>
+</html>

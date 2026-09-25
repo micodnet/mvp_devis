@@ -450,4 +450,460 @@ router.get('/:id/peppol-status', authenticateToken, async (req, res) => {
     }
 });
 
+const { 
+    generateInvoiceNumber, 
+    computeTotals, 
+    computeDeposit,
+    updateInvoicePaymentState,
+    generateAccountingCSV,
+    findInvoicesToRemind
+} = require('../utils/invoice-helpers');
+
+// ============================================================
+// POST /api/invoices/from-quote/:quoteId — Créer une facture depuis un devis
+// ============================================================
+router.post('/from-quote/:quoteId', authenticateToken, async (req, res) => {
+    const quoteId = parseInt(req.params.quoteId);
+    const { depositPercent = 0 } = req.body;
+
+    try {
+        // Charger le devis
+        const quoteResult = await pool.query(
+            'SELECT * FROM quotes WHERE id = $1 AND user_id = $2',
+            [quoteId, req.user.id]
+        );
+        if (quoteResult.rows.length === 0) {
+            return res.status(404).json({ error: 'Devis introuvable.' });
+        }
+        const quote = quoteResult.rows[0];
+
+        // Charger les settings pour la TVA
+        const settingsResult = await pool.query(
+            'SELECT * FROM settings WHERE user_id = $1',
+            [req.user.id]
+        );
+        const settings = settingsResult.rows[0] || {};
+
+        const items = Array.isArray(quote.items) ? quote.items : [];
+        const totals = computeTotals(items, settings.vat_regime || 'franchise', parseFloat(settings.vat_rate) || 21);
+
+        // Acompte ?
+        let invoiceType = 'invoice';
+        let subtotal = totals.subtotal;
+        let total = totals.total;
+
+        if (depositPercent > 0 && depositPercent < 100) {
+            invoiceType = 'deposit';
+            subtotal = computeDeposit(totals.subtotal, depositPercent);
+            total = computeDeposit(totals.total, depositPercent);
+        }
+
+        // Numéro de facture
+        const invoiceNumber = await generateInvoiceNumber(req.user.id, invoiceType);
+
+        // Dates
+        const issueDate = new Date().toISOString().slice(0, 10);
+        const dueDate = new Date();
+        dueDate.setDate(dueDate.getDate() + (parseInt(settings.payment_terms) || 30));
+
+        // Insérer
+        const result = await pool.query(`
+            INSERT INTO invoices (
+                user_id, invoice_number, invoice_type, issue_date, due_date,
+                subtotal, vat_amount, total, vat_regime, status, items,
+                client_name, client_address, client_vat, client_email,
+                quote_id, deposit_percent, amount_due
+            )
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'draft', $10,
+                    $11, $12, $13, $14, $15, $16, $17)
+            RETURNING *
+        `, [
+            req.user.id, invoiceNumber, invoiceType, issueDate, dueDate.toISOString().slice(0, 10),
+            subtotal, totals.vatAmount, total, settings.vat_regime || 'franchise',
+            JSON.stringify(items),
+            quote.client_name, quote.client_address, quote.client_vat, quote.client_email,
+            quoteId, depositPercent || null, total
+        ]);
+
+        res.json({ success: true, invoice: result.rows[0] });
+    } catch (err) {
+        console.error('Erreur from-quote:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ============================================================
+// POST /api/invoices/:id/duplicate — Dupliquer une facture
+// ============================================================
+router.post('/:id/duplicate', authenticateToken, async (req, res) => {
+    const id = parseInt(req.params.id);
+    if (!id) return res.status(400).json({ error: 'ID invalide.' });
+
+    try {
+        const originalResult = await pool.query(
+            'SELECT * FROM invoices WHERE id = $1 AND user_id = $2',
+            [id, req.user.id]
+        );
+        if (originalResult.rows.length === 0) {
+            return res.status(404).json({ error: 'Facture introuvable.' });
+        }
+        const original = originalResult.rows[0];
+
+        // Nouveau numéro
+        const newNumber = await generateInvoiceNumber(req.user.id, original.invoice_type || 'invoice');
+
+        // Nouvelles dates
+        const issueDate = new Date().toISOString().slice(0, 10);
+        const settingsResult = await pool.query(
+            'SELECT payment_terms FROM settings WHERE user_id = $1',
+            [req.user.id]
+        );
+        const paymentTerms = parseInt(settingsResult.rows[0]?.payment_terms) || 30;
+        const dueDate = new Date();
+        dueDate.setDate(dueDate.getDate() + paymentTerms);
+
+        // Insérer la copie
+        const result = await pool.query(`
+            INSERT INTO invoices (
+                user_id, invoice_number, invoice_type, issue_date, due_date,
+                subtotal, vat_amount, total, vat_regime, status, items,
+                client_id, client_name, client_address, client_vat, client_email,
+                notes, amount_due
+            )
+            SELECT 
+                user_id, $1, invoice_type, $2, $3,
+                subtotal, vat_amount, total, vat_regime, 'draft', items,
+                client_id, client_name, client_address, client_vat, client_email,
+                notes, total
+            FROM invoices WHERE id = $4
+            RETURNING *
+        `, [newNumber, issueDate, dueDate.toISOString().slice(0, 10), id]);
+
+        res.json({ success: true, invoice: result.rows[0] });
+    } catch (err) {
+        console.error('Erreur duplicate:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ============================================================
+// POST /api/invoices/:id/credit-note — Créer un avoir
+// ============================================================
+router.post('/:id/credit-note', authenticateToken, async (req, res) => {
+    const id = parseInt(req.params.id);
+    const { reason = 'Annulation', amount = null, fullCredit = true } = req.body;
+
+    try {
+        const originalResult = await pool.query(
+            'SELECT * FROM invoices WHERE id = $1 AND user_id = $2',
+            [id, req.user.id]
+        );
+        if (originalResult.rows.length === 0) {
+            return res.status(404).json({ error: 'Facture introuvable.' });
+        }
+        const original = originalResult.rows[0];
+
+        if (original.invoice_type === 'credit_note') {
+            return res.status(400).json({ error: 'Impossible de créer un avoir sur un avoir.' });
+        }
+
+        // Numéro d'avoir
+        const creditNumber = await generateInvoiceNumber(req.user.id, 'credit_note');
+
+        // Montants
+        const originalTotal = parseFloat(original.total);
+        const creditAmount = fullCredit ? originalTotal : parseFloat(amount);
+        if (isNaN(creditAmount) || creditAmount <= 0 || creditAmount > originalTotal) {
+            return res.status(400).json({ error: 'Montant d\'avoir invalide.' });
+        }
+
+        const ratio = creditAmount / originalTotal;
+        const creditSubtotal = Math.round(parseFloat(original.subtotal) * ratio * 100) / 100;
+        const creditVat = Math.round(parseFloat(original.vat_amount) * ratio * 100) / 100;
+
+        const issueDate = new Date().toISOString().slice(0, 10);
+
+        const result = await pool.query(`
+            INSERT INTO invoices (
+                user_id, invoice_number, invoice_type, parent_invoice_id,
+                issue_date, due_date, subtotal, vat_amount, total, vat_regime,
+                status, items, client_id, client_name, client_address, client_vat, client_email,
+                notes, amount_due
+            )
+            VALUES ($1, $2, 'credit_note', $3, $4, $4, $5, $6, $7, $8,
+                    'draft', $9, $10, $11, $12, $13, $14, $15, $7)
+            RETURNING *
+        `, [
+            req.user.id, creditNumber, id,
+            issueDate,
+            -creditSubtotal, -creditVat, -creditAmount,
+            original.vat_regime || 'franchise',
+            JSON.stringify(original.items),
+            original.client_id, original.client_name, original.client_address,
+            original.client_vat, original.client_email,
+            `Avoir sur facture ${original.invoice_number} : ${reason}`
+        ]);
+
+        res.json({ success: true, creditNote: result.rows[0] });
+    } catch (err) {
+        console.error('Erreur credit-note:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ============================================================
+// POST /api/invoices/:id/payments — Enregistrer un paiement
+// ============================================================
+router.post('/:id/payments', authenticateToken, async (req, res) => {
+    const id = parseInt(req.params.id);
+    const { amount, paymentDate, paymentMethod, reference, notes } = req.body;
+
+    if (!amount || parseFloat(amount) <= 0) {
+        return res.status(400).json({ error: 'Montant invalide.' });
+    }
+
+    try {
+        // Vérifier la facture
+        const invoiceResult = await pool.query(
+            'SELECT * FROM invoices WHERE id = $1 AND user_id = $2',
+            [id, req.user.id]
+        );
+        if (invoiceResult.rows.length === 0) {
+            return res.status(404).json({ error: 'Facture introuvable.' });
+        }
+
+        // Insérer le paiement
+        const result = await pool.query(`
+            INSERT INTO invoice_payments (user_id, invoice_id, amount, payment_date, payment_method, reference, notes)
+            VALUES ($1, $2, $3, $4, $5, $6, $7)
+            RETURNING *
+        `, [
+            req.user.id, id, parseFloat(amount),
+            paymentDate || new Date().toISOString().slice(0, 10),
+            paymentMethod || null, reference || null, notes || null
+        ]);
+
+        // Recalculer l'état
+        const state = await updateInvoicePaymentState(id);
+
+        res.json({ 
+            success: true, 
+            payment: result.rows[0],
+            invoiceState: state
+        });
+    } catch (err) {
+        console.error('Erreur payment:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ============================================================
+// GET /api/invoices/:id/payments — Historique des paiements
+// ============================================================
+router.get('/:id/payments', authenticateToken, async (req, res) => {
+    const id = parseInt(req.params.id);
+    try {
+        const result = await pool.query(
+            'SELECT * FROM invoice_payments WHERE invoice_id = $1 AND user_id = $2 ORDER BY payment_date DESC',
+            [id, req.user.id]
+        );
+        res.json(result.rows);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ============================================================
+// GET /api/invoices/export/csv — Export comptable
+// ============================================================
+router.get('/export/csv', authenticateToken, async (req, res) => {
+    try {
+        const { from, to, status } = req.query;
+
+        let query = 'SELECT * FROM invoices WHERE user_id = $1';
+        const params = [req.user.id];
+
+        if (from) {
+            params.push(from);
+            query += ` AND issue_date >= $${params.length}`;
+        }
+        if (to) {
+            params.push(to);
+            query += ` AND issue_date <= $${params.length}`;
+        }
+        if (status) {
+            params.push(status);
+            query += ` AND status = $${params.length}`;
+        }
+
+        query += ' ORDER BY issue_date DESC';
+
+        const result = await pool.query(query, params);
+
+        const settingsResult = await pool.query(
+            'SELECT company_name FROM settings WHERE user_id = $1',
+            [req.user.id]
+        );
+        const companyName = settingsResult.rows[0]?.company_name || '';
+
+        const csv = generateAccountingCSV(result.rows, companyName);
+
+        res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+        res.setHeader('Content-Disposition', `attachment; filename=export-factures-${new Date().toISOString().slice(0, 10)}.csv`);
+        res.send('\uFEFF' + csv); // BOM pour Excel
+    } catch (err) {
+        console.error('Erreur export CSV:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ============================================================
+// GET /api/invoices/reminders/settings — Paramètres de relance
+// ============================================================
+router.get('/reminders/settings', authenticateToken, async (req, res) => {
+    try {
+        const result = await pool.query(
+            'SELECT * FROM reminder_settings WHERE user_id = $1',
+            [req.user.id]
+        );
+        if (result.rows.length === 0) {
+            return res.json({
+                enabled: false,
+                daysBeforeFirst: 7,
+                daysBetweenReminders: 7,
+                maxReminders: 3
+            });
+        }
+        const s = result.rows[0];
+        res.json({
+            enabled: s.enabled,
+            daysBeforeFirst: s.days_before_first,
+            daysBetweenReminders: s.days_between_reminders,
+            maxReminders: s.max_reminders,
+            emailSubjectTemplate: s.email_subject_template,
+            emailBodyTemplate: s.email_body_template
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ============================================================
+// POST /api/invoices/reminders/settings — Modifier paramètres
+// ============================================================
+router.post('/reminders/settings', authenticateToken, async (req, res) => {
+    const { enabled, daysBeforeFirst, daysBetweenReminders, maxReminders, emailSubjectTemplate, emailBodyTemplate } = req.body;
+    try {
+        await pool.query(`
+            INSERT INTO reminder_settings (user_id, enabled, days_before_first, days_between_reminders, max_reminders, email_subject_template, email_body_template, updated_at)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
+            ON CONFLICT (user_id) DO UPDATE SET
+                enabled = EXCLUDED.enabled,
+                days_before_first = EXCLUDED.days_before_first,
+                days_between_reminders = EXCLUDED.days_between_reminders,
+                max_reminders = EXCLUDED.max_reminders,
+                email_subject_template = EXCLUDED.email_subject_template,
+                email_body_template = EXCLUDED.email_body_template,
+                updated_at = NOW()
+        `, [
+            req.user.id, enabled || false,
+            parseInt(daysBeforeFirst) || 7, parseInt(daysBetweenReminders) || 7,
+            parseInt(maxReminders) || 3,
+            emailSubjectTemplate || null, emailBodyTemplate || null
+        ]);
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ============================================================
+// POST /api/invoices/:id/remind — Envoyer une relance manuelle
+// ============================================================
+router.post('/:id/remind', authenticateToken, async (req, res) => {
+    const id = parseInt(req.params.id);
+    try {
+        // Charger la facture
+        const invoiceResult = await pool.query(
+            'SELECT * FROM invoices WHERE id = $1 AND user_id = $2',
+            [id, req.user.id]
+        );
+        if (invoiceResult.rows.length === 0) {
+            return res.status(404).json({ error: 'Facture introuvable.' });
+        }
+        const invoice = invoiceResult.rows[0];
+
+        if (!invoice.client_email) {
+            return res.status(400).json({ error: 'Aucun email client. Ajoutez-en un d\'abord.' });
+        }
+
+        // Compter les relances précédentes
+        const countResult = await pool.query(
+            'SELECT COUNT(*) FROM payment_reminders WHERE invoice_id = $1',
+            [id]
+        );
+        const level = parseInt(countResult.rows[0].count) + 1;
+
+        // Envoyer l'email (via Resend)
+        const { Resend } = require('resend');
+        if (process.env.RESEND_API_KEY) {
+            const resend = new Resend(process.env.RESEND_API_KEY);
+            const settingsResult = await pool.query(
+                'SELECT company_name FROM settings WHERE user_id = $1',
+                [req.user.id]
+            );
+            const companyName = settingsResult.rows[0]?.company_name || '';
+
+            const subjects = {
+                1: `Rappel amiable - Facture ${invoice.invoice_number}`,
+                2: `Relance - Facture ${invoice.invoice_number}`,
+                3: `Mise en demeure - Facture ${invoice.invoice_number}`
+            };
+
+            await resend.emails.send({
+                from: process.env.RESEND_FROM_EMAIL || 'noreply@votreentreprise.com',
+                to: [invoice.client_email],
+                subject: subjects[Math.min(level, 3)],
+                html: `
+                    <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">
+                        <h2>${subjects[Math.min(level, 3)]}</h2>
+                        <p>Bonjour ${invoice.client_name || ''},</p>
+                        <p>Nous vous rappelons que la facture <strong>${invoice.invoice_number}</strong> 
+                           d'un montant de <strong>${parseFloat(invoice.amount_due || invoice.total).toFixed(2)} €</strong>
+                           est arrivée à échéance le <strong>${new Date(invoice.due_date).toLocaleDateString('fr-FR')}</strong>.</p>
+                        <p>Nous vous remercions de bien vouloir procéder au règlement dans les plus brefs délais.</p>
+                        <p>Cordialement,<br>${companyName}</p>
+                    </div>
+                `
+            });
+        }
+
+        // Enregistrer la relance
+        await pool.query(`
+            INSERT INTO payment_reminders (user_id, invoice_id, reminder_level, sent_to_email, status)
+            VALUES ($1, $2, $3, $4, 'sent')
+        `, [req.user.id, id, level, invoice.client_email]);
+
+        res.json({ success: true, level, sentTo: invoice.client_email });
+    } catch (err) {
+        console.error('Erreur remind:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ============================================================
+// GET /api/invoices/:id/reminders — Historique des relances
+// ============================================================
+router.get('/:id/reminders', authenticateToken, async (req, res) => {
+    const id = parseInt(req.params.id);
+    try {
+        const result = await pool.query(
+            'SELECT * FROM payment_reminders WHERE invoice_id = $1 AND user_id = $2 ORDER BY sent_at DESC',
+            [id, req.user.id]
+        );
+        res.json(result.rows);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
 module.exports = router;

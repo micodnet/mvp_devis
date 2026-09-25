@@ -933,77 +933,21 @@
         }
 
         /* Carte d'action en attente de confirmation */
-        .msg.action-draft {
-            align-self: flex-start;
-            background: #1a253b;
-            border: 1px solid #f97316;
-            color: #e2e8f0;
-            max-width: 90%;
-            border-radius: 16px;
-            padding: 16px 18px;
-        }
-        .msg.action-draft .draft-title {
-            font-weight: 700;
-            color: #f97316;
-            font-size: 13px;
-            margin-bottom: 10px;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-        }
-        .msg.action-draft .draft-summary {
-            font-weight: 600;
-            color: #fff;
-            margin-bottom: 12px;
-            font-size: 14px;
-        }
-        .msg.action-draft .draft-preview {
-            background: #0b1120;
-            border-radius: 10px;
-            padding: 12px 14px;
-            margin-bottom: 14px;
-            font-size: 13px;
-            line-height: 1.7;
-            border: 1px solid #2a3a55;
-        }
-        .msg.action-draft .draft-preview .row {
-            display: flex;
-            justify-content: space-between;
-            gap: 12px;
-            border-bottom: 1px solid rgba(42,58,85,0.5);
-            padding: 4px 0;
-        }
+        .msg.action-draft { align-self: flex-start; background: #1a253b; border: 1px solid #f97316; color: #e2e8f0; max-width: 90%; border-radius: 16px; padding: 16px 18px; }
+        .msg.action-draft .draft-title { font-weight: 700; color: #f97316; font-size: 13px; margin-bottom: 10px; letter-spacing: 0.5px; text-transform: uppercase; }
+        .msg.action-draft .draft-summary { font-weight: 600; color: #fff; margin-bottom: 12px; font-size: 14px; }
+        .msg.action-draft .draft-preview { background: #0b1120; border-radius: 10px; padding: 12px 14px; margin-bottom: 14px; font-size: 13px; line-height: 1.7; border: 1px solid #2a3a55; }
+        .msg.action-draft .draft-preview .row { display: flex; justify-content: space-between; gap: 12px; border-bottom: 1px solid rgba(42,58,85,0.5); padding: 4px 0; }
         .msg.action-draft .draft-preview .row:last-child { border-bottom: none; }
         .msg.action-draft .draft-preview .key { color: #94a3b8; }
         .msg.action-draft .draft-preview .val { color: #e2e8f0; font-weight: 500; text-align: right; }
-        .msg.action-draft .draft-actions {
-            display: flex;
-            gap: 8px;
-        }
-        .msg.action-draft .draft-actions button {
-            flex: 1;
-            padding: 10px 16px;
-            border-radius: 60px;
-            border: none;
-            font-weight: 700;
-            font-size: 13px;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-        .msg.action-draft .draft-actions .confirm {
-            background: #f97316;
-            color: #0b1120;
-        }
+        .msg.action-draft .draft-actions { display: flex; gap: 8px; }
+        .msg.action-draft .draft-actions button { flex: 1; padding: 10px 16px; border-radius: 60px; border: none; font-weight: 700; font-size: 13px; cursor: pointer; transition: 0.2s; }
+        .msg.action-draft .draft-actions .confirm { background: #f97316; color: #0b1120; }
         .msg.action-draft .draft-actions .confirm:hover { background: #ea580c; }
-        .msg.action-draft .draft-actions .cancel {
-            background: #1a253b;
-            border: 1px solid #2a3a55;
-            color: #cbd5e1;
-        }
+        .msg.action-draft .draft-actions .cancel { background: #1a253b; border: 1px solid #2a3a55; color: #cbd5e1; }
         .msg.action-draft .draft-actions .cancel:hover { background: #3f1e24; color: #f87171; border-color: #7f1d1d; }
-        .msg.action-draft.done {
-            border-color: #22c55e;
-            background: rgba(34,197,94,0.05);
-        }
+        .msg.action-draft.done { border-color: #22c55e; background: rgba(34,197,94,0.05); }
         .msg.action-draft.done .draft-title { color: #22c55e; }
     </style>
 </head>
@@ -1242,6 +1186,7 @@
         <button class="tab-btn" data-tab="tab-history" data-i18n="app.tab.history">📜 Historique</button>
         <button class="tab-btn" data-tab="tab-invoices" data-i18n="app.tab.invoices">🧾 Factures</button>
         <button class="tab-btn" data-tab="tab-dashboard" data-i18n="app.tab.dashboard">📊 Dashboard</button>
+                <button class="tab-btn" data-tab="tab-analytics" data-i18n="app.tab.analytics">📈 Analytics</button>
         <button class="tab-btn" data-tab="tab-team" data-i18n="app.tab.team">👥 Équipe</button>
         <button class="tab-btn" data-tab="tab-settings" data-i18n="app.tab.settings">⚙️ Paramètres</button>
         <button class="tab-btn" data-tab="tab-assistant" data-i18n="app.tab.assistant">💬 Assistant</button>
@@ -1431,6 +1376,7 @@
             <div class="catalog-header">
                 <h2 data-i18n="invoices.title">🧾 Mes factures</h2>
                 <div class="catalog-actions">
+                    <button class="btn-secondary" id="exportInvoicesCsvBtn">📊 Export comptable</button>
                     <button class="btn-primary-sm" id="newInvoiceBtn" data-i18n="invoices.new">+ Nouvelle facture</button>
                 </div>
             </div>
@@ -1440,6 +1386,7 @@
                 <button class="history-filter" data-ifilter="sent"><span data-i18n="invoices.filter.sent">Envoyées</span> <span class="count" id="ifCntSent">0</span></button>
                 <button class="history-filter" data-ifilter="paid"><span data-i18n="invoices.filter.paid">Payées</span> <span class="count" id="ifCntPaid">0</span></button>
                 <button class="history-filter" data-ifilter="overdue"><span data-i18n="invoices.filter.overdue">En retard</span> <span class="count" id="ifCntOverdue">0</span></button>
+                
             </div>
             <div id="invoicesList"><p style="color:#64748b;">Chargement...</p></div>
         </div>
@@ -1507,6 +1454,86 @@
                 <div class="chart-wrapper">
                     <canvas id="statusChart"></canvas>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ANALYTICS -->
+    <div id="tab-analytics" class="tab-content">
+        <!-- Filtres de période -->
+        <div class="card">
+            <div class="catalog-header" style="margin-bottom:12px;">
+                <h2 data-i18n="analytics.title">📈 Analyse détaillée de votre activité</h2>
+                <div class="catalog-actions">
+                    <button class="btn-secondary" id="analyticsRefreshBtn">🔄 Actualiser</button>
+                </div>
+            </div>
+            <div class="history-filters" id="analyticsFilters">
+                <button class="history-filter active" data-period="12m">12 derniers mois</button>
+                <button class="history-filter" data-period="3m">3 derniers mois</button>
+                <button class="history-filter" data-period="30d">30 derniers jours</button>
+                <button class="history-filter" data-period="ytd">Année en cours</button>
+                <button class="history-filter" data-period="all">Tout</button>
+            </div>
+        </div>
+
+        <!-- KPI Cards -->
+        <div id="analyticsKPIs" class="stats-grid" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr));">
+            <!-- Rempli par JS -->
+        </div>
+
+        <!-- Prévisionnel de trésorerie -->
+        <div class="card">
+            <div class="card-title">💰 Prévisionnel de trésorerie</div>
+            <div class="stats-grid" id="treasuryBuckets" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr));">
+                <!-- Rempli par JS -->
+            </div>
+        </div>
+
+        <!-- Rentabilité par métier -->
+        <div class="card">
+            <div class="card-title">🎯 Rentabilité par métier</div>
+            <div class="chart-wrapper" style="height:320px;margin-bottom:20px;">
+                <canvas id="metierChart"></canvas>
+            </div>
+            <div id="metierTable" style="overflow-x:auto;"></div>
+        </div>
+
+        <!-- Rentabilité par client -->
+        <div class="card">
+            <div class="card-title">👥 Top clients</div>
+            <div id="clientsTable" style="overflow-x:auto;"></div>
+        </div>
+
+        <!-- Conversion -->
+        <div class="charts-grid">
+            <div class="card">
+                <div class="card-title">📊 Taux de conversion mensuel</div>
+                <div class="chart-wrapper">
+                    <canvas id="conversionChart"></canvas>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-title">🎯 Évolution du CA</div>
+                <div class="chart-wrapper">
+                    <canvas id="revenueEvolutionChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top produits -->
+        <div class="card">
+            <div class="card-title">🏆 Top produits/services</div>
+            <div class="chart-wrapper" style="height:380px;">
+                <canvas id="topProductsChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Comparaison périodes -->
+        <div class="card">
+            <div class="card-title">📅 Comparaison avec la période précédente</div>
+            <div id="comparisonBlock" style="padding:20px;background:#0b1120;border-radius:12px;">
+                <!-- Rempli par JS -->
             </div>
         </div>
     </div>
@@ -1587,7 +1614,41 @@
                 <p style="color:#64748b;font-size:12px;margin-bottom:16px;" data-i18n="settings.invoice_notice">
                     Ces informations apparaîtront sur toutes vos factures (numéro, échéance, coordonnées de paiement).
                 </p>
-
+                <div class="card-title" style="margin-top:24px;">📨 Peppol (Facturation électronique)</div>
+                <p style="color:#94a3b8;font-size:13px;margin-bottom:16px;line-height:1.6;">
+                    Peppol est le réseau d'échange de factures électroniques B2B. 
+                    Obligatoire en Belgique depuis janvier 2026. 
+                    Créez un compte sur <a href="https://www.storecove.com/" target="_blank"rel="noopener  noreferrer" style="color:#f97316;">Storecove</a> pour obtenir une clé API.
+                </p>
+                <div class="form-group">
+                    <label class="checkbox-accept" style="margin:0;">
+                        <input type="checkbox" id="peppolEnabled" style="margin-top:0;" />
+                        <div class="text">Activer l'envoi de factures via Peppol</div>
+                    </label>
+                </div>
+                <div id="peppolFields" style="display:none;">
+                    <div class="form-group">
+                        <label>Clé API Storecove</label>
+                        <input type="text" id="peppolApiKey" placeholder="sk_live_..." />
+                    </div>
+                    <div class="form-group">
+                        <label>Legal Entity ID (fourni par Storecove)</label>
+                        <input type="text" id="peppolLegalEntityId" placeholder="Ex: 12345678" />
+                    </div>
+                    <div class="form-group">
+                        <label>Schéma d'identification</label>
+                        <select id="peppolSchemeId">
+                            <option value="0208">0208 — Belgique (BCE/TVA)</option>
+                            <option value="0009">0009 — France (SIRET)</option>
+                            <option value="0106">0106 — Pays-Bas (KVK)</option>
+                            <option value="9930">9930 — Allemagne (VAT)</option>
+                        </select>
+                    </div>
+                    <button type="button" class="btn-secondary" id="peppolTestBtn" style="margin-top:8px;">
+                        🔌 Tester la connexion Peppol
+                    </button>
+                    <div id="peppolTestResult" style="margin-top:10px;font-size:13px;"></div>
+                </div>
                 <div class="card-title" style="margin-top:24px;" data-i18n="settings.signature_section">✍️ Signature électronique</div>
                 <div class="form-group">
                     <label data-i18n="settings.signature_method">Méthode de signature par défaut</label>
@@ -2673,6 +2734,13 @@ async function loadSettings() {
         document.getElementById('paymentTerms').value = data.paymentTerms || 30;
         document.getElementById('languageSelect').value = data.language || 'fr';
         document.getElementById('pdfTemplate').value = data.pdfTemplate || 'classic';
+        // Peppol
+        document.getElementById('peppolEnabled').checked = data.peppolEnabled || false;
+        document.getElementById('peppolFields').style.display = data.peppolEnabled ? 'block' : 'none';
+        document.getElementById('peppolApiKey').value = data.peppolApiKey || '';
+        document.getElementById('peppolLegalEntityId').value = data.peppolLegalEntityId || '';
+        document.getElementById('peppolSchemeId').value = data.peppolSchemeId || '0208';
+
         // Appliquer la langue
         if (typeof setLanguage === 'function') {
             setLanguage(data.language || 'fr');
@@ -2724,13 +2792,44 @@ document.getElementById('settingsForm').addEventListener('submit', async (e) => 
         paymentTerms: parseInt(document.getElementById('paymentTerms').value) || 30,
         language: document.getElementById('languageSelect').value || 'fr',
         pdfTemplate: document.getElementById('pdfTemplate').value || 'classic',
-        logo: logoBase64 || undefined
+        logo: logoBase64 || undefined,
+        peppolEnabled: document.getElementById('peppolEnabled').checked,
+        peppolApiKey: document.getElementById('peppolApiKey').value.trim(),
+        peppolLegalEntityId: document.getElementById('peppolLegalEntityId').value.trim(),
+        peppolSchemeId: document.getElementById('peppolSchemeId').value,
     };
     try {
         const res = await apiFetch('/api/settings', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(settings) });
         if (res.ok) { showToast('✅ Paramètres enregistrés !', 'success'); loadSettings(); checkOnboarding(); }
         else showToast('❌ Erreur.', 'error');
     } catch(err) { showToast(err.message, 'error'); }
+});
+
+document.getElementById('peppolEnabled')?.addEventListener('change', (e) => {
+    document.getElementById('peppolFields').style.display = e.target.checked ? 'block' : 'none';
+});
+
+document.getElementById('peppolTestBtn')?.addEventListener('click', async () => {
+    const btn = document.getElementById('peppolTestBtn');
+    const result = document.getElementById('peppolTestResult');
+    btn.disabled = true;
+    btn.textContent = '⏳ Test en cours...';
+    result.textContent = '';
+    
+    try {
+        const res = await apiFetch('/api/peppol/test-connection', { method: 'POST' });
+        const data = await res.json();
+        if (res.ok && data.success) {
+            result.innerHTML = '<span style="color:#22c55e;">✅ Connexion Peppol opérationnelle</span>';
+        } else {
+            result.innerHTML = '<span style="color:#f87171;">❌ ' + (data.error || 'Erreur') + '</span>';
+        }
+    } catch (err) {
+        result.innerHTML = '<span style="color:#f87171;">❌ ' + err.message + '</span>';
+    } finally {
+        btn.disabled = false;
+        btn.textContent = '🔌 Tester la connexion Peppol';
+    }
 });
 
 // ================================================================
@@ -3923,10 +4022,17 @@ function renderHistory() {
         menuItems += `<button onclick="closeAllMenus(); duplicateQuote(${q.id})"><span class="icon">📋</span> Dupliquer</button>`;
         // Bouton "Transformer en facture" si le devis est accepté ou signé
         if (q.status === 'accepted' || (q.signature && q.signature.signedAt)) {
+            //menuItems += `<button onclick="closeAllMenus(); createInvoiceFromQuote(${q.id})"><span class="icon">🧾</span> Créer facture</button>`;
             menuItems += `<button onclick="closeAllMenus(); convertQuoteToInvoice(${q.id})"><span class="icon">🧾</span> Transformer en facture</button>`;
         }
         menuItems += `<button onclick="closeAllMenus(); downloadQuotePdf(${q.id})"><span class="icon">⬇</span> Télécharger PDF</button>`;
         menuItems += `<button class="danger" onclick="closeAllMenus(); deleteQuote(${q.id})"><span class="icon">🗑</span> Supprimer</button>`;
+
+        // Bouton "Certificat de signature" si signé
+        if (q.signature && q.signature.signedAt) {
+            menuItems += `<button onclick="closeAllMenus(); downloadSignatureCertificate(${q.id})"><span class="icon">📜</span> Certificat de signature</button>`;
+            menuItems += `<button onclick="closeAllMenus(); verifyQuoteSignature(${q.id})"><span class="icon">🔍</span> Vérifier l'intégrité</button>`;
+        }
 
         html += `<div class="quote-row">
             <div>
@@ -4047,6 +4153,149 @@ window.downloadQuotePdf = async function(id) {
         document.body.appendChild(a); a.click(); a.remove();
         window.URL.revokeObjectURL(u);
     } catch(err) { showToast('Erreur : ' + err.message, 'error'); }
+};
+
+window.createInvoiceFromQuote = async function(quoteId) {
+    const depositInput = prompt('Créer un acompte ? (entrez un pourcentage 30/50, ou laissez vide pour facture complète)');
+    const depositPercent = depositInput ? parseFloat(depositInput) : 0;
+    
+    if (depositPercent > 0 && (isNaN(depositPercent) || depositPercent >= 100)) {
+        showToast('Pourcentage invalide.', 'error');
+        return;
+    }
+    
+    try {
+        showToast('Création de la facture...', 'info');
+        const res = await apiFetch(`/api/invoices/from-quote/${quoteId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ depositPercent })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Erreur');
+        
+        showToast(`✅ Facture ${data.invoice.invoice_number} créée`, 'success');
+        document.querySelector('[data-tab="tab-invoices"]').click();
+        loadInvoices();
+    } catch (err) {
+        showToast('Erreur : ' + err.message, 'error');
+    }
+};
+
+window.downloadSignatureCertificate = async function(quoteId) {
+    try {
+        showToast('Génération du certificat...', 'info');
+        const res = await apiFetch(`/api/signature/quotes/${quoteId}/certificate`);
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Erreur');
+
+        // Générer un PDF du certificat (côté client avec un simple format HTML imprimable)
+        const cert = data.certificate;
+        const html = `
+            <!DOCTYPE html>
+            <html><head><meta charset="utf-8"><title>Certificat de signature - ${cert.quote.number}</title>
+            <style>
+                body { font-family: Arial, sans-serif; padding: 40px; color: #000; max-width: 800px; margin: 0 auto; }
+                h1 { color: #0b1120; border-bottom: 3px solid #f97316; padding-bottom: 10px; }
+                h2 { color: #0b1120; margin-top: 30px; font-size: 16px; text-transform: uppercase; border-bottom: 1px solid #ccc; padding-bottom: 5px; }
+                table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+                th, td { text-align: left; padding: 8px; border-bottom: 1px solid #eee; font-size: 13px; }
+                th { background: #f5f5f5; font-weight: 600; }
+                .hash { font-family: monospace; font-size: 10px; word-break: break-all; color: #f97316; }
+                .header { display: flex; justify-content: space-between; align-items: center; }
+                .logo { font-size: 24px; font-weight: 800; color: #0b1120; }
+                .logo span { color: #f97316; }
+                .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #ccc; font-size: 11px; color: #666; text-align: center; }
+                .signature-img { max-width: 300px; border: 1px solid #ccc; background: #fff; }
+            </style></head>
+            <body>
+                <div class="header">
+                    <div class="logo">Devis <span>Express</span> Pro</div>
+                    <div>Certificat de signature électronique</div>
+                </div>
+                <h1>Certificat de signature — ${cert.quote.number}</h1>
+                <p>Ce certificat atteste de la signature électronique du devis mentionné ci-dessous, conforme au règlement eIDAS (UE) n° 910/2014.</p>
+
+                <h2>1. Informations du devis</h2>
+                <table>
+                    <tr><th>N° de devis</th><td>${cert.quote.number}</td></tr>
+                    <tr><th>Date d'émission</th><td>${cert.quote.issueDate}</td></tr>
+                    <tr><th>Date de validité</th><td>${cert.quote.validDate}</td></tr>
+                    <tr><th>Client</th><td>${cert.quote.clientName || '—'}</td></tr>
+                    <tr><th>Email client</th><td>${cert.quote.clientEmail || '—'}</td></tr>
+                    <tr><th>Total HT</th><td>${cert.quote.subtotal.toFixed(2)} €</td></tr>
+                    <tr><th>TVA</th><td>${cert.quote.vatAmount.toFixed(2)} €</td></tr>
+                    <tr><th>Total TTC</th><td><strong>${cert.quote.total.toFixed(2)} €</strong></td></tr>
+                </table>
+
+                <h2>2. Informations du signataire</h2>
+                <table>
+                    <tr><th>Nom du signataire</th><td><strong>${cert.signature.signedBy}</strong></td></tr>
+                    <tr><th>Date et heure</th><td>${new Date(cert.signature.signedAt).toLocaleString('fr-FR')}</td></tr>
+                    <tr><th>Méthode</th><td>${cert.signature.method === 'draw' ? 'Signature manuscrite' : 'Acceptation électronique (case à cocher)'}</td></tr>
+                    <tr><th>Adresse IP</th><td>${cert.signature.ip || '—'}</td></tr>
+                    <tr><th>User-Agent</th><td style="font-size:11px;">${cert.signature.userAgent || '—'}</td></tr>
+                </table>
+
+                ${cert.signature.data ? `
+                    <h2>3. Signature manuscrite</h2>
+                    <img src="${cert.signature.data}" class="signature-img" alt="Signature" />
+                ` : ''}
+
+                <h2>${cert.signature.data ? '4' : '3'}. Preuves d'intégrité</h2>
+                <table>
+                    <tr><th>Hash SHA-256 du devis</th><td class="hash">${cert.signature.hash}</td></tr>
+                    <tr><th>Horodatage serveur</th><td>${new Date(cert.signature.timestamp).toLocaleString('fr-FR')}</td></tr>
+                    <tr><th>Source de l'horodatage</th><td>${cert.signature.timestampSource || 'server_utc'}</td></tr>
+                    <tr><th>Token de vérification</th><td class="hash">${cert.signature.token}</td></tr>
+                </table>
+
+                <h2>${cert.signature.data ? '5' : '4'}. Audit trail</h2>
+                <table>
+                    <tr><th>Événement</th><th>Date</th><th>IP</th></tr>
+                    ${cert.auditTrail.map(e => `<tr>
+                        <td>${e.event}</td>
+                        <td>${new Date(e.date).toLocaleString('fr-FR')}</td>
+                        <td style="font-size:11px;">${e.ip || '—'}</td>
+                    </tr>`).join('')}
+                </table>
+
+                <div class="footer">
+                    Document généré automatiquement le ${new Date().toLocaleString('fr-FR')}<br>
+                    Émis par ${cert.company.companyName || ''} — ${cert.company.email || ''}<br>
+                    Vérifiable en ligne sur ${window.location.origin}/verify.html?token=${cert.signature.token}
+                </div>
+            </body>
+            </html>
+        `;
+
+        // Ouvrir dans un nouvel onglet pour impression
+        const w = window.open('', '_blank');
+        w.document.write(html);
+        w.document.close();
+        setTimeout(() => w.print(), 500);
+
+        showToast('✅ Certificat ouvert (imprimez en PDF)', 'success');
+    } catch (err) {
+        showToast('Erreur : ' + err.message, 'error');
+    }
+};
+
+window.verifyQuoteSignature = async function(quoteId) {
+    try {
+        showToast('Vérification...', 'info');
+        const res = await apiFetch(`/api/signature/quotes/${quoteId}/verify`);
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Erreur');
+
+        if (data.valid) {
+            showToast('✅ Signature valide — le document n\'a pas été modifié', 'success');
+        } else {
+            showToast('❌ ' + (data.message || 'Signature invalide'), 'error');
+        }
+    } catch (err) {
+        showToast('Erreur : ' + err.message, 'error');
+    }
 };
 
 // ================================================================
@@ -4905,7 +5154,28 @@ function renderInvoices() {
 
         let menuItems = '';
         menuItems += `<button onclick="closeAllMenus(); downloadInvoicePdf(${inv.id})"><span class="icon">⬇</span> Télécharger PDF</button>`;
+        // Bouton paiement (si pas encore payée)
+        if (inv.status !== 'paid' && inv.status !== 'cancelled') {
+            menuItems += `<button onclick="closeAllMenus(); recordPayment(${inv.id}, ${inv.total})"><span class="icon">💰</span> Enregistrer paiement</button>`;
+        }
+        // Bouton avoir
+        if (inv.invoice_type !== 'credit_note' && inv.status !== 'cancelled') {
+            menuItems += `<button onclick="closeAllMenus(); createCreditNote(${inv.id})"><span class="icon">↩</span> Créer un avoir</button>`;
+        }
+        // Bouton relance
+        if (inv.status !== 'paid' && inv.client_email && new Date(inv.due_date) < new Date()) {
+            menuItems += `<button onclick="closeAllMenus(); sendReminder(${inv.id})"><span class="icon">📧</span> Envoyer relance</button>`;
+        }
+        // Bouton dupliquer
+        menuItems += `<button onclick="closeAllMenus(); duplicateInvoice(${inv.id})"><span class="icon">📋</span> Dupliquer</button>`;
         // Bouton Peppol (uniquement si pas déjà envoyé)
+        // if (!inv.peppolSubmissionId) {
+        // Badge Peppol
+        //if (inv.peppolStatus === 'delivered') {
+        //    badges += '<span class="invoice-badge paid" style="margin-left:6px;">📨 Peppol livré</span>';
+        //} else if (inv.peppolSubmissionId) {
+        //    badges += '<span class="invoice-badge sent" style="margin-left:6px;">📨 Peppol envoyé</span>';
+        //}
         if (!inv.peppolOrderId) {
             menuItems += `<button onclick="closeAllMenus(); sendInvoicePeppol(${inv.id})"><span class="icon">📨</span> Envoyer via Peppol</button>`;
         } else {
@@ -4939,6 +5209,24 @@ function renderInvoices() {
 }
 
 // Actions facture
+document.getElementById('exportInvoicesCsvBtn')?.addEventListener('click', async () => {
+    try {
+        showToast('Génération du CSV...', 'info');
+        const res = await apiFetch('/api/invoices/export/csv');
+        if (!res.ok) throw new Error('Erreur');
+        const blob = await res.blob();
+        const u = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = u;
+        a.download = `export-factures-${new Date().toISOString().slice(0, 10)}.csv`;
+        document.body.appendChild(a); a.click(); a.remove();
+        window.URL.revokeObjectURL(u);
+        showToast('✅ Export téléchargé', 'success');
+    } catch (err) {
+        showToast('Erreur : ' + err.message, 'error');
+    }
+});
+
 window.downloadInvoicePdf = async function(id) {
     try {
         showToast('Génération du PDF...', 'info');
@@ -5006,6 +5294,7 @@ window.sendInvoicePeppol = async function(id) {
 
     showToast('Envoi via Peppol en cours...', 'info');
     try {
+        // const res = await apiFetch(`/api/peppol/invoices/${id}/send`, {
         const res = await apiFetch(`/api/invoices/${id}/send-peppol`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' }
@@ -5044,6 +5333,105 @@ window.deleteInvoice = async function(id) {
         showToast('🗑 Facture supprimée', 'success');
         loadInvoices();
     } catch (err) { showToast('Erreur : ' + err.message, 'error'); }
+};
+
+window.recordPayment = async function(invoiceId, total) {
+    const amountInput = prompt(`Montant du paiement reçu (€) :\nMontant total : ${total.toFixed(2)} €`, total.toFixed(2));
+    if (!amountInput) return;
+    
+    const amount = parseFloat(amountInput.replace(',', '.'));
+    if (isNaN(amount) || amount <= 0) {
+        showToast('Montant invalide.', 'error');
+        return;
+    }
+    
+    const method = prompt('Mode de paiement (virement, carte, espèces, chèque) :', 'virement');
+    if (method === null) return;
+    
+    try {
+        showToast('Enregistrement...', 'info');
+        const res = await apiFetch(`/api/invoices/${invoiceId}/payments`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+                amount, 
+                paymentMethod: method || 'virement',
+                paymentDate: new Date().toISOString().slice(0, 10)
+            })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Erreur');
+        
+        showToast(`✅ Paiement enregistré — Reste dû : ${data.invoiceState.amountDue.toFixed(2)} €`, 'success');
+        loadInvoices();
+    } catch (err) {
+        showToast('Erreur : ' + err.message, 'error');
+    }
+};
+
+window.createCreditNote = async function(invoiceId) {
+    const reason = prompt('Raison de l\'avoir :', 'Annulation');
+    if (!reason) return;
+    
+    const partial = confirm('Créer un avoir total ?\n\nOK = avoir total\nAnnuler = avoir partiel');
+    let amount = null;
+    
+    if (!partial) {
+        const amountInput = prompt('Montant de l\'avoir (€) :');
+        if (!amountInput) return;
+        amount = parseFloat(amountInput.replace(',', '.'));
+        if (isNaN(amount) || amount <= 0) {
+            showToast('Montant invalide.', 'error');
+            return;
+        }
+    }
+    
+    try {
+        showToast('Création de l\'avoir...', 'info');
+        const res = await apiFetch(`/api/invoices/${invoiceId}/credit-note`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ reason, amount, fullCredit: partial })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Erreur');
+        
+        showToast(`✅ Avoir ${data.creditNote.invoice_number} créé`, 'success');
+        loadInvoices();
+    } catch (err) {
+        showToast('Erreur : ' + err.message, 'error');
+    }
+};
+
+window.sendReminder = async function(invoiceId) {
+    if (!confirm('Envoyer une relance par email au client ?')) return;
+    
+    try {
+        showToast('Envoi...', 'info');
+        const res = await apiFetch(`/api/invoices/${invoiceId}/remind`, { method: 'POST' });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Erreur');
+        
+        showToast(`✅ Relance niveau ${data.level} envoyée à ${data.sentTo}`, 'success');
+    } catch (err) {
+        showToast('Erreur : ' + err.message, 'error');
+    }
+};
+
+window.duplicateInvoice = async function(invoiceId) {
+    if (!confirm('Dupliquer cette facture ?')) return;
+    
+    try {
+        showToast('Duplication...', 'info');
+        const res = await apiFetch(`/api/invoices/${invoiceId}/duplicate`, { method: 'POST' });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Erreur');
+        
+        showToast(`✅ Facture ${data.invoice.invoice_number} créée`, 'success');
+        loadInvoices();
+    } catch (err) {
+        showToast('Erreur : ' + err.message, 'error');
+    }
 };
 
 // Modal facture
@@ -6609,6 +6997,421 @@ document.getElementById('languageSelect')?.addEventListener('change', (e) => {
         });
     });
 
+})();
+
+// ================================================================
+// 20. ANALYTICS
+// ================================================================
+(function initAnalytics() {
+    let currentPeriod = '12m';
+    let metierChartInstance = null;
+    let conversionChartInstance = null;
+    let revenueChartInstance = null;
+    let topProductsChartInstance = null;
+
+    // ----- Helpers -----
+    function getPeriodDates(period) {
+        const now = new Date();
+        let from = null;
+        let to = now.toISOString().slice(0, 10);
+
+        switch (period) {
+            case '30d':
+                from = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+                break;
+            case '3m':
+                from = new Date(now.getFullYear(), now.getMonth() - 2, 1).toISOString().slice(0, 10);
+                break;
+            case '12m':
+                from = new Date(now.getFullYear(), now.getMonth() - 11, 1).toISOString().slice(0, 10);
+                break;
+            case 'ytd':
+                from = new Date(now.getFullYear(), 0, 1).toISOString().slice(0, 10);
+                break;
+            case 'all':
+            default:
+                from = null;
+        }
+        return { from, to };
+    }
+
+    function fmt(n) {
+        if (typeof n !== 'number') return '0,00 €';
+        return n.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+    }
+
+    function fmtInt(n) {
+        return (parseInt(n) || 0).toLocaleString('fr-FR');
+    }
+
+    // ----- Charger tout -----
+    async function loadAll() {
+        const { from, to } = getPeriodDates(currentPeriod);
+        const qs = `?from=${from || ''}&to=${to}`;
+
+        try {
+            const [kpi, treasury, metier, clients, conversion, topProducts, temporal] = await Promise.all([
+                apiFetch('/api/stats/kpi').then(r => r.json()),
+                apiFetch('/api/stats/treasury').then(r => r.json()),
+                apiFetch('/api/stats/profitability/by-metier' + qs).then(r => r.json()),
+                apiFetch('/api/stats/profitability/by-client' + qs + '&limit=10').then(r => r.json()),
+                apiFetch('/api/stats/conversion' + qs).then(r => r.json()),
+                apiFetch('/api/stats/top-products' + qs + '&limit=10').then(r => r.json()),
+                apiFetch('/api/stats/temporal' + qs).then(r => r.json())
+            ]);
+
+            renderKPIs(kpi);
+            renderTreasury(treasury);
+            renderMetierChart(metier);
+            renderMetierTable(metier);
+            renderClientsTable(clients);
+            renderConversionChart(conversion);
+            renderRevenueChart(temporal);
+            renderTopProductsChart(topProducts);
+            renderComparison(temporal);
+        } catch (err) {
+            console.error('Erreur analytics:', err);
+            showToast('Erreur chargement analytics', 'error');
+        }
+    }
+
+    // ----- KPI Cards -----
+    function renderKPIs(kpi) {
+        const box = document.getElementById('analyticsKPIs');
+        if (!box) return;
+        box.innerHTML = `
+            <div class="stat-card">
+                <div class="number" style="color:#f97316;">${fmt(kpi.year.revenue)}</div>
+                <div class="label">CA accepté ${new Date().getFullYear()}</div>
+            </div>
+            <div class="stat-card">
+                <div class="number">${fmtInt(kpi.year.quotes)}</div>
+                <div class="label">Devis émis ${new Date().getFullYear()}</div>
+            </div>
+            <div class="stat-card">
+                <div class="number" style="color:${kpi.year.conversionRate >= 50 ? '#22c55e' : '#f97316'};">${kpi.year.conversionRate}%</div>
+                <div class="label">Taux de conversion</div>
+            </div>
+            <div class="stat-card">
+                <div class="number">${fmt(kpi.year.avgQuoteValue)}</div>
+                <div class="label">Panier moyen</div>
+            </div>
+            <div class="stat-card" style="border-color:${kpi.overdue.count > 0 ? '#7f1d1d' : '#1e2a41'};">
+                <div class="number" style="color:${kpi.overdue.count > 0 ? '#f87171' : '#e2e8f0'};">${fmt(kpi.overdue.amount)}</div>
+                <div class="label">Impayés (${kpi.overdue.count})</div>
+            </div>
+            <div class="stat-card">
+                <div class="number" style="color:#3b82f6;">${fmt(kpi.pipeline.value)}</div>
+                <div class="label">Pipeline (${kpi.pipeline.count} devis)</div>
+            </div>
+        `;
+    }
+
+    // ----- Trésorerie -----
+    function renderTreasury(t) {
+        const box = document.getElementById('treasuryBuckets');
+        if (!box) return;
+        const buckets = [
+            { key: 'overdue', label: '⚠️ En retard', color: '#f87171' },
+            { key: '30_days', label: '📅 < 30 jours', color: '#f97316' },
+            { key: '60_days', label: '📅 30-60 jours', color: '#fb923c' },
+            { key: '90_days', label: '📅 60-90 jours', color: '#facc15' },
+            { key: 'later', label: '📅 > 90 jours', color: '#94a3b8' }
+        ];
+        box.innerHTML = buckets.map(b => {
+            const data = t.buckets[b.key] || { count: 0, amount: 0 };
+            return `
+                <div class="stat-card">
+                    <div class="number" style="color:${b.color};">${fmt(data.amount)}</div>
+                    <div class="label">${b.label} (${data.count})</div>
+                </div>
+            `;
+        }).join('') + `
+            <div class="stat-card" style="border-color:#3b82f6;">
+                <div class="number" style="color:#3b82f6;">${fmt(t.acceptedNotInvoiced.total)}</div>
+                <div class="label">À facturer (${t.acceptedNotInvoiced.count} devis)</div>
+            </div>
+        `;
+    }
+
+    // ----- Chart Métier -----
+    function renderMetierChart(data) {
+        if (typeof Chart === 'undefined') return;
+        const ctx = document.getElementById('metierChart');
+        if (!ctx) return;
+        if (metierChartInstance) metierChartInstance.destroy();
+
+        const labels = data.metiers.map(m => m.name);
+        const revenues = data.metiers.map(m => m.totalRevenue);
+        const accepted = data.metiers.map(m => m.acceptedRevenue);
+
+        metierChartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels,
+                datasets: [
+                    {
+                        label: 'CA total HT',
+                        data: revenues,
+                        backgroundColor: 'rgba(59,130,246,0.7)',
+                        borderColor: '#3b82f6',
+                        borderWidth: 1.5,
+                        borderRadius: 6
+                    },
+                    {
+                        label: 'CA accepté',
+                        data: accepted,
+                        backgroundColor: 'rgba(249,115,22,0.8)',
+                        borderColor: '#f97316',
+                        borderWidth: 1.5,
+                        borderRadius: 6
+                    }
+                ]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: {
+                    legend: { labels: { color: '#cbd5e1', font: { size: 12 } } },
+                    tooltip: {
+                        backgroundColor: '#161f32', borderColor: '#2a3a55', borderWidth: 1,
+                        titleColor: '#fff', bodyColor: '#cbd5e1', padding: 12,
+                        callbacks: { label: (c) => `${c.dataset.label} : ${c.parsed.y.toFixed(2)} €` }
+                    }
+                },
+                scales: {
+                    x: { grid: { display: false }, ticks: { color: '#94a3b8', font: { size: 11 } } },
+                    y: { beginAtZero: true, grid: { color: 'rgba(42,58,85,0.5)' }, ticks: { color: '#64748b', callback: v => v + ' €' } }
+                }
+            }
+        });
+    }
+
+    // ----- Table métier -----
+    function renderMetierTable(data) {
+        const box = document.getElementById('metierTable');
+        if (!box) return;
+        if (data.metiers.length === 0) {
+            box.innerHTML = '<p style="color:#64748b;text-align:center;padding:20px;">Aucune donnée.</p>';
+            return;
+        }
+        let html = '<table class="catalog-table"><thead><tr>' +
+            '<th>Métier</th><th style="text-align:right;">Devis</th>' +
+            '<th style="text-align:right;">CA total</th><th style="text-align:right;">CA accepté</th>' +
+            '<th style="text-align:right;">Heures</th><th style="text-align:right;">Taux horaire</th>' +
+            '<th style="text-align:right;">Panier moyen</th>' +
+            '</tr></thead><tbody>';
+        data.metiers.forEach(m => {
+            html += `<tr>
+                <td><strong>${escapeHtml(m.name)}</strong></td>
+                <td style="text-align:right;">${m.quoteCount}</td>
+                <td style="text-align:right;">${m.totalRevenue.toFixed(2)} €</td>
+                <td style="text-align:right;color:#f97316;font-weight:600;">${m.acceptedRevenue.toFixed(2)} €</td>
+                <td style="text-align:right;">${m.totalHours.toFixed(1)} h</td>
+                <td style="text-align:right;">${m.hourlyRate.toFixed(2)} €/h</td>
+                <td style="text-align:right;">${m.avgQuoteValue.toFixed(2)} €</td>
+            </tr>`;
+        });
+        html += '</tbody></table>';
+        box.innerHTML = html;
+    }
+
+    // ----- Table clients -----
+    function renderClientsTable(data) {
+        const box = document.getElementById('clientsTable');
+        if (!box) return;
+        if (data.clients.length === 0) {
+            box.innerHTML = '<p style="color:#64748b;text-align:center;padding:20px;">Aucune donnée.</p>';
+            return;
+        }
+        let html = '<table class="catalog-table"><thead><tr>' +
+            '<th>Client</th><th style="text-align:right;">Devis</th>' +
+            '<th style="text-align:right;">Acceptés</th><th style="text-align:right;">Conversion</th>' +
+            '<th style="text-align:right;">CA total</th><th style="text-align:right;">CA accepté</th>' +
+            '<th style="text-align:right;">Panier moyen</th><th>Dernier devis</th>' +
+            '</tr></thead><tbody>';
+        data.clients.forEach(c => {
+            const status = c.isActive ? '🟢' : '⚪';
+            html += `<tr>
+                <td><strong>${escapeHtml(c.name)}</strong> ${status}</td>
+                <td style="text-align:right;">${c.quoteCount}</td>
+                <td style="text-align:right;">${c.acceptedCount}</td>
+                <td style="text-align:right;color:${c.conversionRate >= 50 ? '#22c55e' : '#f97316'};font-weight:600;">${c.conversionRate}%</td>
+                <td style="text-align:right;">${c.totalRevenue.toFixed(2)} €</td>
+                <td style="text-align:right;color:#f97316;font-weight:600;">${c.acceptedRevenue.toFixed(2)} €</td>
+                <td style="text-align:right;">${c.avgQuoteValue.toFixed(2)} €</td>
+                <td style="font-size:12px;color:#94a3b8;">${c.lastQuoteDate ? new Date(c.lastQuoteDate).toLocaleDateString('fr-FR') : '—'}</td>
+            </tr>`;
+        });
+        html += '</tbody></table>';
+        box.innerHTML = html;
+    }
+
+    // ----- Chart Conversion -----
+    function renderConversionChart(data) {
+        if (typeof Chart === 'undefined') return;
+        const ctx = document.getElementById('conversionChart');
+        if (!ctx) return;
+        if (conversionChartInstance) conversionChartInstance.destroy();
+
+        conversionChartInstance = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: data.monthly.map(m => m.month),
+                datasets: [{
+                    label: 'Taux de conversion (%)',
+                    data: data.monthly.map(m => m.conversionRate),
+                    borderColor: '#f97316',
+                    backgroundColor: 'rgba(249,115,22,0.15)',
+                    borderWidth: 3, fill: true, tension: 0.3,
+                    pointBackgroundColor: '#f97316', pointRadius: 4
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#161f32', borderColor: '#2a3a55', borderWidth: 1,
+                        titleColor: '#fff', bodyColor: '#cbd5e1', padding: 12, displayColors: false,
+                        callbacks: { label: (c) => `${c.parsed.y}%` }
+                    }
+                },
+                scales: {
+                    x: { grid: { display: false }, ticks: { color: '#64748b', font: { size: 11 } } },
+                    y: { beginAtZero: true, max: 100, grid: { color: 'rgba(42,58,85,0.5)' }, ticks: { color: '#64748b', callback: v => v + '%' } }
+                }
+            }
+        });
+    }
+
+    // ----- Chart Revenu -----
+    function renderRevenueChart(data) {
+        if (typeof Chart === 'undefined') return;
+        const ctx = document.getElementById('revenueEvolutionChart');
+        if (!ctx) return;
+        if (revenueChartInstance) revenueChartInstance.destroy();
+
+        revenueChartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: data.series.map(s => s.period),
+                datasets: [{
+                    label: 'CA accepté (€)',
+                    data: data.series.map(s => s.acceptedValue),
+                    backgroundColor: 'rgba(34,197,94,0.7)',
+                    borderColor: '#22c55e',
+                    borderWidth: 1.5, borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#161f32', borderColor: '#2a3a55', borderWidth: 1,
+                        titleColor: '#fff', bodyColor: '#cbd5e1', padding: 12, displayColors: false,
+                        callbacks: { label: (c) => `${c.parsed.y.toFixed(2)} €` }
+                    }
+                },
+                scales: {
+                    x: { grid: { display: false }, ticks: { color: '#64748b', font: { size: 11 } } },
+                    y: { beginAtZero: true, grid: { color: 'rgba(42,58,85,0.5)' }, ticks: { color: '#64748b', callback: v => v + ' €' } }
+                }
+            }
+        });
+    }
+
+    // ----- Chart Top Produits -----
+    function renderTopProductsChart(data) {
+        if (typeof Chart === 'undefined') return;
+        const ctx = document.getElementById('topProductsChart');
+        if (!ctx) return;
+        if (topProductsChartInstance) topProductsChartInstance.destroy();
+
+        topProductsChartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: data.top.map(p => p.name.length > 30 ? p.name.slice(0, 27) + '...' : p.name),
+                datasets: [{
+                    label: 'CA (€)',
+                    data: data.top.map(p => p.totalRevenue),
+                    backgroundColor: 'rgba(249,115,22,0.7)',
+                    borderColor: '#f97316',
+                    borderWidth: 1.5, borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                indexAxis: 'y',
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#161f32', borderColor: '#2a3a55', borderWidth: 1,
+                        titleColor: '#fff', bodyColor: '#cbd5e1', padding: 12, displayColors: false,
+                        callbacks: { 
+                            title: (items) => data.top[items[0].dataIndex].name,
+                            label: (c) => `${c.parsed.x.toFixed(2)} €`
+                        }
+                    }
+                },
+                scales: {
+                    x: { beginAtZero: true, grid: { color: 'rgba(42,58,85,0.5)' }, ticks: { color: '#64748b', callback: v => v + ' €' } },
+                    y: { grid: { display: false }, ticks: { color: '#94a3b8', font: { size: 11 } } }
+                }
+            }
+        });
+    }
+
+    // ----- Comparaison -----
+    function renderComparison(data) {
+        const box = document.getElementById('comparisonBlock');
+        if (!box) return;
+        const c = data.comparison;
+        const isUp = c.growthPercent >= 0;
+        const color = isUp ? '#22c55e' : '#f87171';
+        const arrow = isUp ? '📈' : '📉';
+
+        box.innerHTML = `
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;">
+                <div>
+                    <div style="font-size:12px;color:#64748b;text-transform:uppercase;font-weight:600;margin-bottom:6px;">Période actuelle</div>
+                    <div style="font-size:20px;color:#e2e8f0;font-weight:700;">${fmt(c.currentTotalValue)}</div>
+                    <div style="font-size:13px;color:#94a3b8;">${c.currentQuotes} devis</div>
+                </div>
+                <div>
+                    <div style="font-size:12px;color:#64748b;text-transform:uppercase;font-weight:600;margin-bottom:6px;">Période précédente</div>
+                    <div style="font-size:20px;color:#e2e8f0;font-weight:700;">${fmt(c.previousTotalValue)}</div>
+                    <div style="font-size:13px;color:#94a3b8;">${c.previousQuotes} devis</div>
+                </div>
+                <div>
+                    <div style="font-size:12px;color:#64748b;text-transform:uppercase;font-weight:600;margin-bottom:6px;">Évolution</div>
+                    <div style="font-size:26px;color:${color};font-weight:800;">${arrow} ${isUp ? '+' : ''}${c.growthPercent}%</div>
+                    <div style="font-size:13px;color:#94a3b8;">vs période précédente</div>
+                </div>
+            </div>
+        `;
+    }
+
+    // ----- Events -----
+    document.getElementById('analyticsRefreshBtn')?.addEventListener('click', loadAll);
+
+    document.querySelectorAll('#analyticsFilters .history-filter').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('#analyticsFilters .history-filter').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentPeriod = btn.dataset.period;
+            loadAll();
+        });
+    });
+
+    // Charger quand l'onglet Analytics est ouvert
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            if (btn.dataset.tab === 'tab-analytics') {
+                setTimeout(loadAll, 100);
+            }
+        });
+    });
 })();
 </script>
 </body>
