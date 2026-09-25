@@ -141,13 +141,24 @@ router.post('/', authenticateToken, async (req, res) => {
             dueDateFinal = d.toISOString().slice(0, 10);
         }
 
+        // Recuperer la devise par defaut
+        // const settingsResult = await pool.query(
+        //     'SELECT default_currency FROM settings WHERE user_id = $1',
+        //     [req.user.id]
+        // );
+        const currency = req.body.currency || settingsResult.rows[0]?.default_currency || 'EUR';
+
+        // Recuperer le taux de change
+        const { getRate } = require('../utils/currency/rates');
+        const exchangeRate = await getRate(currency, 'EUR');
+
         const result = await clientPg.query(`
             INSERT INTO invoices (
                 user_id, invoice_number, quote_id, issue_date, due_date,
                 subtotal, vat_amount, total, vat_regime, status,
-                items, client_id, client_name, client_address, client_vat, client_email, notes
+                items, client_id, client_name, client_address, client_vat, client_email, notes, currency, exchange_rate
             )
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
             RETURNING id, invoice_number
         `, [
             req.user.id,
@@ -166,7 +177,9 @@ router.post('/', authenticateToken, async (req, res) => {
             client?.address || null,
             client?.vat || null,
             client?.email || null,
-            notes || null
+            notes || null,
+            currency, 
+            exchangeRate
         ]);
 
         await clientPg.query('COMMIT');

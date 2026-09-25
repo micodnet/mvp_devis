@@ -34,6 +34,9 @@ const publicVerifyRoutes = require('./routes/public-verify');
 const statsRoutes = require('./routes/stats');
 const chantiersRoutes = require('./routes/chantiers');
 const pushRoutes = require('./routes/push');
+const excelRoutes = require('./routes/excel');
+const currencyRoutes = require('./routes/currency');
+const subcontractorsRoutes = require('./routes/subcontractors');
 
 // ⚙️ INTERRUPTEUR DE QUOTA — Mets à `false` pour désactiver les limites pendant les tests
 const ENABLE_QUOTA_LIMITS = false;
@@ -71,6 +74,9 @@ app.use('/api/public', publicVerifyRoutes);
 app.use('/api/stats', statsRoutes);
 app.use('/api/chantiers', chantiersRoutes);
 app.use('/api/push', pushRoutes);
+app.use('/api/excel', excelRoutes);
+app.use('/api/currency', currencyRoutes);
+app.use('/api/subcontractors', subcontractorsRoutes);
 
 // Multer
 const storage = multer.diskStorage({
@@ -362,12 +368,23 @@ app.post('/api/generate-quote', authenticateToken, upload.single('file'), async 
             vatRate
         };
 
+        // Recuperer la devise par defaut
+        // const settingsResult = await pool.query(
+        //     'SELECT default_currency FROM settings WHERE user_id = $1',
+        //     [req.user.id]
+        // );
+        const currency = req.body.currency || settingsResult.rows[0]?.default_currency || 'EUR';
+
+        // Recuperer le taux de change
+        const { getRate } = require('../utils/currency/rates');
+        const exchangeRate = await getRate(currency, 'EUR');
+
         // ---- Insertion du devis en base ----
         await pool.query(`
-            INSERT INTO quotes (user_id, quote_number, issue_date, valid_date, subtotal, vat_amount, total, vat_regime, status, items, client_id, client_name, client_address, client_vat, client_email)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'draft', $9, $10, $11, $12, $13, $14)
+            INSERT INTO quotes (user_id, quote_number, issue_date, valid_date, subtotal, vat_amount, total, vat_regime, status, items, client_id, client_name, client_address, client_vat, client_email, currency, exchange_rate)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'draft', $9, $10, $11, $12, $13, $14, $15, $16 )
         `, [req.user.id, quoteNumber, issueDate, validDate, subtotal, vatAmount, total, vatRegime,
-            JSON.stringify(items), clientId, clientName, clientAddress, clientVat, clientEmail]);
+            JSON.stringify(items), clientId, clientName, clientAddress, clientVat, clientEmail, currency, exchangeRate]);
 
         // Récupérer l'id du devis qu'on vient d'insérer
         const insertedQuote = await pool.query(

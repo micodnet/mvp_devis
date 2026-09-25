@@ -1319,6 +1319,7 @@
         <button class="tab-btn" data-tab="tab-dashboard" data-i18n="app.tab.dashboard">📊 Dashboard</button>
         <button class="tab-btn" data-tab="tab-analytics" data-i18n="app.tab.analytics">📈 Analytics</button>
         <button class="tab-btn" data-tab="tab-chantiers" data-i18n="app.tab.chantiers">🏗️ Chantiers</button>
+        <button class="tab-btn" data-tab="tab-subcontractors" data-i18n="app.tab.contractors">Sous-traitants</button>
         <button class="tab-btn" data-tab="tab-team" data-i18n="app.tab.team">👥 Équipe</button>
         <button class="tab-btn" data-tab="tab-settings" data-i18n="app.tab.settings">⚙️ Paramètres</button>
         <button class="tab-btn" data-tab="tab-assistant" data-i18n="app.tab.assistant">💬 Assistant</button>
@@ -1348,6 +1349,12 @@
             <div class="form-group">
                 <label data-i18n="quotes.select_client">Sélectionner un client</label>
                 <select id="clientSelector"><option value="" data-i18n="quotes.no_client">— Aucun client sélectionné —</option></select>
+            </div>
+            <div class="form-group" id="currencyFieldWrapper" style="display:none;">
+                <label>Devise</label>
+                <select id="quoteCurrency">
+                    <option value="EUR">EUR - Euro</option>
+                </select>
             </div>
             <div id="selectedClientInfo" class="client-info-box" style="display:none;"></div>
             <p class="client-empty-hint" id="noClientsHint" style="display:none;">
@@ -1403,7 +1410,10 @@
         <div class="card">
             <div class="catalog-header">
                 <h2 data-i18n="clients.title">👥 Mon carnet clients</h2>
-                <div class="catalog-actions"><button class="btn-primary-sm" id="addClientBtn" data-i18n="clients.new">+ Nouveau client</button></div>
+                <div class="catalog-actions">
+                    <button class="btn-primary-sm" id="addClientBtn" data-i18n="clients.new">+ Nouveau client</button>
+                    <button class="btn-secondary" id="exportClientsExcelBtn">Export Excel</button>
+                </div>
             </div>
             <input type="text" id="clientsSearch" class="catalog-search" placeholder="🔍 Rechercher un client..." data-i18n-placeholder="clients.search" />
             <div id="clientsContent"><p style="color:#64748b; text-align:center; padding:40px;">Chargement...</p></div>
@@ -1416,6 +1426,7 @@
             <div class="catalog-header">
                 <h2 data-i18n="catalog.title">📦 Mon catalogue produits</h2>
                 <div class="catalog-actions">
+                    <button class="btn-secondary" id="exportProductsExcelBtn">Export Excel</button>
                     <button class="btn-secondary" id="importCatalogBtn" data-i18n="catalog.import">📥 Importer</button>
                     <button class="btn-primary-sm" id="addProductBtn" data-i18n="catalog.add">+ Ajouter</button>
                 </div>
@@ -1489,7 +1500,10 @@
     <div id="tab-history" class="tab-content">
         <div class="card">
             <div class="catalog-header">
-                <h2 data-i18n="history.title">📜 Historique de vos devis</h2>
+                <h2 data-i18n="history.title">Historique de vos devis</h2>
+                <div class="catalog-actions">
+                    <button class="btn-secondary" id="exportQuotesExcelBtn">Export Excel</button>
+                </div>
             </div>
             <div class="history-filters" id="historyFilters">
                 <button class="history-filter active" data-filter="all"><span data-i18n="history.filter.all">Tous</span> <span class="count" id="cntAll">0</span></button>
@@ -1508,7 +1522,8 @@
             <div class="catalog-header">
                 <h2 data-i18n="invoices.title">🧾 Mes factures</h2>
                 <div class="catalog-actions">
-                    <button class="btn-secondary" id="exportInvoicesCsvBtn">📊 Export comptable</button>
+                    <button class="btn-secondary" id="exportInvoicesExcelBtn">Export Excel</button>
+                    <button class="btn-secondary" id="exportInvoicesCsvBtn">Export CSV</button>
                     <button class="btn-primary-sm" id="newInvoiceBtn" data-i18n="invoices.new">+ Nouvelle facture</button>
                 </div>
             </div>
@@ -1590,12 +1605,39 @@
         </div>
     </div>
 
+    <!-- SOUS-TRAITANTS -->
+    <div id="tab-subcontractors" class="tab-content">
+        <div class="card">
+            <div class="catalog-header">
+                <h2>Mes sous-traitants</h2>
+                <div class="catalog-actions">
+                    <button class="btn-primary-sm" id="newSubcontractorBtn">+ Nouveau sous-traitant</button>
+                </div>
+            </div>
+            <div class="history-filters" id="subcontractorFilters">
+                <button class="history-filter active" data-sfilter="all">Tous</button>
+                <button class="history-filter" data-sfilter="active">Actifs</button>
+                <button class="history-filter" data-sfilter="inactive">Inactifs</button>
+            </div>
+            <input type="text" id="subcontractorsSearch" class="catalog-search" placeholder="Rechercher un sous-traitant..." />
+            <div id="subcontractorsList"><p style="color:#64748b;text-align:center;padding:40px;">Chargement...</p></div>
+        </div>
+
+        <div class="card">
+            <div class="catalog-header">
+                <h2>Missions en cours</h2>
+            </div>
+            <div id="assignmentsList"><p style="color:#64748b;text-align:center;padding:40px;">Chargement...</p></div>
+        </div>
+    </div>
+
     <!-- CHANTIERS -->
     <div id="tab-chantiers" class="tab-content">
         <div class="card">
             <div class="catalog-header">
                 <h2 data-i18n="chantiers.title">🏗️ Mes chantiers</h2>
                 <div class="catalog-actions">
+                    <button class="btn-secondary" id="exportChantiersExcelBtn">Export Excel</button>
                     <button class="btn-primary-sm" id="newChantierBtn">+ Nouveau chantier</button>
                 </div>
             </div>
@@ -1736,6 +1778,15 @@
                         <option value="nl" data-i18n="settings.lang_nl">Nederlands</option>
                         <option value="en" data-i18n="settings.lang_en">English</option>
                     </select>
+                </div>
+
+                <div class="card-title" style="margin-top:24px;">Devises</div>
+                <p style="color:#94a3b8;font-size:13px;margin-bottom:16px;line-height:1.6;">
+                    Activez les devises dans lesquelles vous facturez. Chaque devis peut avoir sa propre devise.
+                    Les statistiques sont consolidees en EUR.
+                </p>
+                <div id="currencySettingsBox" style="background:#0b1120;border:1px solid #1e2a41;border-radius:12px;padding:16px;">
+                    <p style="color:#64748b;font-size:13px;">Chargement...</p>
                 </div>
 
                 <div class="card-title" style="margin-top:24px;" data-i18n="settings.bank_section">🏦 Coordonnées bancaires & Facturation</div>
@@ -1887,6 +1938,7 @@
             <p style="color:#94a3b8;font-size:13px;margin-bottom:16px;line-height:1.6;" data-i18n="settings.rgpd_desc">
                 Conformément à l'article 20 du RGPD, vous pouvez télécharger l'intégralité de vos données (compte, paramètres, clients, produits, devis) dans un fichier JSON lisible.
             </p>
+            <button class="btn-secondary" id="exportAllExcelBtn" style="margin-left:8px;">Export Excel complet</button>
             <button class="btn-secondary" id="exportDataBtn" data-i18n="settings.rgpd_btn">📥 Télécharger mes données (JSON)</button>
         </div>
         <div class="card" style="border-color:rgba(248,113,113,0.3);">
@@ -2499,6 +2551,115 @@
     </div>
 </div>
 
+<!-- MODAL SOUS-TRAITANT -->
+<div class="modal-overlay" id="subcontractorModal">
+    <div class="modal modal-wide">
+        <h3 id="subcontractorModalTitle">Nouveau sous-traitant</h3>
+        <input type="hidden" id="subcontractorIdField" />
+
+        <div class="form-row">
+            <div class="form-group"><label>Nom *</label><input type="text" id="subName" required /></div>
+            <div class="form-group"><label>Raison sociale</label><input type="text" id="subCompanyName" /></div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group"><label>Personne de contact</label><input type="text" id="subContactName" /></div>
+            <div class="form-group"><label>Specialite</label><input type="text" id="subSpecialty" placeholder="Electricien, Plombier..." /></div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group"><label>Email</label><input type="email" id="subEmail" /></div>
+            <div class="form-group"><label>Telephone</label><input type="text" id="subPhone" /></div>
+        </div>
+
+        <div class="form-group"><label>Adresse</label><input type="text" id="subAddress" /></div>
+
+        <div class="form-row">
+            <div class="form-group"><label>N TVA</label><input type="text" id="subVatNumber" /></div>
+            <div class="form-group"><label>Taux horaire (EUR)</label><input type="number" id="subHourlyRate" step="0.01" min="0" /></div>
+        </div>
+
+        <div class="card-title" style="margin-top:16px;font-size:15px;">Coordonnees bancaires</div>
+        <div class="form-row">
+            <div class="form-group"><label>IBAN</label><input type="text" id="subIban" placeholder="BE68 5390 0754 7034" /></div>
+            <div class="form-group"><label>BIC</label><input type="text" id="subBic" placeholder="GEBABEBB" /></div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group"><label>Delai de paiement (jours)</label><input type="number" id="subPaymentTerms" min="0" max="120" value="30" /></div>
+            <div class="form-group">
+                <label>Statut</label>
+                <select id="subActive">
+                    <option value="true">Actif</option>
+                    <option value="false">Inactif</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group"><label>Notes</label><input type="text" id="subNotes" /></div>
+
+        <div class="modal-actions">
+            <button class="btn-cancel" id="cancelSubcontractorBtn">Annuler</button>
+            <button class="btn-confirm" id="saveSubcontractorBtn">Enregistrer</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL MISSION -->
+<div class="modal-overlay" id="assignmentModal">
+    <div class="modal modal-wide">
+        <h3 id="assignmentModalTitle">Nouvelle mission</h3>
+        <input type="hidden" id="assignmentIdField" />
+        <input type="hidden" id="assignmentSubcontractorId" />
+
+        <div class="form-group"><label>Titre *</label><input type="text" id="assignTitle" required placeholder="Pose de carrelage salle de bain" /></div>
+        <div class="form-group"><label>Description</label><input type="text" id="assignDescription" /></div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label>Chantier (optionnel)</label>
+                <select id="assignChantierId"><option value="">Aucun</option></select>
+            </div>
+            <div class="form-group">
+                <label>Devis lie (optionnel)</label>
+                <select id="assignQuoteId"><option value="">Aucun</option></select>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group"><label>Montant forfaitaire (EUR)</label><input type="number" id="assignAmount" step="0.01" min="0" /></div>
+            <div class="form-group"><label>Taux horaire (EUR)</label><input type="number" id="assignHourlyRate" step="0.01" min="0" /></div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group"><label>Heures estimees</label><input type="number" id="assignEstimatedHours" step="0.5" min="0" /></div>
+            <div class="form-group">
+                <label>Statut</label>
+                <select id="assignStatus">
+                    <option value="pending">En attente</option>
+                    <option value="in_progress">En cours</option>
+                    <option value="completed">Termine</option>
+                    <option value="invoiced">Facture</option>
+                    <option value="paid">Paye</option>
+                    <option value="cancelled">Annule</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group"><label>Date debut</label><input type="date" id="assignStartDate" /></div>
+            <div class="form-group"><label>Date fin</label><input type="date" id="assignEndDate" /></div>
+        </div>
+
+        <div class="form-group"><label>Notes</label><input type="text" id="assignNotes" /></div>
+
+        <div class="modal-actions">
+            <button class="btn-cancel" id="cancelAssignmentBtn">Annuler</button>
+            <button class="btn-confirm" id="saveAssignmentBtn">Enregistrer</button>
+        </div>
+    </div>
+</div>
+
 <!-- ============================================================ -->
 <!-- ASSISTANT IA - BULLE FLOTTANTE                                -->
 <!-- ============================================================ -->
@@ -3068,8 +3229,8 @@ document.getElementById('settingsForm').addEventListener('submit', async (e) => 
     };
     try {
         const res = await apiFetch('/api/settings', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(settings) });
-        if (res.ok) { showToast('✅ Paramètres enregistrés !', 'success'); loadSettings(); checkOnboarding(); }
-        else showToast('❌ Erreur.', 'error');
+        if (res.ok) { showToast(' Paramètres enregistrés !', 'success'); loadSettings(); checkOnboarding(); }
+        else showToast(' Erreur.', 'error');
     } catch(err) { showToast(err.message, 'error'); }
 });
 
@@ -3081,19 +3242,19 @@ document.getElementById('peppolTestBtn')?.addEventListener('click', async () => 
     const btn = document.getElementById('peppolTestBtn');
     const result = document.getElementById('peppolTestResult');
     btn.disabled = true;
-    btn.textContent = '⏳ Test en cours...';
+    btn.textContent = ' Test en cours...';
     result.textContent = '';
     
     try {
         const res = await apiFetch('/api/peppol/test-connection', { method: 'POST' });
         const data = await res.json();
         if (res.ok && data.success) {
-            result.innerHTML = '<span style="color:#22c55e;">✅ Connexion Peppol opérationnelle</span>';
+            result.innerHTML = '<span style="color:#22c55e;"> Connexion Peppol opérationnelle</span>';
         } else {
-            result.innerHTML = '<span style="color:#f87171;">❌ ' + (data.error || 'Erreur') + '</span>';
+            result.innerHTML = '<span style="color:#f87171;"> ' + (data.error || 'Erreur') + '</span>';
         }
     } catch (err) {
-        result.innerHTML = '<span style="color:#f87171;">❌ ' + err.message + '</span>';
+        result.innerHTML = '<span style="color:#f87171;"> ' + err.message + '</span>';
     } finally {
         btn.disabled = false;
         btn.textContent = '🔌 Tester la connexion Peppol';
@@ -3207,6 +3368,7 @@ function openClientModal(mode = 'add', client = null) {
     document.getElementById('cNotes').value = client ? (client.notes || '') : '';
     clientModal.classList.add('show');
 }
+
 function closeClientModal() { clientModal.classList.remove('show'); }
 document.getElementById('addClientBtn').addEventListener('click', () => openClientModal('add'));
 document.getElementById('quickNewClientBtn').addEventListener('click', () => openClientModal('add'));
@@ -3246,6 +3408,7 @@ document.getElementById('saveClientBtn').addEventListener('click', async () => {
 });
 
 window.editClient = function(id) { const c = clientsList.find(x => x.id === id); if (c) openClientModal('edit', c); };
+
 window.deleteClient = async function(id) {
     if (!confirm('Supprimer ce client ?')) return;
     try {
@@ -3256,6 +3419,25 @@ window.deleteClient = async function(id) {
         await loadClients();
     } catch (err) { showToast('Erreur : ' + err.message, 'error'); }
 };
+
+/// Export Excel - Clients
+document.getElementById('exportClientsExcelBtn')?.addEventListener('click', async () => {
+    try {
+        showToast('Generation du fichier Excel...', 'info');
+        const res = await apiFetch('/api/excel/clients');
+        if (!res.ok) throw new Error('Erreur');
+        const blob = await res.blob();
+        const u = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = u;
+        a.download = 'clients-' + new Date().toISOString().slice(0, 10) + '.xlsx';
+        document.body.appendChild(a); a.click(); a.remove();
+        window.URL.revokeObjectURL(u);
+        showToast('Fichier telecharge', 'success');
+    } catch (err) {
+        showToast('Erreur : ' + err.message, 'error');
+    }
+});
 
 // ================================================================
 // 8.9. SERVICES
@@ -3373,7 +3555,7 @@ document.getElementById('saveServiceBtn')?.addEventListener('click', async () =>
         const res = await apiFetch(url, { method, headers:{'Content-Type':'application/json'}, body: JSON.stringify(data) });
         const result = await res.json();
         if (!res.ok) throw new Error(result.error || 'Erreur');
-        showToast(id ? '✅ Service modifié !' : '✅ Service ajouté !', 'success');
+        showToast(id ? ' Service modifié !' : ' Service ajouté !', 'success');
         closeServiceModal();
         loadServices();
     } catch (err) { showToast('Erreur : ' + err.message, 'error'); }
@@ -4050,6 +4232,25 @@ confirmImportBtn.addEventListener('click', async () => {
     finally { confirmImportBtn.disabled = false; confirmImportBtn.textContent = 'Importer'; }
 });
 
+// Export Excel - Produits
+document.getElementById('exportProductsExcelBtn')?.addEventListener('click', async () => {
+    try {
+        showToast('Generation du fichier Excel...', 'info');
+        const res = await apiFetch('/api/excel/products');
+        if (!res.ok) throw new Error('Erreur');
+        const blob = await res.blob();
+        const u = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = u;
+        a.download = 'produits-' + new Date().toISOString().slice(0, 10) + '.xlsx';
+        document.body.appendChild(a); a.click(); a.remove();
+        window.URL.revokeObjectURL(u);
+        showToast('Fichier telecharge', 'success');
+    } catch (err) {
+        showToast('Erreur : ' + err.message, 'error');
+    }
+});
+
 // ================================================================
 // 10. QUOTES
 // ================================================================
@@ -4101,6 +4302,8 @@ generateBtn.addEventListener('click', async () => {
     generateBtn.innerHTML = '<span style="display:inline-block;width:18px;height:18px;border:3px solid rgba(11,17,32,0.2);border-top:3px solid #0b1120;border-radius:50%;animation:spin 0.7s linear infinite;"></span> Analyse';
     const fd = new FormData();
     fd.append('file', selectedFile);
+    const currencySelect = document.getElementById('quoteCurrency');
+    if (currencySelect) fd.append('currency', currencySelect.value);
     if (selectedClient) {
         fd.append('clientId', selectedClient.id);
         fd.append('clientName', selectedClient.name || '');
@@ -4143,11 +4346,11 @@ function displayResult(data) {
     const box = document.getElementById('totauxBox');
     let html = '';
     if (data.vatRegime === 'assujetti') {
-        html += `<div class="totaux-line"><span>Total HT</span><span>${data.subtotal.toFixed(2)} €</span></div>`;
-        html += `<div class="totaux-line"><span>TVA (${data.vatRate}%)</span><span>${data.vatAmount.toFixed(2)} €</span></div>`;
-        html += `<div class="totaux-line total"><span>TOTAL TTC</span><span class="amount">${data.total.toFixed(2)} €</span></div>`;
+        html += `<div class="totaux-line"><span>Total HT</span><span>${formatCurrency(data.total, data.currency || 'EUR')}</span></div>`;
+        html += `<div class="totaux-line"><span>TVA (${data.vatRate}%)</span><span>${formatCurrency(data.total, data.currency || 'EUR')}</span></div>`;
+        html += `<div class="totaux-line total"><span>TOTAL TTC</span><span class="amount">${formatCurrency(data.total, data.currency || 'EUR')}</span></div>`;
     } else {
-        html += `<div class="totaux-line total"><span>TOTAL</span><span class="amount">${data.total.toFixed(2)} €</span></div>`;
+        html += `<div class="totaux-line total"><span>TOTAL</span><span class="amount">${formatCurrency(data.total, data.currency || 'EUR')}</span></div>`;
         html += `<div style="font-size:11px;color:#64748b;margin-top:8px;">Régime particulier de franchise des petites entreprises — TVA non applicable.</div>`;
     }
     box.innerHTML = html;
@@ -4198,6 +4401,23 @@ resetBtn.addEventListener('click', (e) => {
     document.getElementById('clientSelector').value = '';
     updateSelectedClientInfo();
 });
+
+function formatCurrency(amount, currency) {
+    const cur = currency || 'EUR';
+    const num = parseFloat(amount) || 0;
+    const formatted = num.toLocaleString('fr-FR', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
+    const symbols = {
+        EUR: { symbol: 'EUR', position: 'after' },
+        USD: { symbol: '$', position: 'before' },
+        CHF: { symbol: 'CHF', position: 'after' },
+        GBP: { symbol: 'GBP', position: 'before' }
+    };
+    const c = symbols[cur] || symbols.EUR;
+    return c.position === 'before' ? c.symbol + ' ' + formatted : formatted + ' ' + c.symbol;
+}
 
 // ================================================================
 // 11. HISTORIQUE
@@ -4557,14 +4777,33 @@ window.verifyQuoteSignature = async function(quoteId) {
         if (!res.ok) throw new Error(data.error || 'Erreur');
 
         if (data.valid) {
-            showToast('✅ Signature valide — le document n\'a pas été modifié', 'success');
+            showToast(' Signature valide — le document n\'a pas été modifié', 'success');
         } else {
-            showToast('❌ ' + (data.message || 'Signature invalide'), 'error');
+            showToast((data.message || 'Signature invalide'), 'error');
         }
     } catch (err) {
         showToast('Erreur : ' + err.message, 'error');
     }
 };
+
+// Export Excel - Devis
+document.getElementById('exportQuotesExcelBtn')?.addEventListener('click', async () => {
+    try {
+        showToast('Generation du fichier Excel...', 'info');
+        const res = await apiFetch('/api/excel/quotes');
+        if (!res.ok) throw new Error('Erreur');
+        const blob = await res.blob();
+        const u = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = u;
+        a.download = 'devis-' + new Date().toISOString().slice(0, 10) + '.xlsx';
+        document.body.appendChild(a); a.click(); a.remove();
+        window.URL.revokeObjectURL(u);
+        showToast('Fichier telecharge', 'success');
+    } catch (err) {
+        showToast('Erreur : ' + err.message, 'error');
+    }
+});
 
 // ================================================================
 // 11.5. SIGNATURE MANUELLE (utilisateur marque un devis accepté)
@@ -5702,6 +5941,25 @@ window.duplicateInvoice = async function(invoiceId) {
     }
 };
 
+// Export Excel - Factures
+document.getElementById('exportInvoicesExcelBtn')?.addEventListener('click', async () => {
+    try {
+        showToast('Generation du fichier Excel...', 'info');
+        const res = await apiFetch('/api/excel/invoices');
+        if (!res.ok) throw new Error('Erreur');
+        const blob = await res.blob();
+        const u = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = u;
+        a.download = 'factures-' + new Date().toISOString().slice(0, 10) + '.xlsx';
+        document.body.appendChild(a); a.click(); a.remove();
+        window.URL.revokeObjectURL(u);
+        showToast('Fichier telecharge', 'success');
+    } catch (err) {
+        showToast('Erreur : ' + err.message, 'error');
+    }
+});
+
 // Modal facture
 const invoiceModal = document.getElementById('invoiceModal');
 
@@ -5966,6 +6224,24 @@ document.getElementById('exportDataBtn')?.addEventListener('click', async () => 
     }
 });
 
+// Export Excel - Tout
+document.getElementById('exportAllExcelBtn')?.addEventListener('click', async () => {
+    try {
+        showToast('Generation de l\'export complet...', 'info');
+        const res = await apiFetch('/api/excel/all');
+        if (!res.ok) throw new Error('Erreur');
+        const blob = await res.blob();
+        const u = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = u;
+        a.download = 'export-complet-' + new Date().toISOString().slice(0, 10) + '.xlsx';
+        document.body.appendChild(a); a.click(); a.remove();
+        window.URL.revokeObjectURL(u);
+        showToast('Export telecharge', 'success');
+    } catch (err) {
+        showToast('Erreur : ' + err.message, 'error');
+    }
+});
 // ================================================================
 // 14.5. SUPPRESSION DE COMPTE (RGPD)
 // ================================================================
@@ -7690,11 +7966,11 @@ document.getElementById('languageSelect')?.addEventListener('change', (e) => {
     let currentFilter = 'all';
 
     const STATUS_LABELS = {
-        planned: '📋 Planifié',
-        in_progress: '🔨 En cours',
-        paused: '⏸️ En pause',
-        completed: '✅ Terminé',
-        cancelled: '❌ Annulé'
+        planned: ' Planifié',
+        in_progress: ' En cours',
+        paused: '⏸ En pause',
+        completed: ' Terminé',
+        cancelled: ' Annulé'
     };
 
     const STATUS_COLORS = {
@@ -7891,7 +8167,7 @@ document.getElementById('languageSelect')?.addEventListener('change', (e) => {
             });
             const result = await res.json();
             if (!res.ok) throw new Error(result.error || 'Erreur');
-            showToast(id ? '✅ Chantier modifié' : '✅ Chantier créé', 'success');
+            showToast(id ? ' Chantier modifié' : ' Chantier créé', 'success');
             chantierModal.classList.remove('show');
             loadChantiers();
         } catch (err) {
@@ -7921,7 +8197,7 @@ document.getElementById('languageSelect')?.addEventListener('change', (e) => {
         //}
     };
     
-        // ═══════════════════════════════════════════════════════════
+    // ═══════════════════════════════════════════════════════════
     // FICHE DÉTAILLÉE D'UN CHANTIER
     // ═══════════════════════════════════════════════════════════
     let currentChantier = null;
@@ -8135,14 +8411,14 @@ document.getElementById('languageSelect')?.addEventListener('change', (e) => {
                             ${timeline.map(t => {
                                 const date = new Date(t.date).toLocaleString('fr-FR');
                                 const labels = {
-                                    created: '🏗️ Chantier créé',
-                                    status_changed: `🔄 Statut changé : ${t.data?.from || '?'} → ${t.data?.to || '?'}`,
-                                    quote_added: `📄 Devis attaché : ${t.data?.quoteNumber || ''}`,
-                                    quote_accepted: `✅ Devis accepté`,
-                                    invoice_created: `🧾 Facture créée : ${t.data?.invoiceNumber || ''}`,
-                                    invoice_paid: `💰 Facture payée`,
-                                    note_added: `📝 Note modifiée`,
-                                    photo_added: `📸 Photo ajoutée`
+                                    created: ' Chantier créé',
+                                    status_changed: ` Statut changé : ${t.data?.from || '?'} → ${t.data?.to || '?'}`,
+                                    quote_added: ` Devis attaché : ${t.data?.quoteNumber || ''}`,
+                                    quote_accepted: ` Devis accepté`,
+                                    invoice_created: ` Facture créée : ${t.data?.invoiceNumber || ''}`,
+                                    invoice_paid: ` Facture payée`,
+                                    note_added: ` Note modifiée`,
+                                    photo_added: ` Photo ajoutée`
                                 };
                                 return `
                                     <div style="position:relative;padding:8px 0 16px 0;">
@@ -8180,7 +8456,7 @@ document.getElementById('languageSelect')?.addEventListener('change', (e) => {
                 body: JSON.stringify({ notes })
             });
             if (!res.ok) throw new Error('Erreur');
-            showToast('✅ Notes enregistrées', 'success');
+            showToast(' Notes enregistrées', 'success');
             // Rafraîchir la fiche
             openChantierDetailModal(id);
         } catch (err) {
@@ -8193,7 +8469,7 @@ document.getElementById('languageSelect')?.addEventListener('change', (e) => {
         try {
             const res = await apiFetch(`/api/chantiers/${chantierId}/detach-quote/${quoteId}`, { method: 'POST' });
             if (!res.ok) throw new Error('Erreur');
-            showToast('✅ Devis détaché', 'success');
+            showToast(' Devis détaché', 'success');
             openChantierDetailModal(chantierId);
         } catch (err) {
             showToast('Erreur : ' + err.message, 'error');
@@ -8246,7 +8522,7 @@ document.getElementById('languageSelect')?.addEventListener('change', (e) => {
         try {
             const res = await apiFetch(`/api/chantiers/${chantierId}/attach-quote/${quoteId}`, { method: 'POST' });
             if (!res.ok) throw new Error('Erreur');
-            showToast('✅ Devis attaché', 'success');
+            showToast(' Devis attaché', 'success');
             // Fermer le modal de sélection
             element.closest('div[style*="fixed"]').remove();
             // Rafraîchir la fiche
@@ -8263,7 +8539,7 @@ document.getElementById('languageSelect')?.addEventListener('change', (e) => {
             const res = await apiFetch(`/api/chantiers/${chantierId}/facturer-tout`, { method: 'POST' });
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || 'Erreur');
-            showToast(`✅ Facture ${data.invoice.invoice_number} créée (${data.quotesCount} devis, ${data.total.toFixed(2)} €)`, 'success');
+            showToast(` Facture ${data.invoice.invoice_number} créée (${data.quotesCount} devis, ${data.total.toFixed(2)} €)`, 'success');
             openChantierDetailModal(chantierId);
         } catch (err) {
             showToast('Erreur : ' + err.message, 'error');
@@ -8285,7 +8561,7 @@ document.getElementById('languageSelect')?.addEventListener('change', (e) => {
             });
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || 'Erreur');
-            showToast('✅ Photo ajoutée', 'success');
+            showToast(' Photo ajoutée', 'success');
             openChantierDetailModal(chantierId);
         } catch (err) {
             showToast('Erreur : ' + err.message, 'error');
@@ -8306,7 +8582,24 @@ document.getElementById('languageSelect')?.addEventListener('change', (e) => {
         }
     };       
     
-
+    // Export Excel - Chantiers
+    document.getElementById('exportChantiersExcelBtn')?.addEventListener('click', async () => {
+        try {
+            showToast('Generation du fichier Excel...', 'info');
+            const res = await apiFetch('/api/excel/chantiers');
+            if (!res.ok) throw new Error('Erreur');
+            const blob = await res.blob();
+            const u = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = u;
+            a.download = 'chantiers-' + new Date().toISOString().slice(0, 10) + '.xlsx';
+            document.body.appendChild(a); a.click(); a.remove();
+            window.URL.revokeObjectURL(u);
+            showToast('Fichier telecharge', 'success');
+        } catch (err) {
+            showToast('Erreur : ' + err.message, 'error');
+        }
+    });
 })();
 
 // ================================================================
@@ -8604,7 +8897,669 @@ document.getElementById('languageSelect')?.addEventListener('change', (e) => {
     // Exposer pour l'onglet Paramètres
     window.updatePushStatus = updatePushStatus;
     window.updatePWAStatus = updatePWAStatus;
+
+
 })();
+
+// ================================================================
+// 23. MULTI-DEVISES
+// ================================================================
+(function initCurrency() {
+    let currencyConfig = null;
+
+    async function loadCurrencyConfig() {
+        try {
+            const res = await apiFetch('/api/currency/list');
+            currencyConfig = await res.json();
+
+            // Mettre a jour le selecteur de devise
+            const select = document.getElementById('quoteCurrency');
+            if (select && currencyConfig.supported) {
+                const current = select.value;
+                select.innerHTML = currencyConfig.supported.map(code => {
+                    const cur = currencyConfig.available.find(a => a.code === code);
+                    return '<option value="' + code + '">' + code + ' - ' + (cur ? cur.label : code) + '</option>';
+                }).join('');
+                select.value = current || currencyConfig.default;
+
+                // Afficher le selecteur seulement si plus d'1 devise
+                const wrapper = document.getElementById('currencyFieldWrapper');
+                if (wrapper) {
+                    wrapper.style.display = currencyConfig.supported.length > 1 ? 'block' : 'none';
+                }
+            }
+
+            // Charger les taux dans les parametres
+            renderCurrencySettings();
+        } catch (err) {
+            console.warn('Erreur chargement devises:', err.message);
+        }
+    }
+
+    function renderCurrencySettings() {
+        const box = document.getElementById('currencySettingsBox');
+        if (!box || !currencyConfig) return;
+
+        let html = '<div style="display:grid;gap:8px;">';
+        currencyConfig.available.forEach(cur => {
+            const checked = currencyConfig.supported.includes(cur.code) ? 'checked' : '';
+            const disabled = cur.code === 'EUR' ? 'disabled' : '';
+            html += `
+                <label style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:#0b1120;border:1px solid #1e2a41;border-radius:10px;cursor:pointer;">
+                    <input type="checkbox" class="currency-toggle" data-code="${cur.code}" ${checked} ${disabled} />
+                    <div>
+                        <div style="color:#fff;font-weight:600;font-size:13px;">${cur.code} - ${cur.label}</div>
+                    </div>
+                </label>
+            `;
+        });
+        html += '</div>';
+
+        html += `
+            <div style="margin-top:16px;">
+                <label style="display:block;color:#94a3b8;font-size:13px;margin-bottom:6px;">Devise par defaut</label>
+                <select id="defaultCurrencySelect" style="width:100%;padding:10px 14px;border-radius:10px;background:#0b1120;border:1px solid #2a3a55;color:#e2e8f0;font-size:14px;">
+                    ${currencyConfig.supported.map(code => {
+                        const cur = currencyConfig.available.find(a => a.code === code);
+                        return '<option value="' + code + '"' + (code === currencyConfig.default ? ' selected' : '') + '>' + code + ' - ' + (cur ? cur.label : code) + '</option>';
+                    }).join('')}
+                </select>
+            </div>
+        `;
+
+        html += `
+            <button class="btn-save" id="saveCurrencyConfigBtn" style="margin-top:16px;">Enregistrer la configuration</button>
+        `;
+
+        box.innerHTML = html;
+
+        document.getElementById('saveCurrencyConfigBtn')?.addEventListener('click', saveCurrencyConfig);
+    }
+
+    async function saveCurrencyConfig() {
+        const toggles = document.querySelectorAll('.currency-toggle');
+        const supported = [];
+        toggles.forEach(t => {
+            if (t.checked) supported.push(t.dataset.code);
+        });
+        if (!supported.includes('EUR')) supported.unshift('EUR');
+
+        const defaultCurrency = document.getElementById('defaultCurrencySelect')?.value || 'EUR';
+
+        try {
+            const res = await apiFetch('/api/currency/config', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ defaultCurrency, supportedCurrencies: supported })
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Erreur');
+            showToast('Configuration devises enregistree', 'success');
+            loadCurrencyConfig();
+        } catch (err) {
+            showToast('Erreur : ' + err.message, 'error');
+        }
+    }
+
+    // Exposer pour le DOMContentLoaded ou l'entree dans Parametres
+    window.loadCurrencyConfig = loadCurrencyConfig;
+
+    // Recharger quand on ouvre les parametres
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            if (btn.dataset.tab === 'tab-settings') {
+                setTimeout(loadCurrencyConfig, 200);
+            }
+        });
+    });
+
+    // Charger au demarrage si connecte
+    if (getToken()) {
+        setTimeout(loadCurrencyConfig, 1500);
+    }
+})();
+
+// ================================================================
+// 24. SOUS-TRAITANTS
+// ================================================================
+(function initSubcontractors() {
+    let allSubs = [];
+    let allAssignments = [];
+    let currentFilter = 'all';
+    let searchTerm = '';
+
+    const STATUS_LABELS = {
+        pending: 'En attente',
+        in_progress: 'En cours',
+        completed: 'Termine',
+        invoiced: 'Facture',
+        paid: 'Paye',
+        cancelled: 'Annule'
+    };
+
+    const STATUS_COLORS = {
+        pending: '#94a3b8',
+        in_progress: '#3b82f6',
+        completed: '#22c55e',
+        invoiced: '#eab308',
+        paid: '#16a34a',
+        cancelled: '#f87171'
+    };
+
+    async function loadSubcontractors() {
+        const container = document.getElementById('subcontractorsList');
+        if (!container) return;
+        container.innerHTML = '<p style="color:#64748b;text-align:center;padding:40px;">Chargement...</p>';
+
+        try {
+            const res = await apiFetch('/api/subcontractors');
+            allSubs = await res.json();
+            renderSubcontractors();
+        } catch (err) {
+            container.innerHTML = '<p style="color:#f87171;text-align:center;padding:40px;">Erreur.</p>';
+        }
+    }
+
+    async function loadAssignments() {
+        const container = document.getElementById('assignmentsList');
+        if (!container) return;
+        container.innerHTML = '<p style="color:#64748b;text-align:center;padding:40px;">Chargement...</p>';
+
+        try {
+            const res = await apiFetch('/api/subcontractors/assignments/all');
+            allAssignments = await res.json();
+            renderAssignments();
+        } catch (err) {
+            container.innerHTML = '<p style="color:#f87171;text-align:center;padding:40px;">Erreur.</p>';
+        }
+    }
+
+    function renderSubcontractors() {
+        const container = document.getElementById('subcontractorsList');
+        if (!container) return;
+
+        let filtered = allSubs;
+        if (currentFilter === 'active') filtered = allSubs.filter(s => s.active);
+        else if (currentFilter === 'inactive') filtered = allSubs.filter(s => !s.active);
+
+        if (searchTerm) {
+            const term = searchTerm.toLowerCase();
+            filtered = filtered.filter(s =>
+                (s.name || '').toLowerCase().includes(term) ||
+                (s.companyName || '').toLowerCase().includes(term) ||
+                (s.email || '').toLowerCase().includes(term) ||
+                (s.specialty || '').toLowerCase().includes(term)
+            );
+        }
+
+        if (allSubs.length === 0) {
+            container.innerHTML = '<div class="catalog-empty"><div class="big-icon">-</div><h3>Aucun sous-traitant</h3><p>Ajoutez vos sous-traitants pour suivre leurs missions et paiements.</p><div style="margin-top:20px;"><button class="btn-primary-sm" onclick="document.getElementById(\'newSubcontractorBtn\').click()">+ Creer un sous-traitant</button></div></div>';
+            return;
+        }
+
+        if (filtered.length === 0) {
+            container.innerHTML = '<p style="color:#64748b;text-align:center;padding:40px;">Aucun resultat.</p>';
+            return;
+        }
+
+        let html = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;">';
+        filtered.forEach(s => {
+            const statusBadge = s.active
+                ? '<span style="font-size:10px;font-weight:700;padding:3px 10px;border-radius:40px;background:rgba(34,197,94,0.15);color:#22c55e;border:1px solid rgba(34,197,94,0.3);">Actif</span>'
+                : '<span style="font-size:10px;font-weight:700;padding:3px 10px;border-radius:40px;background:rgba(148,163,184,0.15);color:#94a3b8;border:1px solid rgba(148,163,184,0.3);">Inactif</span>';
+
+            html += `
+                <div style="background:#0b1120;border:1px solid #1e2a41;border-radius:16px;padding:20px;cursor:pointer;transition:0.2s;" onclick="openSubcontractorDetail(${s.id})" onmouseover="this.style.background='#141e33'" onmouseout="this.style.background='#0b1120'">
+                    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:12px;">
+                        <div style="flex:1;min-width:0;">
+                            <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:4px;">${escapeHtml(s.name)}</div>
+                            ${s.companyName ? '<div style="font-size:12px;color:#94a3b8;">' + escapeHtml(s.companyName) + '</div>' : ''}
+                            ${s.specialty ? '<div style="font-size:11px;color:#f97316;font-weight:600;margin-top:4px;">' + escapeHtml(s.specialty) + '</div>' : ''}
+                        </div>
+                        ${statusBadge}
+                    </div>
+
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;padding-top:12px;border-top:1px solid #1e2a41;font-size:12px;">
+                        <div>
+                            <div style="color:#64748b;font-size:10px;text-transform:uppercase;font-weight:600;">Missions</div>
+                            <div style="color:#e2e8f0;font-weight:700;">${s.assignmentsCount}</div>
+                            <div style="color:#64748b;font-size:10px;">dont ${s.activeAssignments} en cours</div>
+                        </div>
+                        <div>
+                            <div style="color:#64748b;font-size:10px;text-transform:uppercase;font-weight:600;">Paye</div>
+                            <div style="color:#22c55e;font-weight:700;">${s.paidTotal.toFixed(2)} EUR</div>
+                            <div style="color:#eab308;font-size:10px;">en attente: ${s.pendingTotal.toFixed(2)} EUR</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        html += '</div>';
+        container.innerHTML = html;
+    }
+
+    function renderAssignments() {
+        const container = document.getElementById('assignmentsList');
+        if (!container) return;
+
+        if (allAssignments.length === 0) {
+            container.innerHTML = '<p style="color:#64748b;text-align:center;padding:40px;">Aucune mission enregistree.</p>';
+            return;
+        }
+
+        let html = '<div style="overflow-x:auto;"><table class="catalog-table"><thead><tr>' +
+            '<th>Sous-traitant</th><th>Mission</th><th>Chantier</th><th>Montant</th><th>Statut</th><th>Actions</th>' +
+            '</tr></thead><tbody>';
+
+        allAssignments.forEach(a => {
+            const statusLabel = STATUS_LABELS[a.status] || a.status;
+            const statusColor = STATUS_COLORS[a.status] || '#94a3b8';
+
+            let actions = '';
+            if (a.status === 'pending' || a.status === 'in_progress') {
+                actions += '<button onclick="completeAssignment(' + a.id + ')" style="background:#22c55e;border:none;color:#0b1120;padding:4px 10px;border-radius:40px;font-size:11px;font-weight:700;cursor:pointer;margin-right:4px;">Terminer</button>';
+            }
+            if (a.status === 'completed') {
+                actions += '<button onclick="invoiceAssignment(' + a.id + ')" style="background:#eab308;border:none;color:#0b1120;padding:4px 10px;border-radius:40px;font-size:11px;font-weight:700;cursor:pointer;margin-right:4px;">Facture recue</button>';
+            }
+            if (a.status === 'invoiced') {
+                actions += '<button onclick="payAssignment(' + a.id + ')" style="background:#16a34a;border:none;color:#fff;padding:4px 10px;border-radius:40px;font-size:11px;font-weight:700;cursor:pointer;margin-right:4px;">Marquer paye</button>';
+            }
+            actions += '<button onclick="editAssignment(' + a.id + ')" style="background:#1a253b;border:1px solid #2a3a55;color:#e2e8f0;padding:4px 10px;border-radius:40px;font-size:11px;cursor:pointer;margin-right:4px;">Modifier</button>';
+            actions += '<button onclick="deleteAssignment(' + a.id + ')" style="background:#3f1e24;border:1px solid #7f1d1d;color:#f87171;padding:4px 10px;border-radius:40px;font-size:11px;cursor:pointer;">Suppr.</button>';
+
+            html += '<tr>' +
+                '<td><strong>' + escapeHtml(a.subcontractorName || '') + '</strong>' +
+                (a.subcontractorCompany ? '<br><span style="color:#64748b;font-size:11px;">' + escapeHtml(a.subcontractorCompany) + '</span>' : '') + '</td>' +
+                '<td>' + escapeHtml(a.title || '') +
+                (a.description ? '<br><span style="color:#64748b;font-size:11px;">' + escapeHtml(a.description) + '</span>' : '') + '</td>' +
+                '<td>' + (a.chantierName ? escapeHtml(a.chantierName) : '<span style="color:#475569;">-</span>') + '</td>' +
+                '<td style="font-weight:600;">' + (a.amount ? a.amount.toFixed(2) + ' EUR' : '-') + '</td>' +
+                '<td><span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:40px;background:' + statusColor + '22;color:' + statusColor + ';border:1px solid ' + statusColor + '66;">' + statusLabel + '</span></td>' +
+                '<td><div style="display:flex;flex-wrap:wrap;">' + actions + '</div></td>' +
+                '</tr>';
+        });
+
+        html += '</tbody></table></div>';
+        container.innerHTML = html;
+    }
+
+    // Filtres
+    document.querySelectorAll('#subcontractorFilters .history-filter').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('#subcontractorFilters .history-filter').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentFilter = btn.dataset.sfilter;
+            renderSubcontractors();
+        });
+    });
+
+    document.getElementById('subcontractorsSearch')?.addEventListener('input', (e) => {
+        searchTerm = e.target.value;
+        renderSubcontractors();
+    });
+
+    // Modal sous-traitant
+    const subModal = document.getElementById('subcontractorModal');
+
+    function openSubModal(mode, sub) {
+        document.getElementById('subcontractorModalTitle').textContent = mode === 'add' ? 'Nouveau sous-traitant' : 'Modifier le sous-traitant';
+        document.getElementById('subcontractorIdField').value = sub ? sub.id : '';
+        document.getElementById('subName').value = sub ? sub.name : '';
+        document.getElementById('subCompanyName').value = sub ? (sub.companyName || '') : '';
+        document.getElementById('subContactName').value = sub ? (sub.contactName || '') : '';
+        document.getElementById('subSpecialty').value = sub ? (sub.specialty || '') : '';
+        document.getElementById('subEmail').value = sub ? (sub.email || '') : '';
+        document.getElementById('subPhone').value = sub ? (sub.phone || '') : '';
+        document.getElementById('subAddress').value = sub ? (sub.address || '') : '';
+        document.getElementById('subVatNumber').value = sub ? (sub.vatNumber || '') : '';
+        document.getElementById('subHourlyRate').value = sub && sub.hourlyRate ? sub.hourlyRate : '';
+        document.getElementById('subIban').value = sub ? (sub.iban || '') : '';
+        document.getElementById('subBic').value = sub ? (sub.bic || '') : '';
+        document.getElementById('subPaymentTerms').value = sub ? (sub.paymentTerms || 30) : 30;
+        document.getElementById('subActive').value = sub && !sub.active ? 'false' : 'true';
+        document.getElementById('subNotes').value = sub ? (sub.notes || '') : '';
+        subModal.classList.add('show');
+    }
+
+    document.getElementById('newSubcontractorBtn')?.addEventListener('click', () => openSubModal('add'));
+    document.getElementById('cancelSubcontractorBtn')?.addEventListener('click', () => subModal.classList.remove('show'));
+    subModal?.addEventListener('click', (e) => { if (e.target === subModal) subModal.classList.remove('show'); });
+
+    document.getElementById('saveSubcontractorBtn')?.addEventListener('click', async () => {
+        const id = document.getElementById('subcontractorIdField').value;
+        const data = {
+            name: document.getElementById('subName').value.trim(),
+            companyName: document.getElementById('subCompanyName').value.trim(),
+            contactName: document.getElementById('subContactName').value.trim(),
+            specialty: document.getElementById('subSpecialty').value.trim(),
+            email: document.getElementById('subEmail').value.trim(),
+            phone: document.getElementById('subPhone').value.trim(),
+            address: document.getElementById('subAddress').value.trim(),
+            vatNumber: document.getElementById('subVatNumber').value.trim(),
+            hourlyRate: document.getElementById('subHourlyRate').value || null,
+            iban: document.getElementById('subIban').value.trim(),
+            bic: document.getElementById('subBic').value.trim(),
+            paymentTerms: parseInt(document.getElementById('subPaymentTerms').value) || 30,
+            active: document.getElementById('subActive').value === 'true',
+            notes: document.getElementById('subNotes').value.trim()
+        };
+
+        if (!data.name) { showToast('Nom requis.', 'error'); return; }
+
+        const btn = document.getElementById('saveSubcontractorBtn');
+        btn.disabled = true;
+        btn.textContent = 'Enregistrement...';
+
+        try {
+            const url = id ? '/api/subcontractors/' + id : '/api/subcontractors';
+            const method = id ? 'PUT' : 'POST';
+            const res = await apiFetch(url, {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            const result = await res.json();
+            if (!res.ok) throw new Error(result.error || 'Erreur');
+            showToast(id ? 'Sous-traitant modifie' : 'Sous-traitant cree', 'success');
+            subModal.classList.remove('show');
+            loadSubcontractors();
+        } catch (err) {
+            showToast('Erreur : ' + err.message, 'error');
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Enregistrer';
+        }
+    });
+
+    // Modal mission
+    const assignModal = document.getElementById('assignmentModal');
+
+    async function openAssignModal(subId, assignment) {
+        document.getElementById('assignmentModalTitle').textContent = assignment ? 'Modifier la mission' : 'Nouvelle mission';
+        document.getElementById('assignmentIdField').value = assignment ? assignment.id : '';
+        document.getElementById('assignmentSubcontractorId').value = subId;
+        document.getElementById('assignTitle').value = assignment ? assignment.title : '';
+        document.getElementById('assignDescription').value = assignment ? (assignment.description || '') : '';
+        document.getElementById('assignAmount').value = assignment && assignment.amount ? assignment.amount : '';
+        document.getElementById('assignHourlyRate').value = assignment && assignment.hourlyRate ? assignment.hourlyRate : '';
+        document.getElementById('assignEstimatedHours').value = assignment && assignment.estimatedHours ? assignment.estimatedHours : '';
+        document.getElementById('assignStatus').value = assignment ? assignment.status : 'pending';
+        document.getElementById('assignStartDate').value = assignment && assignment.startDate ? assignment.startDate.slice(0, 10) : '';
+        document.getElementById('assignEndDate').value = assignment && assignment.endDate ? assignment.endDate.slice(0, 10) : '';
+        document.getElementById('assignNotes').value = assignment ? (assignment.notes || '') : '';
+
+        // Charger chantiers
+        try {
+            const cRes = await apiFetch('/api/chantiers');
+            const chantiers = await cRes.json();
+            const cSel = document.getElementById('assignChantierId');
+            cSel.innerHTML = '<option value="">Aucun</option>';
+            chantiers.forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c.id;
+                opt.textContent = c.name;
+                if (assignment && assignment.chantierId === c.id) opt.selected = true;
+                cSel.appendChild(opt);
+            });
+        } catch (e) {}
+
+        // Charger devis
+        try {
+            const qRes = await apiFetch('/api/quotes');
+            const quotes = await qRes.json();
+            const qSel = document.getElementById('assignQuoteId');
+            qSel.innerHTML = '<option value="">Aucun</option>';
+            quotes.forEach(q => {
+                const opt = document.createElement('option');
+                opt.value = q.id;
+                opt.textContent = q.quote_number + ' - ' + (q.client_name || '');
+                if (assignment && assignment.quoteId === q.id) opt.selected = true;
+                qSel.appendChild(opt);
+            });
+        } catch (e) {}
+
+        assignModal.classList.add('show');
+    }
+
+    document.getElementById('cancelAssignmentBtn')?.addEventListener('click', () => assignModal.classList.remove('show'));
+    assignModal?.addEventListener('click', (e) => { if (e.target === assignModal) assignModal.classList.remove('show'); });
+
+    document.getElementById('saveAssignmentBtn')?.addEventListener('click', async () => {
+        const id = document.getElementById('assignmentIdField').value;
+        const subId = document.getElementById('assignmentSubcontractorId').value;
+        const data = {
+            title: document.getElementById('assignTitle').value.trim(),
+            description: document.getElementById('assignDescription').value.trim(),
+            chantierId: document.getElementById('assignChantierId').value || null,
+            quoteId: document.getElementById('assignQuoteId').value || null,
+            amount: document.getElementById('assignAmount').value || null,
+            hourlyRate: document.getElementById('assignHourlyRate').value || null,
+            estimatedHours: document.getElementById('assignEstimatedHours').value || null,
+            status: document.getElementById('assignStatus').value,
+            startDate: document.getElementById('assignStartDate').value || null,
+            endDate: document.getElementById('assignEndDate').value || null,
+            notes: document.getElementById('assignNotes').value.trim()
+        };
+
+        if (!data.title) { showToast('Titre requis.', 'error'); return; }
+
+        const btn = document.getElementById('saveAssignmentBtn');
+        btn.disabled = true;
+        btn.textContent = 'Enregistrement...';
+
+        try {
+            let url, method;
+            if (id) {
+                url = '/api/subcontractors/assignments/' + id;
+                method = 'PUT';
+            } else {
+                url = '/api/subcontractors/' + subId + '/assignments';
+                method = 'POST';
+            }
+            const res = await apiFetch(url, {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            const result = await res.json();
+            if (!res.ok) throw new Error(result.error || 'Erreur');
+            showToast(id ? 'Mission modifiee' : 'Mission creee', 'success');
+            assignModal.classList.remove('show');
+            loadAssignments();
+            loadSubcontractors();
+        } catch (err) {
+            showToast('Erreur : ' + err.message, 'error');
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Enregistrer';
+        }
+    });
+
+    // Detail d'un sous-traitant
+    window.openSubcontractorDetail = async function(id) {
+        try {
+            const [subRes, assignRes] = await Promise.all([
+                apiFetch('/api/subcontractors/' + id),
+                apiFetch('/api/subcontractors/' + id + '/assignments')
+            ]);
+            const sub = await subRes.json();
+            const assignments = await assignRes.json();
+
+            let modal = document.getElementById('subDetailModal');
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = 'subDetailModal';
+                modal.className = 'modal-overlay';
+                modal.innerHTML = '<div class="modal" style="max-width:900px;width:95%;max-height:90vh;overflow-y:auto;padding:0;"><div id="subDetailContent"></div></div>';
+                document.body.appendChild(modal);
+                modal.addEventListener('click', (e) => { if (e.target === modal) modal.classList.remove('show'); });
+            }
+            modal.classList.add('show');
+
+            const s = sub.stats;
+            let html = '<div style="padding:28px 32px;background:linear-gradient(135deg,rgba(249,115,22,0.15),rgba(249,115,22,0.02));border-bottom:3px solid #f97316;">' +
+                '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;">' +
+                '<div style="flex:1;min-width:250px;">' +
+                '<h2 style="font-size:22px;font-weight:800;color:#fff;margin-bottom:6px;">' + escapeHtml(sub.name) + '</h2>' +
+                (sub.companyName ? '<div style="color:#cbd5e1;font-size:14px;">' + escapeHtml(sub.companyName) + '</div>' : '') +
+                (sub.specialty ? '<div style="color:#f97316;font-size:12px;font-weight:600;margin-top:4px;">' + escapeHtml(sub.specialty) + '</div>' : '') +
+                (sub.email ? '<div style="color:#94a3b8;font-size:12px;margin-top:8px;">' + escapeHtml(sub.email) + '</div>' : '') +
+                (sub.phone ? '<div style="color:#94a3b8;font-size:12px;">' + escapeHtml(sub.phone) + '</div>' : '') +
+                '</div>' +
+                '<div style="display:flex;gap:8px;">' +
+                '<button class="btn-secondary" onclick="editSubcontractorFromDetail(' + sub.id + ')" style="padding:6px 14px;font-size:12px;">Modifier</button>' +
+                '<button class="btn-primary-sm" onclick="newAssignmentForSub(' + sub.id + ')" style="padding:6px 14px;font-size:12px;">+ Mission</button>' +
+                '<button class="btn-cancel" onclick="document.getElementById(\'subDetailModal\').classList.remove(\'show\')" style="padding:6px 14px;font-size:12px;">Fermer</button>' +
+                '</div>' +
+                '</div>' +
+                '</div>';
+
+            html += '<div style="padding:24px 32px;">';
+
+            // Stats
+            html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:24px;">' +
+                '<div style="background:#0b1120;border:1px solid #1e2a41;border-radius:12px;padding:14px;text-align:center;">' +
+                '<div style="color:#64748b;font-size:10px;text-transform:uppercase;font-weight:600;">Missions</div>' +
+                '<div style="color:#fff;font-size:22px;font-weight:800;">' + s.totalAssignments + '</div></div>' +
+                '<div style="background:#0b1120;border:1px solid #1e2a41;border-radius:12px;padding:14px;text-align:center;">' +
+                '<div style="color:#64748b;font-size:10px;text-transform:uppercase;font-weight:600;">Total</div>' +
+                '<div style="color:#f97316;font-size:18px;font-weight:800;">' + s.totalAmount.toFixed(2) + ' EUR</div></div>' +
+                '<div style="background:#0b1120;border:1px solid #1e2a41;border-radius:12px;padding:14px;text-align:center;">' +
+                '<div style="color:#64748b;font-size:10px;text-transform:uppercase;font-weight:600;">Paye</div>' +
+                '<div style="color:#22c55e;font-size:18px;font-weight:800;">' + s.paidAmount.toFixed(2) + ' EUR</div></div>' +
+                '<div style="background:#0b1120;border:1px solid #1e2a41;border-radius:12px;padding:14px;text-align:center;">' +
+                '<div style="color:#64748b;font-size:10px;text-transform:uppercase;font-weight:600;">En attente</div>' +
+                '<div style="color:#eab308;font-size:18px;font-weight:800;">' + s.pendingPayment.toFixed(2) + ' EUR</div></div>' +
+                '</div>';
+
+            // Liste missions
+            html += '<h3 style="font-size:16px;font-weight:700;color:#fff;margin-bottom:14px;">Missions (' + assignments.length + ')</h3>';
+            if (assignments.length === 0) {
+                html += '<p style="color:#64748b;text-align:center;padding:20px;">Aucune mission.</p>';
+            } else {
+                html += '<div style="background:#0b1120;border:1px solid #1e2a41;border-radius:12px;overflow:hidden;">';
+                assignments.forEach(a => {
+                    const statusLabel = STATUS_LABELS[a.status] || a.status;
+                    const statusColor = STATUS_COLORS[a.status] || '#94a3b8';
+                    html += '<div style="padding:14px 16px;border-bottom:1px solid #1e2a41;">' +
+                        '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;">' +
+                        '<div style="flex:1;min-width:200px;">' +
+                        '<div style="color:#fff;font-weight:600;font-size:14px;">' + escapeHtml(a.title) + '</div>' +
+                        (a.description ? '<div style="color:#64748b;font-size:12px;margin-top:2px;">' + escapeHtml(a.description) + '</div>' : '') +
+                        (a.chantierName ? '<div style="color:#94a3b8;font-size:11px;margin-top:4px;">Chantier: ' + escapeHtml(a.chantierName) + '</div>' : '') +
+                        '</div>' +
+                        '<div style="text-align:right;">' +
+                        '<div style="color:#f97316;font-weight:700;">' + (a.amount ? a.amount.toFixed(2) + ' EUR' : '-') + '</div>' +
+                        '<span style="font-size:10px;font-weight:700;padding:3px 10px;border-radius:40px;background:' + statusColor + '22;color:' + statusColor + ';border:1px solid ' + statusColor + '66;">' + statusLabel + '</span>' +
+                        '</div>' +
+                        '</div>' +
+                        '</div>';
+                });
+                html += '</div>';
+            }
+
+            html += '</div>';
+            document.getElementById('subDetailContent').innerHTML = html;
+        } catch (err) {
+            showToast('Erreur : ' + err.message, 'error');
+        }
+    };
+
+    window.editSubcontractorFromDetail = function(id) {
+        document.getElementById('subDetailModal')?.classList.remove('show');
+        const sub = allSubs.find(s => s.id === id);
+        if (sub) openSubModal('edit', sub);
+    };
+
+    window.newAssignmentForSub = function(subId) {
+        document.getElementById('subDetailModal')?.classList.remove('show');
+        openAssignModal(subId, null);
+    };
+
+    window.editAssignment = function(id) {
+        const a = allAssignments.find(x => x.id === id);
+        if (a) openAssignModal(a.subcontractorId, a);
+    };
+
+    window.deleteAssignment = async function(id) {
+        if (!confirm('Supprimer cette mission ?')) return;
+        try {
+            const res = await apiFetch('/api/subcontractors/assignments/' + id, { method: 'DELETE' });
+            if (!res.ok) throw new Error('Erreur');
+            showToast('Mission supprimee', 'success');
+            loadAssignments();
+            loadSubcontractors();
+        } catch (err) {
+            showToast('Erreur : ' + err.message, 'error');
+        }
+    };
+
+    window.completeAssignment = async function(id) {
+        const hours = prompt('Heures reelles passees (optionnel) :', '');
+        try {
+            const res = await apiFetch('/api/subcontractors/assignments/' + id + '/complete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ actualHours: hours || null })
+            });
+            if (!res.ok) throw new Error('Erreur');
+            showToast('Mission terminee', 'success');
+            loadAssignments();
+        } catch (err) {
+            showToast('Erreur : ' + err.message, 'error');
+        }
+    };
+
+    window.invoiceAssignment = async function(id) {
+        const num = prompt('Numero de facture recue :', '');
+        if (!num) return;
+        const date = prompt('Date de la facture (YYYY-MM-DD) :', new Date().toISOString().slice(0, 10));
+        const amount = prompt('Montant (EUR) :', '');
+        try {
+            const res = await apiFetch('/api/subcontractors/assignments/' + id + '/invoice', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ invoiceNumber: num, invoiceDate: date, amount: amount || null })
+            });
+            if (!res.ok) throw new Error('Erreur');
+            showToast('Facture enregistree', 'success');
+            loadAssignments();
+        } catch (err) {
+            showToast('Erreur : ' + err.message, 'error');
+        }
+    };
+
+    window.payAssignment = async function(id) {
+        const method = prompt('Mode de paiement (virement, cheque, especes) :', 'virement');
+        if (!method) return;
+        try {
+            const res = await apiFetch('/api/subcontractors/assignments/' + id + '/pay', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ paymentMethod: method })
+            });
+            if (!res.ok) throw new Error('Erreur');
+            showToast('Mission marquee payee', 'success');
+            loadAssignments();
+        } catch (err) {
+            showToast('Erreur : ' + err.message, 'error');
+        }
+    };
+
+    // Charger quand on ouvre l'onglet
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            if (btn.dataset.tab === 'tab-subcontractors') {
+                setTimeout(() => {
+                    loadSubcontractors();
+                    loadAssignments();
+                }, 100);
+            }
+        });
+    });
+})();
+
 </script>
 </body>
 </html>
