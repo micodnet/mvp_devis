@@ -135,7 +135,9 @@ async function executeIntent(intent, args, userId, userMessage = '', conversatio
         case 'invoice_stats':  return await tools.getInvoiceStats(userId);
         case 'stock_alerts':   return await tools.getStockAlerts(userId);
         case 'general_stats':  return await tools.getGeneralStats(userId);
-
+        case 'list_chantiers': return await tools.listChantiers(userId, args);
+        case 'find_chantier':  return await tools.findChantier(userId, args);
+        case 'chantier_stats': return await tools.getChantierStats(userId);
         case 'calculer_metier':
         case 'calculer_chantier': {
             const { pool } = require('../../db');

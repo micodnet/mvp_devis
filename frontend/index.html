@@ -35,6 +35,20 @@
     <meta name="author" content="Micodnet" />
     <meta name="keywords" content="devis, générateur de devis, IA, artisan, indépendant, TPE, PME, Belgique, facture, Peppol" />
     
+    <!-- PWA -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#0b1120" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Devis Pro" />
+    <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
+    <link rel="apple-touch-icon" sizes="152x152" href="/icons/icon-152x152.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-180x180.png" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="msapplication-TileColor" content="#0b1120" />
+    <meta name="msapplication-TileImage" content="/icons/icon-144x144.png" />
+
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%230b1120'/%3E%3Cpath d='M20 16 h18 l8 8 v24 a4 4 0 0 1 -4 4 h-22 a4 4 0 0 1 -4 -4 v-28 a4 4 0 0 1 4 -4 z' fill='%233b82f6'/%3E%3Cpath d='M38 16 v8 h8' fill='none' stroke='%230b1120' stroke-width='2'/%3E%3Cpath d='M32 28 l-4 10 h5 l-2 8 7 -11 h-5 z' fill='%23f97316'/%3E%3C/svg%3E" />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
     
@@ -949,6 +963,123 @@
         .msg.action-draft .draft-actions .cancel:hover { background: #3f1e24; color: #f87171; border-color: #7f1d1d; }
         .msg.action-draft.done { border-color: #22c55e; background: rgba(34,197,94,0.05); }
         .msg.action-draft.done .draft-title { color: #22c55e; }
+    
+        /* ============================================================ */
+        /* MOBILE / PWA                                                  */
+        /* ============================================================ */
+        @media (max-width: 768px) {
+            /* Zone cliquable plus généreuse */
+            button, a.btn, .tab-btn, .plan-cta {
+                min-height: 44px;
+            }
+
+            /* Tab bar scrollable avec snap */
+            .tabs {
+                scroll-snap-type: x mandatory;
+                -webkit-overflow-scrolling: touch;
+                padding-bottom: 4px;
+            }
+            .tab-btn {
+                scroll-snap-align: start;
+            }
+
+            /* Inputs plus gros (évite le zoom iOS) */
+            input, textarea, select {
+                font-size: 16px !important;
+            }
+
+            /* Cards plus aérées */
+            .card {
+                padding: 16px 14px;
+                border-radius: 16px;
+            }
+
+            /* Modales fullscreen */
+            .modal {
+                max-width: 100% !important;
+                max-height: 100vh !important;
+                border-radius: 0 !important;
+                padding: 20px 16px !important;
+            }
+            .modal-overlay {
+                padding: 0;
+            }
+
+            /* Boutons d'action prennent toute la largeur */
+            .actions {
+                flex-direction: column;
+            }
+            .actions a {
+                width: 100%;
+            }
+
+            /* Header simplifié */
+            .header {
+                padding-bottom: 12px;
+                margin-bottom: 16px;
+            }
+            .logo-area h1 {
+                font-size: 20px;
+            }
+
+            /* Bannière install ajustée */
+            #pwaInstallBanner {
+                left: 12px;
+                right: 12px;
+                bottom: 12px;
+                padding: 14px 16px;
+            }
+
+            /* Bulle assistant plus discrète */
+            #assistantBubble {
+                bottom: 76px;
+                right: 14px;
+                width: 52px;
+                height: 52px;
+            }
+        }
+
+        /* Safe area iOS (notch, home indicator) */
+        @supports (padding: max(0px)) {
+            body {
+                padding-left: max(0px, env(safe-area-inset-left));
+                padding-right: max(0px, env(safe-area-inset-right));
+            }
+            #pwaInstallBanner {
+                bottom: max(12px, env(safe-area-inset-bottom));
+            }
+            #assistantBubble {
+                bottom: max(76px, calc(env(safe-area-inset-bottom) + 60px));
+            }
+        }
+
+        /* Mode PWA standalone */
+        body.pwa-standalone {
+            /* Enlever le padding si déjà installé */
+        }
+        body.pwa-standalone #pwaInstallBanner {
+            display: none !important;
+        }
+
+        /* Indicateur hors ligne */
+        #offlineIndicator {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: #dc2626;
+            color: #fff;
+            text-align: center;
+            padding: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            z-index: 9999;
+            transform: translateY(-100%);
+            transition: transform 0.3s;
+        }
+        #offlineIndicator.show {
+            transform: translateY(0);
+        }
     </style>
 </head>
 <body>
@@ -1186,7 +1317,8 @@
         <button class="tab-btn" data-tab="tab-history" data-i18n="app.tab.history">📜 Historique</button>
         <button class="tab-btn" data-tab="tab-invoices" data-i18n="app.tab.invoices">🧾 Factures</button>
         <button class="tab-btn" data-tab="tab-dashboard" data-i18n="app.tab.dashboard">📊 Dashboard</button>
-                <button class="tab-btn" data-tab="tab-analytics" data-i18n="app.tab.analytics">📈 Analytics</button>
+        <button class="tab-btn" data-tab="tab-analytics" data-i18n="app.tab.analytics">📈 Analytics</button>
+        <button class="tab-btn" data-tab="tab-chantiers" data-i18n="app.tab.chantiers">🏗️ Chantiers</button>
         <button class="tab-btn" data-tab="tab-team" data-i18n="app.tab.team">👥 Équipe</button>
         <button class="tab-btn" data-tab="tab-settings" data-i18n="app.tab.settings">⚙️ Paramètres</button>
         <button class="tab-btn" data-tab="tab-assistant" data-i18n="app.tab.assistant">💬 Assistant</button>
@@ -1458,6 +1590,26 @@
         </div>
     </div>
 
+    <!-- CHANTIERS -->
+    <div id="tab-chantiers" class="tab-content">
+        <div class="card">
+            <div class="catalog-header">
+                <h2 data-i18n="chantiers.title">🏗️ Mes chantiers</h2>
+                <div class="catalog-actions">
+                    <button class="btn-primary-sm" id="newChantierBtn">+ Nouveau chantier</button>
+                </div>
+            </div>
+            <div class="history-filters" id="chantierFilters">
+                <button class="history-filter active" data-cfilter="all">Tous <span class="count" id="cCntAll">0</span></button>
+                <button class="history-filter" data-cfilter="planned">Planifiés <span class="count" id="cCntPlanned">0</span></button>
+                <button class="history-filter" data-cfilter="in_progress">En cours <span class="count" id="cCntProgress">0</span></button>
+                <button class="history-filter" data-cfilter="completed">Terminés <span class="count" id="cCntCompleted">0</span></button>
+                <button class="history-filter" data-cfilter="cancelled">Annulés <span class="count" id="cCntCancelled">0</span></button>
+            </div>
+            <div id="chantiersList"><p style="color:#64748b;text-align:center;padding:40px;">Chargement...</p></div>
+        </div>
+    </div>
+
     <!-- ANALYTICS -->
     <div id="tab-analytics" class="tab-content">
         <!-- Filtres de période -->
@@ -1668,6 +1820,43 @@
                 </div>
                 <button type="submit" class="btn-save" data-i18n="settings.save">💾 Enregistrer</button>
             </form>
+        </div>
+        <div class="card">
+            <div class="card-title">📱 Application mobile (PWA)</div>
+            <p style="color:#94a3b8;font-size:13px;margin-bottom:16px;line-height:1.6;">
+                Installez Devis Express Pro sur votre téléphone pour un accès rapide, 
+                un mode hors ligne partiel et des notifications en temps réel.
+            </p>
+
+            <div style="display:flex;flex-direction:column;gap:14px;">
+                <div style="background:#0b1120;border:1px solid #1e2a41;border-radius:12px;padding:16px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+                        <div>
+                            <div style="color:#fff;font-weight:600;font-size:14px;">📲 Installer l'application</div>
+                            <div style="color:#64748b;font-size:12px;margin-top:2px;" id="pwaStatusText">Non installée</div>
+                        </div>
+                        <button class="btn-secondary" id="pwaSettingsInstallBtn" style="font-size:12px;">Installer</button>
+                    </div>
+                </div>
+
+                <div style="background:#0b1120;border:1px solid #1e2a41;border-radius:12px;padding:16px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+                        <div>
+                            <div style="color:#fff;font-weight:600;font-size:14px;">🔔 Notifications push</div>
+                            <div style="color:#64748b;font-size:12px;margin-top:2px;" id="pushStatusText">Non configurées</div>
+                        </div>
+                        <div style="display:flex;gap:8px;">
+                            <button class="btn-primary-sm" id="pushEnableBtn" style="font-size:12px;">Activer</button>
+                            <button class="btn-secondary" id="pushTestBtn" style="font-size:12px;display:none;">Tester</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="pushDevicesList" style="background:#0b1120;border:1px solid #1e2a41;border-radius:12px;padding:16px;display:none;">
+                    <div style="color:#fff;font-weight:600;font-size:14px;margin-bottom:10px;">📱 Mes appareils abonnés</div>
+                    <div id="pushDevicesContent" style="font-size:13px;color:#94a3b8;"></div>
+                </div>
+            </div>
         </div>
         <div class="card">
             <div class="card-title" data-i18n="settings.password_section">🔒 Changer mon mot de passe</div>
@@ -2246,6 +2435,70 @@
     </div>
 </div>
 
+<!-- MODAL CHANTIER -->
+<div class="modal-overlay" id="chantierModal">
+    <div class="modal modal-wide">
+        <h3 id="chantierModalTitle">Nouveau chantier</h3>
+        <input type="hidden" id="chantierIdField" />
+        
+        <div class="form-row">
+            <div class="form-group"><label>Nom du chantier *</label><input type="text" id="chantierName" required placeholder="Rénovation salle de bain Dupont" /></div>
+            <div class="form-group"><label>Référence</label><input type="text" id="chantierReference" placeholder="CH-2026-001" /></div>
+        </div>
+        
+        <div class="form-group"><label>Description</label><input type="text" id="chantierDescription" placeholder="Travaux de rénovation complets..." /></div>
+        
+        <div class="card-title" style="margin-top:16px;font-size:15px;">Client</div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Sélectionner un client</label>
+                <select id="chantierClientSelector"><option value="">— Aucun —</option></select>
+            </div>
+            <div class="form-group"><label>Nom client (ou manuel)</label><input type="text" id="chantierClientName" /></div>
+        </div>
+        <div class="form-group"><label>Adresse du chantier</label><input type="text" id="chantierClientAddress" /></div>
+        
+        <div class="card-title" style="margin-top:16px;font-size:15px;">Planification</div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Statut</label>
+                <select id="chantierStatus">
+                    <option value="planned">📋 Planifié</option>
+                    <option value="in_progress">🔨 En cours</option>
+                    <option value="paused">⏸️ En pause</option>
+                    <option value="completed">✅ Terminé</option>
+                    <option value="cancelled">❌ Annulé</option>
+                </select>
+            </div>
+            <div class="form-group"><label>Budget estimé (€)</label><input type="number" id="chantierBudget" step="0.01" min="0" /></div>
+        </div>
+        <div class="form-row">
+            <div class="form-group"><label>Date de début</label><input type="date" id="chantierStartDate" /></div>
+            <div class="form-group"><label>Date de fin prévue</label><input type="date" id="chantierEndDate" /></div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label>Couleur</label>
+                <select id="chantierColor">
+                    <option value="#f97316">🟠 Orange</option>
+                    <option value="#3b82f6">🔵 Bleu</option>
+                    <option value="#22c55e">🟢 Vert</option>
+                    <option value="#eab308">🟡 Jaune</option>
+                    <option value="#a855f7">🟣 Violet</option>
+                    <option value="#ef4444">🔴 Rouge</option>
+                </select>
+            </div>
+            <div class="form-group"><label>Notes internes</label><input type="text" id="chantierNotes" /></div>
+        </div>
+        
+        <div class="modal-actions">
+            <button class="btn-cancel" id="cancelChantierBtn">Annuler</button>
+            <button class="btn-confirm" id="saveChantierBtn">Enregistrer</button>
+        </div>
+    </div>
+</div>
+
 <!-- ============================================================ -->
 <!-- ASSISTANT IA - BULLE FLOTTANTE                                -->
 <!-- ============================================================ -->
@@ -2289,6 +2542,21 @@
         <button id="assistantSend" title="Envoyer">➤</button>
     </div>
 </div>
+
+<!-- Bannière d'installation PWA -->
+<div id="pwaInstallBanner" style="display:none;position:fixed;bottom:20px;left:20px;right:20px;max-width:420px;background:linear-gradient(135deg,#161f32,#1a253b);border:1px solid #f97316;border-radius:16px;padding:18px 20px;box-shadow:0 20px 60px rgba(0,0,0,0.7);z-index:4500;align-items:flex-start;gap:14px;">
+    <div style="font-size:28px;flex-shrink:0;">📱</div>
+    <div style="flex:1;min-width:0;">
+        <div style="color:#fff;font-weight:700;font-size:14px;margin-bottom:4px;">Installer Devis Express Pro</div>
+        <div style="color:#cbd5e1;font-size:12px;line-height:1.5;margin-bottom:12px;">Accès rapide depuis votre écran d'accueil, mode hors ligne, notifications.</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button id="pwaInstallBtn" style="background:#f97316;color:#0b1120;border:none;padding:8px 18px;border-radius:40px;font-weight:700;font-size:12px;cursor:pointer;">Installer</button>
+            <button id="pwaInstallDismiss" style="background:transparent;border:1px solid #2a3a55;color:#94a3b8;padding:8px 14px;border-radius:40px;font-weight:600;font-size:12px;cursor:pointer;">Plus tard</button>
+        </div>
+    </div>
+</div>
+
+<div id="offlineIndicator">📡 Mode hors ligne — certaines fonctions sont limitées</div>
 
 <div id="toast"></div>
 
@@ -7412,6 +7680,930 @@ document.getElementById('languageSelect')?.addEventListener('change', (e) => {
             }
         });
     });
+})();
+
+// ================================================================
+// 21. CHANTIERS
+// ================================================================
+(function initChantiers() {
+    let allChantiers = [];
+    let currentFilter = 'all';
+
+    const STATUS_LABELS = {
+        planned: '📋 Planifié',
+        in_progress: '🔨 En cours',
+        paused: '⏸️ En pause',
+        completed: '✅ Terminé',
+        cancelled: '❌ Annulé'
+    };
+
+    const STATUS_COLORS = {
+        planned: '#94a3b8',
+        in_progress: '#3b82f6',
+        paused: '#eab308',
+        completed: '#22c55e',
+        cancelled: '#f87171'
+    };
+
+    // ----- Charger la liste -----
+    async function loadChantiers() {
+        const container = document.getElementById('chantiersList');
+        if (!container) return;
+        container.innerHTML = '<p style="color:#64748b;text-align:center;padding:40px;">Chargement...</p>';
+
+        try {
+            const res = await apiFetch('/api/chantiers');
+            allChantiers = await res.json();
+            updateCounts();
+            renderChantiers();
+        } catch (err) {
+            container.innerHTML = '<p style="color:#f87171;text-align:center;padding:40px;">Erreur.</p>';
+        }
+    }
+
+    function updateCounts() {
+        document.getElementById('cCntAll').textContent = allChantiers.length;
+        document.getElementById('cCntPlanned').textContent = allChantiers.filter(c => c.status === 'planned').length;
+        document.getElementById('cCntProgress').textContent = allChantiers.filter(c => c.status === 'in_progress').length;
+        document.getElementById('cCntCompleted').textContent = allChantiers.filter(c => c.status === 'completed').length;
+        document.getElementById('cCntCancelled').textContent = allChantiers.filter(c => c.status === 'cancelled').length;
+    }
+
+    function renderChantiers() {
+        const container = document.getElementById('chantiersList');
+        if (!container) return;
+
+        let filtered = allChantiers;
+        if (currentFilter !== 'all') {
+            filtered = allChantiers.filter(c => c.status === currentFilter);
+        }
+
+        if (allChantiers.length === 0) {
+            container.innerHTML = `
+                <div class="catalog-empty">
+                    <div class="big-icon">🏗️</div>
+                    <h3>Aucun chantier</h3>
+                    <p>Créez votre premier chantier pour regrouper vos devis et factures.</p>
+                    <div style="margin-top:20px;">
+                        <button class="btn-primary-sm" onclick="document.getElementById('newChantierBtn').click()">+ Créer un chantier</button>
+                    </div>
+                </div>`;
+            return;
+        }
+
+        if (filtered.length === 0) {
+            container.innerHTML = '<p style="color:#64748b;text-align:center;padding:40px;">Aucun chantier dans cette catégorie.</p>';
+            return;
+        }
+
+        let html = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;">';
+        filtered.forEach(c => {
+            const statusLabel = STATUS_LABELS[c.status] || c.status;
+            const statusColor = STATUS_COLORS[c.status] || '#94a3b8';
+            const progression = c.quotesCount > 0 ? Math.round(c.acceptedCount / c.quotesCount * 100) : 0;
+            
+            html += `
+                <div class="chantier-card" onclick="openChantierDetail(${c.id})" style="background:#0b1120;border:1px solid #1e2a41;border-left:4px solid ${c.color};border-radius:16px;padding:20px;cursor:pointer;transition:0.2s;" onmouseover="this.style.background='#141e33'" onmouseout="this.style.background='#0b1120'">
+                    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:12px;">
+                        <div style="flex:1;min-width:0;">
+                            <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:4px;">${escapeHtml(c.name)}</div>
+                            ${c.clientName ? `<div style="font-size:12px;color:#94a3b8;">👤 ${escapeHtml(c.clientName)}</div>` : ''}
+                        </div>
+                        <span style="font-size:10px;font-weight:700;padding:4px 10px;border-radius:40px;background:${statusColor}20;color:${statusColor};border:1px solid ${statusColor}50;white-space:nowrap;">${statusLabel}</span>
+                    </div>
+                    
+                    ${c.quotesCount > 0 ? `
+                    <div style="margin-bottom:10px;">
+                        <div style="display:flex;justify-content:space-between;font-size:11px;color:#64748b;margin-bottom:4px;">
+                            <span>Progression</span>
+                            <span>${c.acceptedCount}/${c.quotesCount} devis</span>
+                        </div>
+                        <div style="height:6px;background:#1e2a41;border-radius:40px;overflow:hidden;">
+                            <div style="height:100%;width:${progression}%;background:${c.color};transition:0.3s;"></div>
+                        </div>
+                    </div>
+                    ` : ''}
+                    
+                    <div style="display:flex;justify-content:space-between;font-size:12px;padding-top:10px;border-top:1px solid #1e2a41;">
+                        <div>
+                            <div style="color:#64748b;font-size:10px;text-transform:uppercase;font-weight:600;">CA accepté</div>
+                            <div style="color:#f97316;font-weight:700;font-size:14px;">${(c.acceptedValue || 0).toFixed(2)} €</div>
+                        </div>
+                        ${c.startDate || c.endDate ? `
+                        <div style="text-align:right;">
+                            <div style="color:#64748b;font-size:10px;text-transform:uppercase;font-weight:600;">Période</div>
+                            <div style="color:#cbd5e1;font-size:12px;">${c.startDate || '?'} → ${c.endDate || '?'}</div>
+                        </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+        });
+        html += '</div>';
+        container.innerHTML = html;
+    }
+
+    // ----- Filtres -----
+    document.querySelectorAll('#chantierFilters .history-filter').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('#chantierFilters .history-filter').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentFilter = btn.dataset.cfilter;
+            renderChantiers();
+        });
+    });
+
+    // ----- Modal création/édition -----
+    const chantierModal = document.getElementById('chantierModal');
+
+    function openChantierModal(mode = 'add', chantier = null) {
+        document.getElementById('chantierModalTitle').textContent = mode === 'add' ? 'Nouveau chantier' : 'Modifier le chantier';
+        document.getElementById('chantierIdField').value = chantier ? chantier.id : '';
+        document.getElementById('chantierName').value = chantier ? chantier.name : '';
+        document.getElementById('chantierReference').value = chantier ? (chantier.reference || '') : '';
+        document.getElementById('chantierDescription').value = chantier ? (chantier.description || '') : '';
+        document.getElementById('chantierClientName').value = chantier ? (chantier.clientName || '') : '';
+        document.getElementById('chantierClientAddress').value = chantier ? (chantier.clientAddress || '') : '';
+        document.getElementById('chantierStatus').value = chantier ? chantier.status : 'planned';
+        document.getElementById('chantierBudget').value = chantier && chantier.budgetEstimate ? chantier.budgetEstimate : '';
+        document.getElementById('chantierStartDate').value = chantier && chantier.startDate ? chantier.startDate.slice(0, 10) : '';
+        document.getElementById('chantierEndDate').value = chantier && chantier.endDate ? chantier.endDate.slice(0, 10) : '';
+        document.getElementById('chantierColor').value = chantier ? (chantier.color || '#f97316') : '#f97316';
+        document.getElementById('chantierNotes').value = chantier ? (chantier.notes || '') : '';
+
+        // Remplir le select client
+        const sel = document.getElementById('chantierClientSelector');
+        sel.innerHTML = '<option value="">— Aucun —</option>';
+        clientsList.forEach(c => {
+            const opt = document.createElement('option');
+            opt.value = c.id;
+            opt.textContent = c.name + (c.email ? ` (${c.email})` : '');
+            if (chantier && chantier.clientId === c.id) opt.selected = true;
+            sel.appendChild(opt);
+        });
+
+        chantierModal.classList.add('show');
+    }
+
+    document.getElementById('newChantierBtn')?.addEventListener('click', () => openChantierModal('add'));
+    document.getElementById('cancelChantierBtn')?.addEventListener('click', () => chantierModal.classList.remove('show'));
+    chantierModal?.addEventListener('click', (e) => { if (e.target === chantierModal) chantierModal.classList.remove('show'); });
+
+    // Auto-remplir le nom client si sélectionné
+    document.getElementById('chantierClientSelector')?.addEventListener('change', (e) => {
+        const id = parseInt(e.target.value);
+        const c = clientsList.find(x => x.id === id);
+        if (c) {
+            document.getElementById('chantierClientName').value = c.name || '';
+            document.getElementById('chantierClientAddress').value = c.address || '';
+        }
+    });
+
+    // Sauvegarder
+    document.getElementById('saveChantierBtn')?.addEventListener('click', async () => {
+        const id = document.getElementById('chantierIdField').value;
+        const data = {
+            name: document.getElementById('chantierName').value.trim(),
+            reference: document.getElementById('chantierReference').value.trim(),
+            description: document.getElementById('chantierDescription').value.trim(),
+            clientId: document.getElementById('chantierClientSelector').value || null,
+            clientName: document.getElementById('chantierClientName').value.trim(),
+            clientAddress: document.getElementById('chantierClientAddress').value.trim(),
+            status: document.getElementById('chantierStatus').value,
+            budgetEstimate: document.getElementById('chantierBudget').value || null,
+            startDate: document.getElementById('chantierStartDate').value || null,
+            endDate: document.getElementById('chantierEndDate').value || null,
+            color: document.getElementById('chantierColor').value,
+            notes: document.getElementById('chantierNotes').value.trim()
+        };
+        if (!data.name) { showToast('Nom requis.', 'error'); return; }
+
+        const btn = document.getElementById('saveChantierBtn');
+        btn.disabled = true; btn.textContent = 'Enregistrement...';
+
+        try {
+            const url = id ? `/api/chantiers/${id}` : '/api/chantiers';
+            const method = id ? 'PUT' : 'POST';
+            const res = await apiFetch(url, {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            const result = await res.json();
+            if (!res.ok) throw new Error(result.error || 'Erreur');
+            showToast(id ? '✅ Chantier modifié' : '✅ Chantier créé', 'success');
+            chantierModal.classList.remove('show');
+            loadChantiers();
+        } catch (err) {
+            showToast('Erreur : ' + err.message, 'error');
+        } finally {
+            btn.disabled = false; btn.textContent = 'Enregistrer';
+        }
+    });
+
+    // Charger au clic sur l'onglet
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            if (btn.dataset.tab === 'tab-chantiers') {
+                setTimeout(loadChantiers, 100);
+            }
+        });
+    });
+
+    // Exposer pour le détail
+    window.openChantierDetail = async function(id) {
+        // Pour la V1, on ouvre juste une alerte avec le nom
+        // (La fiche détaillée viendra en V2)
+        openChantierDetailModal(id);
+        //const c = allChantiers.find(x => x.id === id);
+        //if (c) {
+        //    showToast(`📂 Chantier "${c.name}" — ${c.acceptedCount} devis acceptés`, 'info');
+        //}
+    };
+    
+        // ═══════════════════════════════════════════════════════════
+    // FICHE DÉTAILLÉE D'UN CHANTIER
+    // ═══════════════════════════════════════════════════════════
+    let currentChantier = null;
+    let chantierPhotos = [];
+
+    async function openChantierDetailModal(id) {
+        try {
+            // Créer le modal s'il n'existe pas
+            let modal = document.getElementById('chantierDetailModal');
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = 'chantierDetailModal';
+                modal.className = 'modal-overlay';
+                modal.innerHTML = `
+                    <div class="modal" style="max-width:1000px;width:95%;max-height:92vh;overflow-y:auto;padding:0;">
+                        <div id="chantierDetailContent"></div>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) modal.classList.remove('show');
+                });
+            }
+
+            modal.classList.add('show');
+            document.getElementById('chantierDetailContent').innerHTML = '<p style="padding:60px;text-align:center;color:#64748b;">Chargement...</p>';
+
+            // Charger toutes les données
+            const [chantierRes, statsRes, quotesRes, invoicesRes, timelineRes, photosRes] = await Promise.all([
+                apiFetch(`/api/chantiers/${id}`),
+                apiFetch(`/api/chantiers/${id}/stats`),
+                apiFetch(`/api/chantiers/${id}/quotes`),
+                apiFetch(`/api/chantiers/${id}/invoices`),
+                apiFetch(`/api/chantiers/${id}/events`),
+                apiFetch(`/api/chantiers/${id}/photos`)
+            ]);
+
+            currentChantier = await chantierRes.json();
+            const stats = await statsRes.json();
+            const quotes = await quotesRes.json();
+            const invoices = await invoicesRes.json();
+            const timeline = await timelineRes.json();
+            chantierPhotos = await photosRes.json();
+
+            renderChantierDetail(currentChantier, stats, quotes, invoices, timeline, chantierPhotos);
+        } catch (err) {
+            console.error('Erreur openChantierDetail:', err);
+            showToast('Erreur de chargement', 'error');
+        }
+    }
+
+    function renderChantierDetail(c, stats, quotes, invoices, timeline, photos) {
+        const statusLabel = STATUS_LABELS[c.status] || c.status;
+        const statusColor = STATUS_COLORS[c.status] || '#94a3b8';
+        const progression = stats.progression || 0;
+
+        const html = `
+            <div style="background:linear-gradient(135deg,${c.color}22,${c.color}05);border-bottom:3px solid ${c.color};padding:28px 32px;position:sticky;top:0;z-index:10;background-color:#161f32;">
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap;">
+                    <div style="flex:1;min-width:250px;">
+                        <h2 style="font-size:24px;font-weight:800;color:#fff;margin-bottom:6px;">${escapeHtml(c.name)}</h2>
+                        ${c.reference ? `<div style="color:#94a3b8;font-size:12px;font-family:monospace;">${escapeHtml(c.reference)}</div>` : ''}
+                        ${c.clientName ? `<div style="color:#cbd5e1;font-size:14px;margin-top:8px;">👤 ${escapeHtml(c.clientName)}</div>` : ''}
+                        ${c.clientAddress ? `<div style="color:#64748b;font-size:12px;">📍 ${escapeHtml(c.clientAddress)}</div>` : ''}
+                    </div>
+                    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;">
+                        <span style="font-size:11px;font-weight:700;padding:6px 14px;border-radius:40px;background:${statusColor}22;color:${statusColor};border:1px solid ${statusColor}66;">${statusLabel}</span>
+                        <div style="display:flex;gap:8px;">
+                            <button class="btn-secondary" onclick="editChantierFromDetail(${c.id})" style="padding:6px 14px;font-size:12px;">✏️ Modifier</button>
+                            <button class="btn-cancel" onclick="document.getElementById('chantierDetailModal').classList.remove('show')" style="padding:6px 14px;font-size:12px;">✕ Fermer</button>
+                        </div>
+                    </div>
+                </div>
+                ${progression > 0 ? `
+                    <div style="margin-top:20px;">
+                        <div style="display:flex;justify-content:space-between;font-size:12px;color:#94a3b8;margin-bottom:6px;">
+                            <span>Progression globale</span>
+                            <span><strong style="color:${c.color};">${progression}%</strong></span>
+                        </div>
+                        <div style="height:8px;background:#1e2a41;border-radius:40px;overflow:hidden;">
+                            <div style="height:100%;width:${progression}%;background:${c.color};transition:0.5s;"></div>
+                        </div>
+                    </div>
+                ` : ''}
+            </div>
+
+            <div style="padding:24px 32px;">
+                <!-- STATISTIQUES -->
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:28px;">
+                    <div style="background:#0b1120;border:1px solid #1e2a41;border-radius:12px;padding:14px;text-align:center;">
+                        <div style="color:#64748b;font-size:10px;text-transform:uppercase;font-weight:600;margin-bottom:6px;">Devis</div>
+                        <div style="color:#fff;font-size:22px;font-weight:800;">${stats.quotes.total}</div>
+                        <div style="color:#22c55e;font-size:11px;margin-top:2px;">${stats.quotes.accepted} acceptés</div>
+                    </div>
+                    <div style="background:#0b1120;border:1px solid #1e2a41;border-radius:12px;padding:14px;text-align:center;">
+                        <div style="color:#64748b;font-size:10px;text-transform:uppercase;font-weight:600;margin-bottom:6px;">CA accepté</div>
+                        <div style="color:#f97316;font-size:18px;font-weight:800;">${stats.quotes.acceptedValue.toFixed(2)} €</div>
+                    </div>
+                    <div style="background:#0b1120;border:1px solid #1e2a41;border-radius:12px;padding:14px;text-align:center;">
+                        <div style="color:#64748b;font-size:10px;text-transform:uppercase;font-weight:600;margin-bottom:6px;">Facturé</div>
+                        <div style="color:#3b82f6;font-size:18px;font-weight:800;">${stats.invoices.invoicedValue.toFixed(2)} €</div>
+                    </div>
+                    <div style="background:#0b1120;border:1px solid #1e2a41;border-radius:12px;padding:14px;text-align:center;">
+                        <div style="color:#64748b;font-size:10px;text-transform:uppercase;font-weight:600;margin-bottom:6px;">Payé</div>
+                        <div style="color:#22c55e;font-size:18px;font-weight:800;">${stats.invoices.paidValue.toFixed(2)} €</div>
+                    </div>
+                    <div style="background:#0b1120;border:1px solid #1e2a41;border-radius:12px;padding:14px;text-align:center;">
+                        <div style="color:#64748b;font-size:10px;text-transform:uppercase;font-weight:600;margin-bottom:6px;">Reste dû</div>
+                        <div style="color:${stats.invoices.dueValue > 0 ? '#f87171' : '#94a3b8'};font-size:18px;font-weight:800;">${stats.invoices.dueValue.toFixed(2)} €</div>
+                    </div>
+                    <div style="background:#0b1120;border:1px solid #1e2a41;border-radius:12px;padding:14px;text-align:center;">
+                        <div style="color:#64748b;font-size:10px;text-transform:uppercase;font-weight:600;margin-bottom:6px;">À facturer</div>
+                        <div style="color:#eab308;font-size:18px;font-weight:800;">${stats.remainingToInvoice.toFixed(2)} €</div>
+                    </div>
+                </div>
+
+                <!-- DEVIS -->
+                <div style="margin-bottom:28px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+                        <h3 style="font-size:16px;font-weight:700;color:#fff;">📄 Devis (${quotes.length})</h3>
+                        <button class="btn-secondary" onclick="openAttachQuoteModal(${c.id})" style="font-size:12px;padding:6px 14px;">+ Attacher un devis</button>
+                    </div>
+                    ${quotes.length === 0 ? `
+                        <div style="background:#0b1120;border:1px dashed #2a3a55;border-radius:12px;padding:24px;text-align:center;color:#64748b;font-size:13px;">
+                            Aucun devis attaché à ce chantier
+                        </div>
+                    ` : `
+                        <div style="background:#0b1120;border:1px solid #1e2a41;border-radius:12px;overflow:hidden;">
+                            ${quotes.map(q => `
+                                <div style="display:grid;grid-template-columns:1fr 1fr auto auto auto;gap:12px;padding:12px 16px;border-bottom:1px solid #1e2a41;align-items:center;font-size:13px;">
+                                    <div><strong style="color:#f97316;">${escapeHtml(q.number)}</strong></div>
+                                    <div style="color:#cbd5e1;">${escapeHtml(q.client || '—')}</div>
+                                    <div style="color:#fff;font-weight:600;">${q.total.toFixed(2)} €</div>
+                                    <div><span class="status-badge ${q.status}" style="font-size:10px;">${STATUS_LABELS[q.status] || q.status}</span></div>
+                                    <button onclick="detachQuote(${c.id}, ${q.id})" style="background:transparent;border:1px solid #7f1d1d;color:#f87171;padding:4px 10px;border-radius:40px;font-size:11px;cursor:pointer;">Détacher</button>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `}
+                </div>
+
+                <!-- FACTURES -->
+                <div style="margin-bottom:28px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+                        <h3 style="font-size:16px;font-weight:700;color:#fff;">🧾 Factures (${invoices.length})</h3>
+                        ${stats.quotes.accepted > 0 && stats.remainingToInvoice > 0 ? `
+                            <button class="btn-primary-sm" onclick="facturerTout(${c.id})" style="font-size:12px;padding:8px 16px;">💰 Facturer tout le chantier</button>
+                        ` : ''}
+                    </div>
+                    ${invoices.length === 0 ? `
+                        <div style="background:#0b1120;border:1px dashed #2a3a55;border-radius:12px;padding:24px;text-align:center;color:#64748b;font-size:13px;">
+                            Aucune facture pour ce chantier
+                        </div>
+                    ` : `
+                        <div style="background:#0b1120;border:1px solid #1e2a41;border-radius:12px;overflow:hidden;">
+                            ${invoices.map(i => `
+                                <div style="display:grid;grid-template-columns:1fr 1fr auto auto auto;gap:12px;padding:12px 16px;border-bottom:1px solid #1e2a41;align-items:center;font-size:13px;">
+                                    <div><strong style="color:#3b82f6;">${escapeHtml(i.number)}</strong></div>
+                                    <div style="color:#64748b;font-size:11px;">Émise: ${i.issueDate} • Éch.: ${i.dueDate}</div>
+                                    <div style="color:#fff;font-weight:600;">${i.total.toFixed(2)} €</div>
+                                    <div><span class="invoice-badge ${i.status}" style="font-size:10px;">${i.status}</span></div>
+                                    <div style="color:${i.amountDue > 0 ? '#f87171' : '#22c55e'};font-size:11px;font-weight:600;text-align:right;">
+                                        ${i.amountDue > 0 ? 'Dû: ' + i.amountDue.toFixed(2) + ' €' : '✓ Payée'}
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `}
+                </div>
+
+                <!-- PHOTOS -->
+                <div style="margin-bottom:28px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+                        <h3 style="font-size:16px;font-weight:700;color:#fff;">📸 Photos (${photos.length})</h3>
+                        <label class="btn-secondary" style="font-size:12px;padding:6px 14px;cursor:pointer;">
+                            + Ajouter une photo
+                            <input type="file" id="photoUploadInput" accept="image/*" style="display:none;" onchange="uploadChantierPhoto(${c.id}, this)" />
+                        </label>
+                    </div>
+                    ${photos.length === 0 ? `
+                        <div style="background:#0b1120;border:1px dashed #2a3a55;border-radius:12px;padding:24px;text-align:center;color:#64748b;font-size:13px;">
+                            Aucune photo pour ce chantier
+                        </div>
+                    ` : `
+                        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;">
+                            ${photos.map(p => `
+                                <div style="position:relative;border-radius:10px;overflow:hidden;background:#0b1120;border:1px solid #1e2a41;aspect-ratio:1;">
+                                    <img src="${p.url}" alt="${escapeHtml(p.caption || '')}" style="width:100%;height:100%;object-fit:cover;cursor:pointer;" onclick="window.open('${p.url}', '_blank')" />
+                                    <button onclick="deleteChantierPhoto(${c.id}, ${p.id})" style="position:absolute;top:6px;right:6px;background:rgba(11,17,32,0.85);border:1px solid #7f1d1d;color:#f87171;width:24px;height:24px;border-radius:50%;cursor:pointer;font-size:12px;line-height:1;">✕</button>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `}
+                </div>
+
+                <!-- NOTES INTERNES -->
+                <div style="margin-bottom:28px;">
+                    <h3 style="font-size:16px;font-weight:700;color:#fff;margin-bottom:14px;">📝 Notes internes</h3>
+                    <textarea id="chantierNotesField" placeholder="Notes internes (non visibles par le client)..." style="width:100%;min-height:100px;background:#0b1120;border:1px solid #2a3a55;color:#e2e8f0;padding:14px;border-radius:12px;font-family:inherit;font-size:13px;resize:vertical;outline:none;">${escapeHtml(c.notes || '')}</textarea>
+                    <button class="btn-secondary" onclick="saveChantierNotes(${c.id})" style="margin-top:10px;font-size:12px;padding:8px 16px;">💾 Enregistrer les notes</button>
+                </div>
+
+                <!-- TIMELINE -->
+                <div style="margin-bottom:28px;">
+                    <h3 style="font-size:16px;font-weight:700;color:#fff;margin-bottom:14px;">📅 Historique</h3>
+                    ${timeline.length === 0 ? `
+                        <div style="color:#64748b;font-size:13px;text-align:center;padding:20px;">Aucun événement.</div>
+                    ` : `
+                        <div style="position:relative;padding-left:28px;">
+                            <div style="position:absolute;left:8px;top:8px;bottom:8px;width:2px;background:#1e2a41;"></div>
+                            ${timeline.map(t => {
+                                const date = new Date(t.date).toLocaleString('fr-FR');
+                                const labels = {
+                                    created: '🏗️ Chantier créé',
+                                    status_changed: `🔄 Statut changé : ${t.data?.from || '?'} → ${t.data?.to || '?'}`,
+                                    quote_added: `📄 Devis attaché : ${t.data?.quoteNumber || ''}`,
+                                    quote_accepted: `✅ Devis accepté`,
+                                    invoice_created: `🧾 Facture créée : ${t.data?.invoiceNumber || ''}`,
+                                    invoice_paid: `💰 Facture payée`,
+                                    note_added: `📝 Note modifiée`,
+                                    photo_added: `📸 Photo ajoutée`
+                                };
+                                return `
+                                    <div style="position:relative;padding:8px 0 16px 0;">
+                                        <div style="position:absolute;left:-24px;top:12px;width:10px;height:10px;background:${c.color};border-radius:50%;border:2px solid #161f32;"></div>
+                                        <div style="font-size:12px;color:#94a3b8;">${date}</div>
+                                        <div style="font-size:13px;color:#e2e8f0;margin-top:2px;">${labels[t.type] || t.type}</div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    `}
+                </div>
+            </div>
+        `;
+
+        document.getElementById('chantierDetailContent').innerHTML = html;
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    // ACTIONS DE LA FICHE DÉTAILLÉE
+    // ═══════════════════════════════════════════════════════════
+
+    window.editChantierFromDetail = function(id) {
+        document.getElementById('chantierDetailModal').classList.remove('show');
+        const c = allChantiers.find(x => x.id === id);
+        if (c) openChantierModal('edit', c);
+    };
+
+    window.saveChantierNotes = async function(id) {
+        const notes = document.getElementById('chantierNotesField').value;
+        try {
+            const res = await apiFetch(`/api/chantiers/${id}/notes`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ notes })
+            });
+            if (!res.ok) throw new Error('Erreur');
+            showToast('✅ Notes enregistrées', 'success');
+            // Rafraîchir la fiche
+            openChantierDetailModal(id);
+        } catch (err) {
+            showToast('Erreur : ' + err.message, 'error');
+        }
+    };
+
+    window.detachQuote = async function(chantierId, quoteId) {
+        if (!confirm('Détacher ce devis du chantier ? Le devis ne sera pas supprimé.')) return;
+        try {
+            const res = await apiFetch(`/api/chantiers/${chantierId}/detach-quote/${quoteId}`, { method: 'POST' });
+            if (!res.ok) throw new Error('Erreur');
+            showToast('✅ Devis détaché', 'success');
+            openChantierDetailModal(chantierId);
+        } catch (err) {
+            showToast('Erreur : ' + err.message, 'error');
+        }
+    };
+
+    window.openAttachQuoteModal = async function(chantierId) {
+        try {
+            const res = await apiFetch(`/api/chantiers/${chantierId}/all-quotes`);
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Erreur');
+
+            if (data.available.length === 0) {
+                showToast('Aucun devis disponible à attacher', 'info');
+                return;
+            }
+
+            // Créer un modal simple de sélection
+            const modal = document.createElement('div');
+            modal.style.cssText = 'position:fixed;inset:0;background:rgba(11,17,32,0.85);backdrop-filter:blur(6px);z-index:5000;display:flex;align-items:center;justify-content:center;padding:20px;';
+            modal.innerHTML = `
+                <div style="background:#161f32;border:1px solid #2a3a55;border-radius:20px;padding:24px;max-width:600px;width:100%;max-height:80vh;overflow-y:auto;">
+                    <h3 style="color:#fff;font-size:18px;font-weight:700;margin-bottom:16px;">📄 Attacher un devis au chantier</h3>
+                    <div style="display:flex;flex-direction:column;gap:8px;">
+                        ${data.available.map(q => `
+                            <div style="background:#0b1120;border:1px solid #1e2a41;border-radius:10px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;cursor:pointer;transition:0.2s;" onclick="attachQuote(${chantierId}, ${q.id}, this)" onmouseover="this.style.background='#141e33'" onmouseout="this.style.background='#0b1120'">
+                                <div>
+                                    <div style="color:#f97316;font-weight:600;font-size:13px;">${escapeHtml(q.number)}</div>
+                                    <div style="color:#94a3b8;font-size:11px;">${escapeHtml(q.client || '—')} • ${q.issueDate}</div>
+                                </div>
+                                <div style="text-align:right;">
+                                    <div style="color:#fff;font-weight:700;font-size:13px;">${q.total.toFixed(2)} €</div>
+                                    <span class="status-badge ${q.status}" style="font-size:10px;">${STATUS_LABELS[q.status] || q.status}</span>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div style="margin-top:20px;text-align:right;">
+                        <button class="btn-cancel" onclick="this.closest('div[style*=\\'fixed\\']').remove()" style="padding:8px 20px;">Annuler</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        } catch (err) {
+            showToast('Erreur : ' + err.message, 'error');
+        }
+    };
+
+    window.attachQuote = async function(chantierId, quoteId, element) {
+        try {
+            const res = await apiFetch(`/api/chantiers/${chantierId}/attach-quote/${quoteId}`, { method: 'POST' });
+            if (!res.ok) throw new Error('Erreur');
+            showToast('✅ Devis attaché', 'success');
+            // Fermer le modal de sélection
+            element.closest('div[style*="fixed"]').remove();
+            // Rafraîchir la fiche
+            openChantierDetailModal(chantierId);
+        } catch (err) {
+            showToast('Erreur : ' + err.message, 'error');
+        }
+    };
+
+    window.facturerTout = async function(chantierId) {
+        if (!confirm('Facturer tous les devis acceptés du chantier ?\n\nUne seule facture sera créée avec tous les devis.')) return;
+        try {
+            showToast('Création de la facture...', 'info');
+            const res = await apiFetch(`/api/chantiers/${chantierId}/facturer-tout`, { method: 'POST' });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Erreur');
+            showToast(`✅ Facture ${data.invoice.invoice_number} créée (${data.quotesCount} devis, ${data.total.toFixed(2)} €)`, 'success');
+            openChantierDetailModal(chantierId);
+        } catch (err) {
+            showToast('Erreur : ' + err.message, 'error');
+        }
+    };
+
+    window.uploadChantierPhoto = async function(chantierId, input) {
+        const file = input.files[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append('photo', file);
+
+        try {
+            showToast('Upload en cours...', 'info');
+            const res = await apiFetch(`/api/chantiers/${chantierId}/photos`, {
+                method: 'POST',
+                body: formData
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Erreur');
+            showToast('✅ Photo ajoutée', 'success');
+            openChantierDetailModal(chantierId);
+        } catch (err) {
+            showToast('Erreur : ' + err.message, 'error');
+        } finally {
+            input.value = '';
+        }
+    };
+
+    window.deleteChantierPhoto = async function(chantierId, photoId) {
+        if (!confirm('Supprimer cette photo ?')) return;
+        try {
+            const res = await apiFetch(`/api/chantiers/${chantierId}/photos/${photoId}`, { method: 'DELETE' });
+            if (!res.ok) throw new Error('Erreur');
+            showToast('🗑 Photo supprimée', 'success');
+            openChantierDetailModal(chantierId);
+        } catch (err) {
+            showToast('Erreur : ' + err.message, 'error');
+        }
+    };       
+    
+
+})();
+
+// ================================================================
+// 22. PWA — Service Worker + Installation
+// ================================================================
+(function initPWA() {
+    // ----- Enregistrer le Service Worker -----
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js')
+                .then(reg => {
+                    console.log('✅ Service Worker enregistré:', reg.scope);
+                })
+                .catch(err => {
+                    console.warn('❌ Service Worker échec:', err.message);
+                });
+        });
+    }
+
+    // ----- Détecter si l'app est installée -----
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches
+        || window.navigator.standalone === true;
+    
+    if (isStandalone) {
+        document.body.classList.add('pwa-standalone');
+    }
+
+    // ----- Gérer le prompt d'installation -----
+    let deferredPrompt = null;
+    const installBanner = document.getElementById('pwaInstallBanner');
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        window.deferredPWAPrompt = e;
+
+        // Afficher la bannière après 30 secondes
+        setTimeout(() => {
+            if (installBanner) installBanner.style.display = 'flex';
+        }, 30000);
+    });
+
+    // Bouton d'installation
+    document.getElementById('pwaInstallBtn')?.addEventListener('click', async () => {
+        if (!deferredPrompt) {
+            showToast('Pour installer l\'app : Menu du navigateur → "Ajouter à l\'écran d\'accueil"', 'info');
+            return;
+        }
+        deferredPrompt.prompt();
+        window.deferredPWAPrompt = null;
+        const { outcome } = await deferredPrompt.userChoice;
+        console.log('Installation:', outcome);
+        if (outcome === 'accepted') {
+            showToast('✅ App installée !', 'success');
+        }
+        deferredPrompt = null;
+        if (installBanner) installBanner.style.display = 'none';
+    });
+
+    document.getElementById('pwaInstallDismiss')?.addEventListener('click', () => {
+        if (installBanner) installBanner.style.display = 'none';
+        localStorage.setItem('pwa_install_dismissed', Date.now().toString());
+    });
+
+    // Ne pas afficher si déjà refusé récemment (7 jours)
+    const dismissedAt = localStorage.getItem('pwa_install_dismissed');
+    if (dismissedAt && (Date.now() - parseInt(dismissedAt)) < 7 * 24 * 60 * 60 * 1000) {
+        if (installBanner) installBanner.style.display = 'none';
+    }
+
+    // ----- Notifications push -----
+    window.subscribeToPush = async function() {
+        if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+            showToast('Notifications non supportées par ce navigateur', 'error');
+            return false;
+        }
+
+        try {
+            const registration = await navigator.serviceWorker.ready;
+            const permission = await Notification.requestPermission();
+            
+            if (permission !== 'granted') {
+                showToast('Vous avez refusé les notifications', 'info');
+                return false;
+            }
+
+            // Récupérer la clé publique VAPID depuis le serveur
+            const keyRes = await apiFetch('/api/push/vapid-key');
+            const { publicKey } = await keyRes.json();
+            
+            if (!publicKey) {
+                showToast('Configuration push manquante', 'error');
+                return false;
+            }
+
+            const subscription = await registration.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: urlBase64ToUint8Array(publicKey)
+            });
+
+            // Envoyer au serveur
+            const res = await apiFetch('/api/push/subscribe', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(subscription)
+            });
+
+            if (!res.ok) throw new Error('Erreur serveur');
+
+            showToast('✅ Notifications activées', 'success');
+            return true;
+        } catch (err) {
+            console.error('Erreur subscribe push:', err);
+            showToast('Erreur : ' + err.message, 'error');
+            return false;
+        }
+    };
+
+    // Helper de conversion base64 → Uint8Array
+    function urlBase64ToUint8Array(base64String) {
+        const padding = '='.repeat((4 - base64String.length % 4) % 4);
+        const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+        const rawData = window.atob(base64);
+        const outputArray = new Uint8Array(rawData.length);
+        for (let i = 0; i < rawData.length; ++i) {
+            outputArray[i] = rawData.charCodeAt(i);
+        }
+        return outputArray;
+    }
+
+    // Exposer globalement
+    window.isPWAStandalone = isStandalone;
+    window.isPushSupported = ('serviceWorker' in navigator) && ('PushManager' in window);
+
+    console.log('📱 PWA initialisée', { standalone: isStandalone, pushSupported: window.isPushSupported });
+
+    // ----- Indicateur hors ligne -----
+    const offlineIndicator = document.getElementById('offlineIndicator');
+    
+    function updateOnlineStatus() {
+        if (navigator.onLine) {
+            offlineIndicator?.classList.remove('show');
+            showToast('✅ Connexion rétablie', 'success');
+        } else {
+            offlineIndicator?.classList.add('show');
+        }
+    }
+
+    window.addEventListener('online', updateOnlineStatus);
+    window.addEventListener('offline', () => {
+        offlineIndicator?.classList.add('show');
+    });
+
+    // État initial
+    if (!navigator.onLine) {
+        offlineIndicator?.classList.add('show');
+    }
+
+})();
+
+// ----- Gestion PWA dans les paramètres -----
+(function initPWASettings() {
+    // Statut d'installation
+    function updatePWAStatus() {
+        const statusEl = document.getElementById('pwaStatusText');
+        const installBtn = document.getElementById('pwaSettingsInstallBtn');
+        if (!statusEl) return;
+
+        if (window.isPWAStandalone) {
+            statusEl.innerHTML = '✅ Application installée';
+            statusEl.style.color = '#22c55e';
+            if (installBtn) installBtn.style.display = 'none';
+        } else if (window.matchMedia('(display-mode: browser)').matches) {
+            statusEl.innerHTML = 'Non installée — cliquez sur "Installer"';
+            statusEl.style.color = '#94a3b8';
+        }
+    }
+    updatePWAStatus();
+
+    // Bouton installer dans les paramètres
+    document.getElementById('pwaSettingsInstallBtn')?.addEventListener('click', async () => {
+        // Récupérer le deferredPrompt global si dispo
+        if (window.deferredPWAPrompt) {
+            window.deferredPWAPrompt.prompt();
+            const { outcome } = await window.deferredPWAPrompt.userChoice;
+            if (outcome === 'accepted') {
+                showToast('✅ App installée !', 'success');
+                updatePWAStatus();
+            }
+            window.deferredPWAPrompt = null;
+        } else {
+            alert('Pour installer : ouvrez le menu du navigateur → "Installer l\'application" ou "Ajouter à l\'écran d\'accueil"');
+        }
+    });
+
+    // ----- Statut push -----
+    async function updatePushStatus() {
+        const statusEl = document.getElementById('pushStatusText');
+        const enableBtn = document.getElementById('pushEnableBtn');
+        const testBtn = document.getElementById('pushTestBtn');
+        const devicesList = document.getElementById('pushDevicesList');
+        if (!statusEl) return;
+
+        if (!window.isPushSupported) {
+            statusEl.textContent = '❌ Non supporté par ce navigateur';
+            statusEl.style.color = '#f87171';
+            if (enableBtn) enableBtn.disabled = true;
+            return;
+        }
+
+        // Vérifier permission
+        const permission = Notification.permission;
+        if (permission === 'denied') {
+            statusEl.textContent = '❌ Refusées (modifiez dans les paramètres du navigateur)';
+            statusEl.style.color = '#f87171';
+            if (enableBtn) enableBtn.disabled = true;
+            return;
+        }
+
+        // Charger les devices abonnés
+        try {
+            const res = await apiFetch('/api/push/subscriptions');
+            const devices = await res.json();
+
+            if (devices.length > 0) {
+                statusEl.innerHTML = `✅ ${devices.length} appareil(s) abonné(s)`;
+                statusEl.style.color = '#22c55e';
+                if (enableBtn) enableBtn.textContent = 'Réactiver';
+                if (testBtn) testBtn.style.display = 'inline-block';
+
+                if (devicesList) {
+                    devicesList.style.display = 'block';
+                    document.getElementById('pushDevicesContent').innerHTML = devices.map(d => `
+                        <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #1e2a41;">
+                            <div>
+                                <div style="color:#e2e8f0;font-weight:600;">${escapeHtml(d.device_label || 'Appareil')}</div>
+                                <div style="color:#64748b;font-size:11px;">Abonné le ${new Date(d.created_at).toLocaleDateString('fr-FR')}</div>
+                            </div>
+                            <button onclick="removePushDevice('${encodeURIComponent(d.id)}')" style="background:transparent;border:1px solid #7f1d1d;color:#f87171;padding:4px 10px;border-radius:40px;font-size:11px;cursor:pointer;">Retirer</button>
+                        </div>
+                    `).join('');
+                }
+            } else {
+                statusEl.textContent = 'Non configurées';
+                statusEl.style.color = '#94a3b8';
+                if (enableBtn) enableBtn.textContent = 'Activer';
+                if (testBtn) testBtn.style.display = 'none';
+                if (devicesList) devicesList.style.display = 'none';
+            }
+        } catch (e) {
+            console.warn(e);
+        }
+    }
+
+    document.getElementById('pushEnableBtn')?.addEventListener('click', async () => {
+        const ok = await window.subscribeToPush();
+        if (ok) updatePushStatus();
+    });
+
+    document.getElementById('pushTestBtn')?.addEventListener('click', async () => {
+        try {
+            showToast('Envoi en cours...', 'info');
+            const res = await apiFetch('/api/push/test', { method: 'POST' });
+            const data = await res.json();
+            if (res.ok && data.sent > 0) {
+                showToast(`✅ Notification envoyée à ${data.sent} appareil(s)`, 'success');
+            } else {
+                showToast('Aucun appareil n\'a reçu la notification', 'info');
+            }
+        } catch (err) {
+            showToast('Erreur : ' + err.message, 'error');
+        }
+    });
+
+    window.removePushDevice = async function(id) {
+        if (!confirm('Retirer cet appareil des notifications ?')) return;
+        try {
+            // Récupérer l'endpoint puis unsubscribe
+            showToast('Retrait en cours...', 'info');
+            // Simpler : juste recharger après
+            const res = await apiFetch('/api/push/subscriptions');
+            const devices = await res.json();
+            // On ne peut pas retirer un device distant ici, on le fait localement
+            // Pour retirer du serveur, il faut l'endpoint exact
+            // On va plutôt faire DELETE /push/subscriptions/:id (à ajouter côté serveur si besoin)
+            showToast('Utilisez "Désactiver" pour retirer cet appareil', 'info');
+        } catch (e) {}
+    };
+
+    // Charger au démarrage
+    if (getToken()) {
+        setTimeout(updatePushStatus, 1000);
+    }
+
+    // Exposer pour l'onglet Paramètres
+    window.updatePushStatus = updatePushStatus;
+    window.updatePWAStatus = updatePWAStatus;
 })();
 </script>
 </body>

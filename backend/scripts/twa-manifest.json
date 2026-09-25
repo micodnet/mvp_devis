@@ -1,0 +1,33 @@
+{
+    "packageId": "com.micodnet.devisexpresspro",
+    "host": "mvp-devis.onrender.com",
+    "name": "Devis Express Pro",
+    "launcherName": "Devis Pro",
+    "display": "standalone",
+    "themeColor": "#0b1120",
+    "navigationColor": "#0b1120",
+    "backgroundColor": "#0b1120",
+    "startUrl": "/",
+    "iconUrl": "https://mvp-devis.onrender.com/icons/icon-512x512.png",
+    "maskableIconUrl": "https://mvp-devis.onrender.com/icons/icon-512x512.png",
+    "appVersionName": "1.0.0",
+    "appVersionCode": 1,
+    "shortcuts": [
+        {
+            "name": "Nouveau devis",
+            "shortName": "Devis",
+            "url": "/?action=new-quote",
+            "chosenIconUrl": "https://mvp-devis.onrender.com/icons/icon-96x96.png"
+        }
+    ],
+    "signingKey": {
+        "path": "./android.keystore",
+        "alias": "devispro"
+    },
+    "enableNotifications": true,
+    "features": {
+        "playBilling": {
+            "enabled": false
+        }
+    }
+}

@@ -306,6 +306,94 @@ async function getGeneralStats(userId) {
     };
 }
 
+// ------------------------------------------------------------
+// CHANTIERS
+// ------------------------------------------------------------
+async function listChantiers(userId, args = {}) {
+    const limit = Math.min(parseInt(args.limit) || 50, 200);
+    const status = args.status || null;
+
+    let query = `
+        SELECT c.*,
+            (SELECT COUNT(*) FROM quotes q WHERE q.chantier_id = c.id AND q.status = 'accepted') as accepted_count,
+            (SELECT COALESCE(SUM(total), 0) FROM quotes q WHERE q.chantier_id = c.id AND q.status = 'accepted') as accepted_value
+        FROM chantiers c
+        WHERE c.user_id = $1
+    `;
+    const params = [userId];
+    if (status) {
+        params.push(status);
+        query += ` AND c.status = $${params.length}`;
+    }
+    query += ` ORDER BY c.updated_at DESC LIMIT $${params.length + 1}`;
+    params.push(limit);
+
+    const result = await pool.query(query, params);
+
+    return {
+        count: result.rows.length,
+        chantiers: result.rows.map(c => ({
+            id: c.id,
+            name: c.name,
+            clientName: c.client_name,
+            status: c.status,
+            acceptedCount: parseInt(c.accepted_count),
+            acceptedValue: parseFloat(c.accepted_value),
+            budgetEstimate: c.budget_estimate ? parseFloat(c.budget_estimate) : null,
+            startDate: c.start_date,
+            endDate: c.end_date
+        }))
+    };
+}
+
+async function findChantier(userId, args = {}) {
+    if (!args.query) return { error: 'Aucun terme de recherche fourni' };
+    const term = `%${args.query.toLowerCase()}%`;
+    const result = await pool.query(`
+        SELECT id, name, client_name, status, start_date, end_date, budget_estimate
+        FROM chantiers
+        WHERE user_id = $1
+          AND (LOWER(name) LIKE $2 OR LOWER(client_name) LIKE $2)
+        ORDER BY updated_at DESC LIMIT 10
+    `, [userId, term]);
+
+    return {
+        count: result.rows.length,
+        matches: result.rows.map(c => ({
+            id: c.id,
+            name: c.name,
+            client: c.client_name,
+            status: c.status,
+            startDate: c.start_date,
+            endDate: c.end_date,
+            budget: c.budget_estimate ? parseFloat(c.budget_estimate) : null
+        }))
+    };
+}
+
+async function getChantierStats(userId) {
+    const result = await pool.query(`
+        SELECT 
+            COUNT(*) as total,
+            COUNT(*) FILTER (WHERE status = 'planned') as planned,
+            COUNT(*) FILTER (WHERE status = 'in_progress') as in_progress,
+            COUNT(*) FILTER (WHERE status = 'completed') as completed,
+            COUNT(*) FILTER (WHERE status = 'cancelled') as cancelled,
+            COALESCE(SUM(budget_estimate), 0) as total_budget
+        FROM chantiers
+        WHERE user_id = $1
+    `, [userId]);
+    const r = result.rows[0];
+    return {
+        total: parseInt(r.total),
+        planned: parseInt(r.planned),
+        inProgress: parseInt(r.in_progress),
+        completed: parseInt(r.completed),
+        cancelled: parseInt(r.cancelled),
+        totalBudget: parseFloat(r.total_budget)
+    };
+}
+
 module.exports = {
     listProducts,
     findProduct,
@@ -318,5 +406,8 @@ module.exports = {
     listInvoices,
     getInvoiceStats,
     getStockAlerts,
-    getGeneralStats
+    getGeneralStats,
+    listChantiers,
+    findChantier,
+    getChantierStats,
 };

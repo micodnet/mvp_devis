@@ -19,18 +19,13 @@ const INTENTS = [
     'stock_alerts', 'general_stats',
     'create_client', 'create_product', 'create_service', 'create_supplier',
     'adjust_stock', 'create_quote_simple',
-    'update_quote',
-    'change_quote_status',
-    'delete_quote',
-    'duplicate_quote',
-    'add_items_to_quote',
-    'remove_item_from_quote',
-    'convert_quote_to_invoice',
+    'update_quote', 'change_quote_status', 'delete_quote', 'duplicate_quote',
+    'add_items_to_quote', 'remove_item_from_quote', 'convert_quote_to_invoice',
     'mark_invoice_paid',
-    'send_quote_email',
-    'send_invoice_email',
+    'send_quote_email', 'send_invoice_email',
     'save_preference',
     'calculer_metier', 'calculer_chantier',
+    'list_chantiers', 'find_chantier', 'chantier_stats',
     'help', 'chat'
 ];
 
@@ -229,78 +224,86 @@ async function detectIntent(message, conversationHistory = [], userId = null) {
         : '';
 
     const prompt = `Tu es un routeur d'intentions pour une application de devis/factures/stock.
-Réponds UNIQUEMENT avec un JSON strict. Aucun texte avant/après.
-${contextBlock}${sessionBlock}${langHint}
-Catégories possibles :
-- list_products, find_product, list_services, list_clients, find_client
-- list_suppliers, list_quotes, quote_stats, list_invoices, invoice_stats
-- stock_alerts, general_stats
-- create_client, create_product, create_service, create_supplier, adjust_stock
-- create_quote_simple (créer un NOUVEAU devis à partir d'items dictés)
-- update_quote (modifier un devis EXISTANT : client, adresse, email, statut, date)
-- change_quote_status (changer le statut : brouillon, envoyé, accepté, refusé)
-- delete_quote (supprimer un devis)
-- duplicate_quote (dupliquer un devis)
-- convert_quote_to_invoice (transformer un devis en facture)
-- mark_invoice_paid (marquer une facture payée)
-- send_quote_email (envoyer un devis par email)
-- send_invoice_email (envoyer une facture par email)
-- add_items_to_quote (ajouter des lignes à un devis existant)
-- remove_item_from_quote (retirer une ligne d'un devis)
-- calculer_metier (UN seul métier avec dimensions)
-- calculer_chantier (PLUSIEURS métiers dans la même phrase)
-- save_preference (mémoriser taux horaire, marge, TVA, conditions de paiement)
-- help, chat
+        Réponds UNIQUEMENT avec un JSON strict. Aucun texte avant/après.
+        ${contextBlock}${sessionBlock}${langHint}
+        Catégories possibles :
+        - list_products, find_product, list_services, list_clients, find_client
+        - list_suppliers, list_quotes, quote_stats, list_invoices, invoice_stats
+        - stock_alerts, general_stats
+        - create_client, create_product, create_service, create_supplier, adjust_stock
+        - create_quote_simple (créer un NOUVEAU devis à partir d'items dictés)
+        - update_quote (modifier un devis EXISTANT : client, adresse, email, statut, date)
+        - change_quote_status (changer le statut : brouillon, envoyé, accepté, refusé)
+        - delete_quote (supprimer un devis)
+        - duplicate_quote (dupliquer un devis)
+        - convert_quote_to_invoice (transformer un devis en facture)
+        - mark_invoice_paid (marquer une facture payée)
+        - send_quote_email (envoyer un devis par email)
+        - send_invoice_email (envoyer une facture par email)
+        - add_items_to_quote (ajouter des lignes à un devis existant)
+        - remove_item_from_quote (retirer une ligne d'un devis)
+        - calculer_metier (UN seul métier avec dimensions)
+        - calculer_chantier (PLUSIEURS métiers dans la même phrase)
+        - save_preference (mémoriser taux horaire, marge, TVA, conditions de paiement)
+        - list_chantiers : veut voir la liste des chantiers
+        - find_chantier : cherche un chantier précis
+        - chantier_stats : veut des statistiques sur les chantiers
+        - help, chat
 
-━━━ Impératifs ━━━ 
-dans une réponse:
-Tu ne dois pas lire les ponctuations et les characteres speciaux dans une reponse du genre {/*-+:.|@[]!()}, sauf en cas de cas de calcul
-Les champs indiqués par « – », « –----- », |----| et « / » sont vides (tu ne dois pas les lires ou les cités, sauf en cas de calcul).
-Les champs indiqués par "|---|---------------------|---------|-------|-----------|-----|", ne doivent pas etre cité et lu, cela représente le tableau visuel.
+        ━━━ RÈGLES ━━━
+        - "Mes chantiers", "liste des chantiers" → list_chantiers
+        - "Où en est le chantier X", "cherche le chantier X" → find_chantier
+        - "Combien de chantiers", "stats chantiers", "état des chantiers" → chantier_stats
 
-━━━ RÈGLES CRITIQUES POUR update_quote ━━━
-1. DÉCLENCHE update_quote dès que l'utilisateur veut MODIFIER un devis existant.
-2. TU DOIS TOUJOURS remplir "patch" avec AU MOINS UN champ.
-3. Extraction du nom : "Vincent Dubois" → patch.clientName = "Vincent Dubois"
-4. Statuts : envoyé → "sent", accepté → "accepted", refusé → "refused", brouillon → "draft"
-5. Dates : patch.validDate au format "YYYY-MM-DD"
-6. Adresse : patch.clientAddress
-7. Email : patch.clientEmail
-8. TVA : patch.clientVat
+        ━━━ Impératifs ━━━ 
+        dans une réponse:
+        Tu ne dois pas lire les ponctuations et les characteres speciaux dans une reponse du genre {/*-+:.|@[]!()}, sauf en cas de cas de calcul
+        Les champs indiqués par « – », « –----- », |----| et « / » sont vides (tu ne dois pas les lires ou les cités, sauf en cas de calcul).
+        Les champs indiqués par "|---|---------------------|---------|-------|-----------|-----|", ne doivent pas etre cité et lu, cela représente le tableau visuel.
 
-━━━ EXEMPLES ━━━
-"Ajoute le nom de Vincent Dubois" → {"intent":"update_quote","args":{"patch":{"clientName":"Vincent Dubois"}}}
-"Mets Dupont SARL comme client" → {"intent":"update_quote","args":{"patch":{"clientName":"Dupont SARL"}}}
-"Le client c'est Marie Leroy" → {"intent":"update_quote","args":{"patch":{"clientName":"Marie Leroy"}}}
-"Change le statut en envoyé" → {"intent":"change_quote_status","args":{"status":"sent"}}
-"Modifie la date de validité au 31/12/2026" → {"intent":"update_quote","args":{"patch":{"validDate":"2026-12-31"}}}
-"Ajoute l'adresse 12 rue de la Paix" → {"intent":"update_quote","args":{"patch":{"clientAddress":"12 rue de la Paix"}}}
-"Envoie le dernier devis par email à client@test.com" → {"intent":"send_quote_email","args":{"email":"client@test.com"}}
-"Fais-moi un devis pour peindre 5 murs de 3m x 2.5m" → {"intent":"calculer_metier","args":{"description":"peindre 5 murs de 3m x 2.5m"}}
-"Chantier rénovation salle de bain : carrelage 3x2.5, plomberie, peinture" → {"intent":"calculer_chantier","args":{"description":"rénovation salle de bain : carrelage 3x2.5, plomberie, peinture"}}
-"Mon taux horaire par défaut c'est 50€" → {"intent":"save_preference","args":{"preference":"taux horaire","value":"50"}}
-"Passe le devis en envoyé" → {"intent":"change_quote_status","args":{"status":"sent"}}
-"Supprime le dernier devis" → {"intent":"delete_quote","args":{}}
-"Duplique le dernier devis" → {"intent":"duplicate_quote","args":{}}
-"Transforme le devis accepté en facture" → {"intent":"convert_quote_to_invoice","args":{}}
-"Marque la facture FAC-0015-2026 payée" → {"intent":"mark_invoice_paid","args":{"invoiceNumber":"FAC-0015-2026"}}
-"Envoie la facture à client@test.com" → {"intent":"send_invoice_email","args":{"email":"client@test.com"}}
-"Ajoute 2 câbles HDMI à 8.90€ au dernier devis" → {"intent":"add_items_to_quote","args":{"items":[{"qty":2,"name":"câble HDMI","unitPrice":8.90}]}}
-"Retire la peinture du devis" → {"intent":"remove_item_from_quote","args":{"itemName":"peinture"}}
+        ━━━ RÈGLES CRITIQUES POUR update_quote ━━━
+        1. DÉCLENCHE update_quote dès que l'utilisateur veut MODIFIER un devis existant.
+        2. TU DOIS TOUJOURS remplir "patch" avec AU MOINS UN champ.
+        3. Extraction du nom : "Vincent Dubois" → patch.clientName = "Vincent Dubois"
+        4. Statuts : envoyé → "sent", accepté → "accepted", refusé → "refused", brouillon → "draft"
+        5. Dates : patch.validDate au format "YYYY-MM-DD"
+        6. Adresse : patch.clientAddress
+        7. Email : patch.clientEmail
+        8. TVA : patch.clientVat
 
-━━━ RÉFÉRENCES RELATIVES ━━━
-"le dernier devis" → args.quoteRef = "dernier" (ou rien du tout, défaut = dernier)
-"l'avant-dernier devis" → args.quoteRef = "avant-dernier"
-"le premier devis" → args.quoteRef = "premier"
-"le 3e devis" → args.quoteRef = "3"
-Le routeur peut ajouter "quoteRef" dans args pour préciser.
+        ━━━ EXEMPLES ━━━
+        "Ajoute le nom de Vincent Dubois" → {"intent":"update_quote","args":{"patch":{"clientName":"Vincent Dubois"}}}
+        "Mets Dupont SARL comme client" → {"intent":"update_quote","args":{"patch":{"clientName":"Dupont SARL"}}}
+        "Le client c'est Marie Leroy" → {"intent":"update_quote","args":{"patch":{"clientName":"Marie Leroy"}}}
+        "Change le statut en envoyé" → {"intent":"change_quote_status","args":{"status":"sent"}}
+        "Modifie la date de validité au 31/12/2026" → {"intent":"update_quote","args":{"patch":{"validDate":"2026-12-31"}}}
+        "Ajoute l'adresse 12 rue de la Paix" → {"intent":"update_quote","args":{"patch":{"clientAddress":"12 rue de la Paix"}}}
+        "Envoie le dernier devis par email à client@test.com" → {"intent":"send_quote_email","args":{"email":"client@test.com"}}
+        "Fais-moi un devis pour peindre 5 murs de 3m x 2.5m" → {"intent":"calculer_metier","args":{"description":"peindre 5 murs de 3m x 2.5m"}}
+        "Chantier rénovation salle de bain : carrelage 3x2.5, plomberie, peinture" → {"intent":"calculer_chantier","args":{"description":"rénovation salle de bain : carrelage 3x2.5, plomberie, peinture"}}
+        "Mon taux horaire par défaut c'est 50€" → {"intent":"save_preference","args":{"preference":"taux horaire","value":"50"}}
+        "Passe le devis en envoyé" → {"intent":"change_quote_status","args":{"status":"sent"}}
+        "Supprime le dernier devis" → {"intent":"delete_quote","args":{}}
+        "Duplique le dernier devis" → {"intent":"duplicate_quote","args":{}}
+        "Transforme le devis accepté en facture" → {"intent":"convert_quote_to_invoice","args":{}}
+        "Marque la facture FAC-0015-2026 payée" → {"intent":"mark_invoice_paid","args":{"invoiceNumber":"FAC-0015-2026"}}
+        "Envoie la facture à client@test.com" → {"intent":"send_invoice_email","args":{"email":"client@test.com"}}
+        "Ajoute 2 câbles HDMI à 8.90€ au dernier devis" → {"intent":"add_items_to_quote","args":{"items":[{"qty":2,"name":"câble HDMI","unitPrice":8.90}]}}
+        "Retire la peinture du devis" → {"intent":"remove_item_from_quote","args":{"itemName":"peinture"}}
 
-━━━ CONTEXTE CONVERSATIONNEL ━━━
-Si l'assistant a posé une question et que l'utilisateur répond brièvement, c'est un follow-up.
+        ━━━ RÉFÉRENCES RELATIVES ━━━
+        "le dernier devis" → args.quoteRef = "dernier" (ou rien du tout, défaut = dernier)
+        "l'avant-dernier devis" → args.quoteRef = "avant-dernier"
+        "le premier devis" → args.quoteRef = "premier"
+        "le 3e devis" → args.quoteRef = "3"
+        Le routeur peut ajouter "quoteRef" dans args pour préciser.
 
-Message : "${String(cleanMessage).slice(0, 500)}"
+        ━━━ CONTEXTE CONVERSATIONNEL ━━━
+        Si l'assistant a posé une question et que l'utilisateur répond brièvement, c'est un follow-up.
 
-Réponds maintenant avec le JSON :`;
+        Message : "${String(cleanMessage).slice(0, 500)}"
+
+        Réponds maintenant avec le JSON :`;
 
     let lastError = null;
     for (const model of GROQ_MODELS) {

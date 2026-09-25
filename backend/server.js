@@ -32,6 +32,8 @@ const peppolRoutes = require('./routes/peppol');
 const signatureRoutes = require('./routes/signature');
 const publicVerifyRoutes = require('./routes/public-verify');
 const statsRoutes = require('./routes/stats');
+const chantiersRoutes = require('./routes/chantiers');
+const pushRoutes = require('./routes/push');
 
 // ⚙️ INTERRUPTEUR DE QUOTA — Mets à `false` pour désactiver les limites pendant les tests
 const ENABLE_QUOTA_LIMITS = false;
@@ -48,6 +50,7 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), strip
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.static(path.join(__dirname, '../frontend')));
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Routes publiques
 app.use('/api/auth', authRoutes);
@@ -66,6 +69,8 @@ app.use('/api/peppol', peppolRoutes);
 app.use('/api/signature', signatureRoutes);
 app.use('/api/public', publicVerifyRoutes);
 app.use('/api/stats', statsRoutes);
+app.use('/api/chantiers', chantiersRoutes);
+app.use('/api/push', pushRoutes);
 
 // Multer
 const storage = multer.diskStorage({
@@ -701,6 +706,14 @@ app.get('/api/public/quotes/:token', async (req, res) => {
         // Marquer comme vu (seulement la première fois)
         if (!q.client_viewed_at) {
             await pool.query('UPDATE quotes SET client_viewed_at = NOW() WHERE id = $1', [q.id]);
+            
+            // Notification push au propriétaire
+            try {
+                const { notifyQuoteViewed } = require('./utils/push/notifications');
+                await notifyQuoteViewed(q.user_id, q);
+            } catch (e) {
+                console.warn('Push error:', e.message);
+            }
         }
 
         res.json({
@@ -748,6 +761,11 @@ app.get('/api/public/quotes/:token', async (req, res) => {
 // POST /api/public/quotes/:token/sign — Signature par le client (sans auth)
 app.post('/api/public/quotes/:token/sign', async (req, res) => {
     try {
+        try {
+            const { notifyQuoteSigned } = require('./utils/push/notifications');
+            await notifyQuoteSigned(q.user_id, { ...q, signature_signed_by: signedBy });
+        } catch (e) { console.warn('Push error:', e.message); }
+
         const { token } = req.params;
         const { method, signedBy, signatureData, accepted } = req.body;
 
@@ -793,6 +811,22 @@ app.post('/api/public/quotes/:token/sign', async (req, res) => {
             ip,
             token
         ]);
+
+        try {
+            const quoteResult = await pool.query(
+                'SELECT * FROM quotes WHERE public_token = $1',
+                [token]
+            );
+            if (quoteResult.rows.length > 0) {
+                const { notifyQuoteSigned } = require('./utils/push/notifications');
+                await notifyQuoteSigned(quoteResult.rows[0].user_id, {
+                    ...quoteResult.rows[0],
+                    signature_signed_by: signedBy.trim()
+                });
+            }
+        } catch (e) {
+            console.warn('Push error:', e.message);
+        }
 
         res.json({ success: true });
     } catch (err) {
