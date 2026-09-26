@@ -1244,7 +1244,7 @@
             .app {
                 border-radius: 16px;
                 padding: 16px 14px;
-                margin-top: 60px;
+                margin-top: 0px;
             }
             .header {
                 flex-direction: column;
@@ -2022,6 +2022,8 @@
             <button class="tab-btn" data-tab="tab-subcontractors" data-i18n="app.tab.contractors">Sous-traitants</button>
             <button class="tab-btn" data-tab="tab-api" data-i18n="app.tab.api">🗃 API</button>
             <button class="tab-btn" data-tab="tab-webhooks" data-i18n="app.tab.webhooks">Webhooks</button>
+            <button class="tab-btn" data-tab="tab-reports">Rapports</button>
+            <button class="tab-btn" data-tab="tab-email-import">Import email</button>
             <button class="tab-btn" data-tab="tab-oauth" data-i18n="app.tab.oauth">OAuth</button>
             <button class="tab-btn" data-tab="tab-team" data-i18n="app.tab.team">👥 Équipe</button>
             <button class="tab-btn" data-tab="tab-settings" data-i18n="app.tab.settings">⚙️ Paramètres</button>
@@ -2342,6 +2344,142 @@
                     <h2>Jetons actifs</h2>
                 </div>
                 <div id="oauthTokensList"><p style="color:#64748b;text-align:center;padding:40px;">Chargement...</p></div>
+            </div>
+        </div>
+
+        <!-- IMPORT EMAIL -->
+        <div id="tab-email-import" class="tab-content">
+            <div class="card">
+                <div class="catalog-header">
+                    <h2>Import depuis un email</h2>
+                    <div class="catalog-actions">
+                        <button class="btn-secondary" id="emailHistoryBtn">Historique</button>
+                    </div>
+                </div>
+                <p style="color:#94a3b8;font-size:13px;margin-bottom:20px;line-height:1.6;">
+                    Collez le texte d'un email client. L'IA analyse la demande et prepare un devis brouillon que vous pourrez valider ou ajuster.
+                </p>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Nom du client (optionnel)</label>
+                        <input type="text" id="emailFromName" placeholder="Extrait automatiquement si present" />
+                    </div>
+                    <div class="form-group">
+                        <label>Email du client (optionnel)</label>
+                        <input type="email" id="emailFromEmail" placeholder="Extrait automatiquement si present" />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Sujet (optionnel)</label>
+                    <input type="text" id="emailSubject" placeholder="Extrait automatiquement si present" />
+                </div>
+
+                <div class="form-group">
+                    <label>Contenu de l'email *</label>
+                    <textarea id="emailText" rows="12" placeholder="Collez ici le texte complet de l'email client (avec les en-tetes De/Objet si vous les avez)..." style="font-family:monospace;font-size:13px;"></textarea>
+                </div>
+
+                <button class="btn-primary-sm" id="analyzeEmailBtn" style="padding:14px 28px;font-size:14px;">Analyser l'email</button>
+
+                <div id="emailAnalysisResult" style="display:none;margin-top:24px;">
+                    <div style="background:linear-gradient(135deg,#0b1120,#161f32);border:1px solid #f97316;border-radius:16px;padding:24px;">
+                        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:16px;">
+                            <div>
+                                <div style="color:#f97316;font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">Analyse terminee</div>
+                                <div id="emailAnalysisSummary" style="color:#fff;font-size:16px;font-weight:700;"></div>
+                            </div>
+                        </div>
+
+                        <div id="emailAnalysisDetails"></div>
+
+                        <div style="margin-top:20px;padding-top:20px;border-top:1px solid #1e2a41;">
+                            <div style="color:#94a3b8;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px;">Informations extraites</div>
+                            <div id="emailAnalysisInfo" style="display:grid;gap:8px;"></div>
+                        </div>
+
+                        <div style="margin-top:20px;padding-top:20px;border-top:1px solid #1e2a41;">
+                            <div style="color:#94a3b8;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px;">Articles detectes</div>
+                            <div id="emailAnalysisItems"></div>
+                        </div>
+
+                        <div style="display:flex;gap:10px;margin-top:20px;flex-wrap:wrap;">
+                            <button class="btn-confirm" id="emailCreateQuoteBtn" style="flex:1;min-width:180px;padding:14px;">Creer le devis</button>
+                            <button class="btn-cancel" id="emailResetBtn" style="padding:14px;">Nouvel import</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL HISTORIQUE EMAIL -->
+        <div class="modal-overlay" id="emailHistoryModal">
+            <div class="modal modal-wide">
+                <h3>Historique des imports email</h3>
+                <div id="emailHistoryContent" style="max-height:60vh;overflow-y:auto;">
+                    <p style="color:#64748b;text-align:center;padding:40px;">Chargement...</p>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn-cancel" onclick="document.getElementById('emailHistoryModal').classList.remove('show')">Fermer</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- RAPPORTS -->
+        <div id="tab-reports" class="tab-content">
+            <div class="card">
+                <div class="catalog-header">
+                    <h2>Rapports d'activite</h2>
+                </div>
+                <p style="color:#94a3b8;font-size:13px;margin-bottom:20px;line-height:1.6;">
+                    Generez un rapport PDF de votre activite sur une periode donnee. Ideal pour votre comptable, vos archives ou votre banque.
+                </p>
+
+                <div class="history-filters" id="reportPeriods">
+                    <button class="history-filter active" data-period="month">Mois en cours</button>
+                    <button class="history-filter" data-period="lastmonth">Mois precedent</button>
+                    <button class="history-filter" data-period="quarter">Trimestre</button>
+                    <button class="history-filter" data-period="year">Annee en cours</button>
+                    <button class="history-filter" data-period="lastyear">Annee precedente</button>
+                    <button class="history-filter" data-period="custom">Personnalise</button>
+                </div>
+
+                <div id="reportCustomDates" style="display:none;margin:16px 0;gap:12px;grid-template-columns:1fr 1fr;" class="form-row">
+                    <div class="form-group">
+                        <label>Date de debut</label>
+                        <input type="date" id="reportFrom" />
+                    </div>
+                    <div class="form-group">
+                        <label>Date de fin</label>
+                        <input type="date" id="reportTo" />
+                    </div>
+                </div>
+
+                <div style="background:#0b1120;border:1px solid #1e2a41;border-radius:12px;padding:18px;margin:20px 0;">
+                    <div style="color:#94a3b8;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Periode selectionnee</div>
+                    <div id="reportSelectedPeriod" style="color:#fff;font-size:16px;font-weight:700;">-</div>
+                </div>
+
+                <div style="display:flex;gap:12px;flex-wrap:wrap;">
+                    <button class="btn-primary-sm" id="generateReportBtn" style="padding:12px 24px;font-size:14px;">
+                        Telecharger le rapport PDF
+                    </button>
+                </div>
+
+                <div style="background:#0b1120;border:1px solid #1e2a41;border-radius:12px;padding:18px;margin-top:24px;">
+                    <div style="color:#fff;font-weight:600;font-size:14px;margin-bottom:12px;">Contenu du rapport</div>
+                    <ul style="color:#94a3b8;font-size:13px;line-height:1.9;padding-left:20px;">
+                        <li>Resume chiffre : CA, devis, taux de conversion, panier moyen</li>
+                        <li>Facturation : total, paye, reste du, impayes</li>
+                        <li>Evolution mensuelle du chiffre d'affaires (graphique)</li>
+                        <li>Top 10 clients avec CA et devis</li>
+                        <li>Top 10 produits et services</li>
+                        <li>Rentabilite par metier</li>
+                        <li>Previsionnel de tresorerie (30, 60, 90 jours)</li>
+                        <li>Liste detaillee des devis de la periode</li>
+                    </ul>
+                </div>
             </div>
         </div>
 
@@ -12056,6 +12194,412 @@
         window.closeMobileDrawer = closeDrawer;
         window.switchMobileTab = switchTab;
     })();
+
+    // ================================================================
+    // 32. RAPPORTS PDF
+    // ================================================================
+    (function initReports() {
+        let currentPeriod = 'month';
+        let customFrom = null;
+        let customTo = null;
+
+        // ----- Calculer les dates selon la periode -----
+        function getPeriodDates(period) {
+            const now = new Date();
+            let from, to;
+
+            switch (period) {
+                case 'month':
+                    from = new Date(now.getFullYear(), now.getMonth(), 1);
+                    to = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+                    break;
+                case 'lastmonth':
+                    from = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+                    to = new Date(now.getFullYear(), now.getMonth(), 0);
+                    break;
+                case 'quarter': {
+                    const currentQuarter = Math.floor(now.getMonth() / 3);
+                    from = new Date(now.getFullYear(), currentQuarter * 3, 1);
+                    to = new Date(now.getFullYear(), currentQuarter * 3 + 3, 0);
+                    break;
+                }
+                case 'year':
+                    from = new Date(now.getFullYear(), 0, 1);
+                    to = new Date(now.getFullYear(), 11, 31);
+                    break;
+                case 'lastyear':
+                    from = new Date(now.getFullYear() - 1, 0, 1);
+                    to = new Date(now.getFullYear() - 1, 11, 31);
+                    break;
+                case 'custom':
+                    if (customFrom && customTo) {
+                        return { from: customFrom, to: customTo };
+                    }
+                    return null;
+                default:
+                    from = new Date(now.getFullYear(), now.getMonth(), 1);
+                    to = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+            }
+
+            return {
+                from: from.toISOString().slice(0, 10),
+                to: to.toISOString().slice(0, 10)
+            };
+        }
+
+        // ----- Mettre a jour l'affichage de la periode -----
+        function updatePeriodDisplay() {
+            const el = document.getElementById('reportSelectedPeriod');
+            if (!el) return;
+
+            const dates = getPeriodDates(currentPeriod);
+            if (!dates) {
+                el.textContent = 'Selectionnez une periode personnalisee';
+                return;
+            }
+
+            const fromFmt = new Date(dates.from).toLocaleDateString('fr-FR');
+            const toFmt = new Date(dates.to).toLocaleDateString('fr-FR');
+            el.textContent = 'Du ' + fromFmt + ' au ' + toFmt;
+        }
+
+        // ----- Events des filtres -----
+        document.querySelectorAll('#reportPeriods .history-filter').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('#reportPeriods .history-filter').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentPeriod = btn.dataset.period;
+
+                const customDiv = document.getElementById('reportCustomDates');
+                if (customDiv) {
+                    customDiv.style.display = currentPeriod === 'custom' ? 'grid' : 'none';
+                }
+
+                if (currentPeriod !== 'custom') {
+                    updatePeriodDisplay();
+                }
+            });
+        });
+
+        // ----- Dates personnalisees -----
+        document.getElementById('reportFrom')?.addEventListener('change', (e) => {
+            customFrom = e.target.value;
+            updatePeriodDisplay();
+        });
+
+        document.getElementById('reportTo')?.addEventListener('change', (e) => {
+            customTo = e.target.value;
+            updatePeriodDisplay();
+        });
+
+        // ----- Telecharger le rapport -----
+        document.getElementById('generateReportBtn')?.addEventListener('click', async () => {
+            const dates = getPeriodDates(currentPeriod);
+
+            if (!dates) {
+                showToast('Selectionnez une periode valide.', 'error');
+                return;
+            }
+
+            if (dates.from > dates.to) {
+                showToast('La date de debut doit etre avant la date de fin.', 'error');
+                return;
+            }
+
+            const btn = document.getElementById('generateReportBtn');
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = 'Generation en cours...';
+
+            try {
+                const res = await apiFetch('/api/reports/pdf?from=' + dates.from + '&to=' + dates.to);
+
+                if (!res.ok) {
+                    const err = await res.json().catch(() => ({ error: 'Erreur inconnue' }));
+                    throw new Error(err.error || 'Erreur generation');
+                }
+
+                const blob = await res.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'rapport-' + dates.from + '-au-' + dates.to + '.pdf';
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                window.URL.revokeObjectURL(url);
+
+                showToast('Rapport telecharge', 'success');
+            } catch (err) {
+                console.error('Erreur rapport:', err);
+                showToast('Erreur : ' + err.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
+        });
+
+        // ----- Initialiser au chargement de l'onglet -----
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                if (btn.dataset.tab === 'tab-reports') {
+                    setTimeout(updatePeriodDisplay, 100);
+                }
+            });
+        });
+
+        // Etat initial
+        updatePeriodDisplay();
+    })();
+
+    // ================================================================
+    // 33. IMPORT EMAIL
+    // ================================================================
+    (function initEmailImport() {
+        let currentAnalysis = null;
+
+        const analyzeBtn = document.getElementById('analyzeEmailBtn');
+        const resultBox = document.getElementById('emailAnalysisResult');
+        const textArea = document.getElementById('emailText');
+
+        // ----- Analyser l'email -----
+        analyzeBtn?.addEventListener('click', async () => {
+            const text = textArea.value.trim();
+
+            if (!text || text.length < 20) {
+                showToast('Le texte de l\'email est trop court (20 caracteres minimum).', 'error');
+                return;
+            }
+
+            const btn = analyzeBtn;
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = 'Analyse en cours (30s max)...';
+
+            try {
+                const payload = {
+                    text: text,
+                    fromName: document.getElementById('emailFromName').value.trim() || null,
+                    fromEmail: document.getElementById('emailFromEmail').value.trim() || null,
+                    subject: document.getElementById('emailSubject').value.trim() || null
+                };
+
+                const res = await apiFetch('/api/email-import/analyze', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Erreur analyse');
+
+                currentAnalysis = data;
+                renderAnalysis(data);
+                showToast('Analyse terminee', 'success');
+            } catch (err) {
+                console.error('Erreur analyse email:', err);
+                showToast('Erreur : ' + err.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
+        });
+
+        // ----- Afficher les resultats -----
+        function renderAnalysis(data) {
+            if (!resultBox) return;
+            resultBox.style.display = 'block';
+
+            const d = data.data || {};
+
+            // Resume
+            const summaryEl = document.getElementById('emailAnalysisSummary');
+            summaryEl.textContent = d.description || 'Analyse effectuee';
+
+            // Informations client
+            const infoEl = document.getElementById('emailAnalysisInfo');
+            const infos = [
+                { label: 'Client', value: d.clientName || data.sender.name || '-' },
+                { label: 'Email', value: d.clientEmail || data.sender.email || '-' },
+                { label: 'Telephone', value: d.clientPhone || '-' },
+                { label: 'Adresse', value: d.clientAddress || '-' },
+                { label: 'Type de demande', value: d.requestType || '-' },
+                { label: 'Urgence', value: d.urgency || 'normale' }
+            ];
+
+            if (d.suggestedMetier) {
+                infos.push({ label: 'Metier suggere', value: d.suggestedMetier });
+            }
+            if (d.suggestedDimensions) {
+                infos.push({ label: 'Dimensions', value: d.suggestedDimensions });
+            }
+
+            infoEl.innerHTML = infos.map(i =>
+                '<div style="display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid #1e2a41;font-size:13px;">' +
+                '<span style="color:#94a3b8;">' + escapeHtml(i.label) + '</span>' +
+                '<span style="color:#e2e8f0;font-weight:500;text-align:right;">' + escapeHtml(String(i.value)) + '</span>' +
+                '</div>'
+            ).join('');
+
+            // Articles
+            const itemsEl = document.getElementById('emailAnalysisItems');
+
+            // Priorite : items calcules par le metier, sinon items extraits
+            let displayItems = [];
+            let isCalculated = false;
+
+            if (data.calculated && data.calculated.items && data.calculated.items.length > 0) {
+                displayItems = data.calculated.items;
+                isCalculated = true;
+            } else if (d.items && Array.isArray(d.items) && d.items.length > 0) {
+                displayItems = d.items.map(it => ({
+                    ref: it.ref || 'EXT',
+                    name: it.name || 'Article',
+                    qty: parseFloat(it.qty) || 1,
+                    unitPrice: parseFloat(it.unitPrice) || 0,
+                    total: (parseFloat(it.qty) || 1) * (parseFloat(it.unitPrice) || 0)
+                }));
+            }
+
+            if (displayItems.length === 0) {
+                itemsEl.innerHTML = '<p style="color:#64748b;font-size:13px;padding:12px;">Aucun article detecte.</p>';
+            } else {
+                let html = '<div style="background:#0b1120;border:1px solid #1e2a41;border-radius:10px;overflow:hidden;">';
+                html += '<table style="width:100%;border-collapse:collapse;font-size:13px;">';
+                html += '<thead><tr style="background:#161f32;"><th style="text-align:left;padding:8px 12px;color:#94a3b8;font-size:11px;text-transform:uppercase;">Designation</th><th style="text-align:center;padding:8px;color:#94a3b8;font-size:11px;text-transform:uppercase;">Qte</th><th style="text-align:right;padding:8px 12px;color:#94a3b8;font-size:11px;text-transform:uppercase;">Total</th></tr></thead>';
+                html += '<tbody>';
+
+                let total = 0;
+                for (const it of displayItems) {
+                    const itemTotal = parseFloat(it.total) || (parseFloat(it.qty) * parseFloat(it.unitPrice)) || 0;
+                    total += itemTotal;
+                    html += '<tr>';
+                    html += '<td style="padding:8px 12px;border-bottom:1px solid #1e2a41;color:#e2e8f0;">' + escapeHtml(it.name) + '</td>';
+                    html += '<td style="padding:8px;border-bottom:1px solid #1e2a41;text-align:center;color:#94a3b8;">' + it.qty + '</td>';
+                    html += '<td style="padding:8px 12px;border-bottom:1px solid #1e2a41;text-align:right;color:#f97316;font-weight:600;">' + itemTotal.toFixed(2) + ' EUR</td>';
+                    html += '</tr>';
+                }
+
+                html += '<tr style="background:#161f32;"><td colspan="2" style="padding:10px 12px;text-align:right;font-weight:700;color:#fff;">Total HT</td><td style="padding:10px 12px;text-align:right;color:#f97316;font-weight:800;font-size:15px;">' + total.toFixed(2) + ' EUR</td></tr>';
+                html += '</tbody></table></div>';
+
+                if (isCalculated) {
+                    html += '<p style="color:#94a3b8;font-size:11px;margin-top:8px;font-style:italic;">Calcule par le moteur de metiers (peinture, placo, carrelage, etc.)</p>';
+                }
+
+                itemsEl.innerHTML = html;
+            }
+
+            // Details/Logs
+            const detailsEl = document.getElementById('emailAnalysisDetails');
+            if (data.calculated && data.calculated.logs) {
+                detailsEl.innerHTML = '<div style="background:#080e1a;border-radius:8px;padding:12px;font-family:monospace;font-size:11px;color:#94a3b8;line-height:1.7;max-height:120px;overflow-y:auto;margin-bottom:12px;">' +
+                    data.calculated.logs.map(l => '<div>' + escapeHtml(l) + '</div>').join('') +
+                    '</div>';
+            } else {
+                detailsEl.innerHTML = '';
+            }
+        }
+
+        // ----- Creer le devis -----
+        document.getElementById('emailCreateQuoteBtn')?.addEventListener('click', async () => {
+            if (!currentAnalysis) return;
+
+            const btn = document.getElementById('emailCreateQuoteBtn');
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = 'Creation du devis...';
+
+            try {
+                const res = await apiFetch('/api/email-import/' + currentAnalysis.importId + '/convert', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({})
+                });
+
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Erreur');
+
+                showToast('Devis ' + data.quote.quoteNumber + ' cree (' + data.quote.total.toFixed(2) + ' EUR)', 'success');
+
+                // Basculer sur l'historique
+                const histTab = document.querySelector('.tab-btn[data-tab="tab-history"]');
+                if (histTab) histTab.click();
+
+                // Reset
+                resetForm();
+            } catch (err) {
+                console.error('Erreur creation devis:', err);
+                showToast('Erreur : ' + err.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
+        });
+
+        // ----- Reset -----
+        function resetForm() {
+            textArea.value = '';
+            document.getElementById('emailFromName').value = '';
+            document.getElementById('emailFromEmail').value = '';
+            document.getElementById('emailSubject').value = '';
+            resultBox.style.display = 'none';
+            currentAnalysis = null;
+        }
+
+        document.getElementById('emailResetBtn')?.addEventListener('click', resetForm);
+
+        // ----- Historique -----
+        document.getElementById('emailHistoryBtn')?.addEventListener('click', async () => {
+            const modal = document.getElementById('emailHistoryModal');
+            const content = document.getElementById('emailHistoryContent');
+            modal.classList.add('show');
+            content.innerHTML = '<p style="color:#64748b;text-align:center;padding:40px;">Chargement...</p>';
+
+            try {
+                const res = await apiFetch('/api/email-import');
+                const imports = await res.json();
+
+                if (imports.length === 0) {
+                    content.innerHTML = '<p style="color:#64748b;text-align:center;padding:40px;">Aucun import enregistre.</p>';
+                    return;
+                }
+
+                let html = '<div style="display:flex;flex-direction:column;gap:8px;">';
+                for (const imp of imports) {
+                    const date = new Date(imp.createdAt).toLocaleString('fr-FR');
+                    const statusColor = imp.status === 'converted' ? '#22c55e' : (imp.status === 'analyzed' ? '#f97316' : '#94a3b8');
+                    const statusLabel = imp.status === 'converted' ? 'Devis cree' : (imp.status === 'analyzed' ? 'Analyse' : imp.status);
+
+                    html += '<div style="background:#0b1120;border:1px solid #1e2a41;border-left:3px solid ' + statusColor + ';border-radius:8px;padding:12px;">' +
+                        '<div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:6px;">' +
+                        '<div>' +
+                        '<div style="color:#fff;font-weight:600;font-size:13px;">' + escapeHtml(imp.fromName || imp.fromEmail || 'Email inconnu') + '</div>' +
+                        (imp.subject ? '<div style="color:#94a3b8;font-size:11px;">' + escapeHtml(imp.subject) + '</div>' : '') +
+                        '</div>' +
+                        '<div style="text-align:right;">' +
+                        '<span style="font-size:10px;font-weight:700;padding:3px 10px;border-radius:40px;background:' + statusColor + '22;color:' + statusColor + ';border:1px solid ' + statusColor + '66;">' + statusLabel + '</span>' +
+                        '<div style="color:#64748b;font-size:10px;margin-top:4px;">' + date + '</div>' +
+                        '</div>' +
+                        '</div>' +
+                        (imp.quoteNumber ? '<div style="color:#f97316;font-size:12px;font-weight:600;">Devis : ' + escapeHtml(imp.quoteNumber) + (imp.quoteTotal ? ' - ' + imp.quoteTotal.toFixed(2) + ' EUR' : '') + '</div>' : '') +
+                        '</div>';
+                }
+                html += '</div>';
+                content.innerHTML = html;
+            } catch (err) {
+                content.innerHTML = '<p style="color:#f87171;text-align:center;padding:40px;">Erreur.</p>';
+            }
+        });
+
+        // Fermer le modal
+        document.getElementById('emailHistoryModal')?.addEventListener('click', (e) => {
+            if (e.target === e.currentTarget) {
+                e.currentTarget.classList.remove('show');
+            }
+        });
+    })();
+
     </script>
 </body>
 </html>

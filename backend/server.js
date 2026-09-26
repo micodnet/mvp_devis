@@ -45,6 +45,8 @@ const oauthRoutes = require('./routes/oauth');
 const oauthApiRoutes = require('./routes/oauth-api');
 const onboardingRoutes = require('./routes/onboarding');
 const demoRoutes = require('./routes/demo');
+const reportsRoutes = require('./routes/reports');
+const emailImportRoutes = require('./routes/email-import');
 
 // ⚙️ INTERRUPTEUR DE QUOTA — Mets à `false` pour désactiver les limites pendant les tests
 const ENABLE_QUOTA_LIMITS = false;
@@ -93,6 +95,8 @@ app.use('/api/oauth', oauthRoutes);
 app.use('/api/oauth-v1', oauthApiRoutes);
 app.use('/api/onboarding', onboardingRoutes);
 app.use('/api/demo', demoRoutes);
+app.use('/api/reports', reportsRoutes);
+app.use('/api/email-import', emailImportRoutes);
 
 // Multer
 const storage = multer.diskStorage({
