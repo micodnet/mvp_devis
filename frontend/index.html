@@ -1053,6 +1053,724 @@
         body.demo-active {
             padding-top: 54px;
         }
+
+                /* ============================================================ */
+        /* REFONTE MOBILE                                                */
+        /* ============================================================ */
+
+        /* Navigation mobile en bas */
+        .mobile-bottom-nav {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #0b1120;
+            border-top: 1px solid #1e2a41;
+            padding: 8px 0 calc(8px + env(safe-area-inset-bottom, 0px));
+            z-index: 3500;
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.4);
+        }
+        .mobile-bottom-nav .nav-items {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .mobile-bottom-nav .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            padding: 6px 12px;
+            background: transparent;
+            border: none;
+            color: #64748b;
+            font-size: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            min-width: 60px;
+            border-radius: 12px;
+        }
+        .mobile-bottom-nav .nav-item:hover {
+            color: #94a3b8;
+        }
+        .mobile-bottom-nav .nav-item.active {
+            color: #f97316;
+        }
+        .mobile-bottom-nav .nav-item .icon {
+            font-size: 20px;
+            line-height: 1;
+        }
+        .mobile-bottom-nav .nav-item .label {
+            font-size: 10px;
+            letter-spacing: 0.2px;
+        }
+
+        /* Menu hamburger mobile */
+        .mobile-menu-btn {
+            display: none;
+            position: fixed;
+            top: 16px;
+            right: 16px;
+            width: 44px;
+            height: 44px;
+            background: #f97316;
+            color: #0b1120;
+            border: none;
+            border-radius: 12px;
+            font-size: 22px;
+            cursor: pointer;
+            z-index: 3600;
+            box-shadow: 0 4px 12px rgba(249, 115, 22, 0.4);
+            align-items: center;
+            justify-content: center;
+        }
+        .mobile-menu-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Menu drawer mobile */
+        .mobile-drawer-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(11, 17, 32, 0.85);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            z-index: 3700;
+            display: none;
+        }
+        .mobile-drawer-overlay.show {
+            display: block;
+        }
+        .mobile-drawer {
+            position: fixed;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            width: 300px;
+            max-width: 85vw;
+            background: #161f32;
+            border-left: 1px solid #2a3a55;
+            z-index: 3800;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            overflow-y: auto;
+            padding: 20px;
+        }
+        .mobile-drawer.show {
+            transform: translateX(0);
+        }
+        .mobile-drawer-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #1e2a41;
+        }
+        .mobile-drawer-header h3 {
+            color: #fff;
+            font-size: 16px;
+            font-weight: 700;
+        }
+        .mobile-drawer-header button {
+            background: #1a253b;
+            border: 1px solid #2a3a55;
+            color: #94a3b8;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .mobile-drawer .drawer-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 16px;
+            background: #0b1120;
+            border: 1px solid #1e2a41;
+            border-radius: 12px;
+            color: #cbd5e1;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            margin-bottom: 8px;
+            transition: 0.2s;
+            width: 100%;
+            text-align: left;
+        }
+        .mobile-drawer .drawer-item:active {
+            background: #24324b;
+            transform: scale(0.98);
+        }
+        .mobile-drawer .drawer-item .icon {
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+        .mobile-drawer .drawer-item.active {
+            background: rgba(249, 115, 22, 0.15);
+            border-color: #f97316;
+            color: #f97316;
+        }
+
+        /* Tableaux responsives en cartes */
+        @media (max-width: 768px) {
+            /* Cacher la nav bas desktop */
+            .tabs {
+                display: none !important;
+            }
+
+            /* Afficher la nav mobile */
+            .mobile-bottom-nav {
+                display: block;
+            }
+            .mobile-menu-btn {
+                display: flex;
+            }
+
+            /* Padding bottom pour ne pas cacher le contenu sous la nav */
+            body {
+                padding-bottom: 80px;
+            }
+            body.demo-active {
+                padding-top: 54px;
+            }
+
+            /* Header simplifie */
+            .app {
+                border-radius: 16px;
+                padding: 16px 14px;
+                margin-top: 60px;
+            }
+            .header {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 10px;
+                padding-bottom: 12px;
+                margin-bottom: 14px;
+            }
+            .logo-area h1 {
+                font-size: 20px;
+            }
+            .logo-area .sub {
+                font-size: 11px;
+            }
+            .user-area {
+                justify-content: space-between;
+                flex-wrap: wrap;
+                font-size: 11px;
+            }
+            .user-area .email {
+                max-width: 140px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+            .user-area .plan-badge {
+                font-size: 10px;
+                padding: 3px 8px;
+            }
+            .user-area .logout {
+                font-size: 11px;
+                padding: 5px 10px;
+            }
+
+            /* Cards plus aerees */
+            .card {
+                padding: 16px 14px;
+                border-radius: 14px;
+                margin-bottom: 14px;
+            }
+            .card-title {
+                font-size: 15px;
+                margin-bottom: 12px;
+            }
+
+            /* Boutons generreux */
+            button,
+            .btn-primary-sm,
+            .btn-secondary,
+            .btn-save,
+            .btn-confirm,
+            .btn-cancel,
+            .plan-cta,
+            .cta-primary,
+            .cta-secondary {
+                min-height: 44px;
+                font-size: 14px;
+                padding: 10px 18px;
+            }
+
+            /* Inputs evitant le zoom iOS */
+            input,
+            textarea,
+            select {
+                font-size: 16px !important;
+                padding: 12px 14px;
+                min-height: 44px;
+            }
+
+            /* Formulaires en colonne */
+            .form-row {
+                grid-template-columns: 1fr !important;
+                gap: 12px;
+            }
+
+            /* Modales plein ecran */
+            .modal-overlay {
+                padding: 0;
+                align-items: flex-end;
+            }
+            .modal {
+                max-width: 100% !important;
+                width: 100% !important;
+                max-height: 92vh !important;
+                border-radius: 20px 20px 0 0 !important;
+                padding: 24px 18px calc(24px + env(safe-area-inset-bottom, 0px)) !important;
+                margin: 0 !important;
+            }
+            .modal h3 {
+                font-size: 17px;
+                margin-bottom: 16px;
+            }
+            .modal-actions {
+                flex-direction: column-reverse;
+                gap: 8px;
+            }
+            .modal-actions button {
+                width: 100%;
+            }
+
+            /* Tableaux en cartes */
+            .catalog-table,
+            .catalog-table thead,
+            .catalog-table tbody,
+            .catalog-table th,
+            .catalog-table td,
+            .catalog-table tr {
+                display: block;
+                width: 100%;
+            }
+            .catalog-table thead {
+                display: none;
+            }
+            .catalog-table tr {
+                background: #0b1120;
+                border: 1px solid #1e2a41;
+                border-radius: 12px;
+                padding: 14px 12px;
+                margin-bottom: 10px;
+            }
+            .catalog-table td {
+                padding: 6px 0;
+                border: none;
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                gap: 12px;
+                text-align: right !important;
+                font-size: 13px;
+            }
+            .catalog-table td::before {
+                content: attr(data-label);
+                font-weight: 600;
+                color: #64748b;
+                font-size: 11px;
+                text-transform: uppercase;
+                letter-spacing: 0.3px;
+                text-align: left;
+                flex-shrink: 0;
+            }
+            .catalog-table td:first-child {
+                font-size: 14px;
+                padding-bottom: 8px;
+                border-bottom: 1px solid #1e2a41;
+                margin-bottom: 6px;
+            }
+            .catalog-table td:first-child::before {
+                display: none;
+            }
+            .catalog-table .row-actions {
+                justify-content: flex-end;
+                flex-wrap: wrap;
+                gap: 6px;
+                padding-top: 8px;
+                border-top: 1px solid #1e2a41;
+                margin-top: 6px;
+            }
+            .catalog-table .row-actions button {
+                flex: 1;
+                min-width: 90px;
+                padding: 8px 12px;
+                font-size: 12px;
+            }
+
+            /* Historique quotes en cartes */
+            .quote-row {
+                display: flex !important;
+                flex-direction: column;
+                gap: 8px;
+                padding: 14px 12px !important;
+                border: 1px solid #1e2a41;
+                border-radius: 12px;
+                margin-bottom: 10px;
+                background: #0b1120;
+            }
+            .quote-row.header {
+                display: none !important;
+            }
+            .quote-row .quote-number {
+                font-size: 15px;
+                font-weight: 700;
+            }
+            .quote-row .quote-client {
+                font-size: 13px;
+                color: #94a3b8;
+            }
+            .quote-row .quote-total {
+                font-size: 20px;
+                font-weight: 800;
+                color: #f97316;
+                text-align: right;
+            }
+            .quote-row .quote-actions {
+                grid-column: unset !important;
+                justify-content: flex-start !important;
+                width: 100%;
+                padding-top: 10px;
+                border-top: 1px solid #1e2a41;
+                margin-top: 6px;
+            }
+            .quote-row .quote-actions .actions-toggle {
+                width: 100%;
+                justify-content: center;
+                padding: 10px;
+                font-size: 13px;
+            }
+
+            /* Grid des stats */
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr) !important;
+                gap: 10px;
+            }
+            .stat-card {
+                padding: 14px 10px;
+            }
+            .stat-card .number {
+                font-size: 20px;
+            }
+            .stat-card .label {
+                font-size: 10px;
+            }
+
+            /* Graphiques */
+            .charts-grid {
+                grid-template-columns: 1fr !important;
+                gap: 14px;
+            }
+            .chart-wrapper {
+                height: 240px !important;
+            }
+
+            /* Cartes chantiers/sous-traitants en une colonne */
+            #chantiersList > div,
+            #subcontractorsList > div,
+            #webhooksList > div,
+            #oauthClientsList > div {
+                grid-template-columns: 1fr !important;
+            }
+
+            /* Actions (devis, etc) */
+            .actions {
+                flex-direction: column;
+                gap: 8px;
+            }
+            .actions a {
+                width: 100%;
+                padding: 14px;
+                font-size: 14px;
+            }
+
+            /* Drop zone plus grande */
+            .drop-zone {
+                padding: 24px 16px;
+                border-radius: 16px;
+            }
+            .drop-zone .icon {
+                font-size: 32px;
+            }
+            .drop-zone p {
+                font-size: 14px;
+            }
+
+            /* Onglets assistant */
+            .assistant-suggestions {
+                overflow-x: auto;
+                flex-wrap: nowrap;
+                padding-bottom: 8px;
+                -webkit-overflow-scrolling: touch;
+            }
+            .assistant-suggestions button {
+                white-space: nowrap;
+                flex-shrink: 0;
+            }
+
+            /* Onglets auth */
+            #authScreen {
+                margin-top: 20px;
+                padding: 28px 20px;
+                border-radius: 20px;
+            }
+
+            /* Landing */
+            .landing-nav {
+                flex-direction: column;
+                gap: 12px;
+                text-align: center;
+            }
+            .landing-nav .brand {
+                font-size: 20px;
+            }
+            .landing-nav .nav-actions {
+                width: 100%;
+                justify-content: center;
+            }
+            .hero {
+                padding: 20px 12px 40px;
+            }
+            .hero h1 {
+                font-size: 28px !important;
+                letter-spacing: -0.5px;
+            }
+            .hero p {
+                font-size: 15px;
+            }
+            .hero .eyebrow {
+                font-size: 10px;
+                padding: 5px 12px;
+            }
+            .hero .cta-row {
+                flex-direction: column;
+                gap: 10px;
+                width: 100%;
+            }
+            .hero .cta-primary,
+            .hero .cta-secondary,
+            .hero .demo-cta-btn {
+                width: 100%;
+                padding: 14px 20px;
+                font-size: 14px;
+            }
+            .hero-preview {
+                padding: 20px 14px;
+                margin-top: 40px;
+            }
+            .preview-flow {
+                flex-direction: column;
+            }
+            .preview-arrow {
+                transform: rotate(90deg);
+            }
+            .preview-step {
+                width: 100%;
+                min-width: 0;
+            }
+
+            /* Features */
+            .features {
+                grid-template-columns: 1fr !important;
+                gap: 12px;
+            }
+            .feature {
+                padding: 20px 16px;
+            }
+
+            /* Pricing */
+            .pricing-grid {
+                grid-template-columns: 1fr !important;
+                gap: 14px;
+            }
+            .pricing-card {
+                padding: 22px 18px;
+            }
+            .pricing-card .plan-price {
+                font-size: 32px;
+            }
+            .pricing-header h2 {
+                font-size: 26px;
+            }
+
+            /* Checklist onboarding */
+            .onboarding-step {
+                padding: 12px 14px;
+                gap: 10px;
+            }
+            .onboarding-step .check-circle {
+                width: 28px;
+                height: 28px;
+                font-size: 12px;
+            }
+            .onboarding-step .step-title {
+                font-size: 13px;
+            }
+            .onboarding-step .step-desc {
+                font-size: 11px;
+            }
+
+            /* Welcome modal */
+            .welcome-content {
+                padding: 28px 20px;
+            }
+            .welcome-content h2 {
+                font-size: 22px;
+            }
+            .welcome-actions {
+                flex-direction: column;
+            }
+            .welcome-actions button {
+                width: 100%;
+            }
+
+            /* Tour guide tooltip */
+            .onboarding-tooltip {
+                max-width: calc(100vw - 32px) !important;
+                padding: 16px 18px;
+            }
+            .onboarding-tooltip h4 {
+                font-size: 15px;
+            }
+            .onboarding-tooltip p {
+                font-size: 12px;
+            }
+
+            /* Demo banner */
+            .demo-banner {
+                padding: 8px 12px;
+                font-size: 11px;
+                gap: 8px;
+            }
+            .demo-banner .timer {
+                font-size: 12px;
+                padding: 2px 8px;
+            }
+
+            /* Cookie banner */
+            #cookieBanner {
+                left: 10px;
+                right: 10px;
+                bottom: 90px;
+                padding: 16px;
+            }
+            #cookieBanner .cookie-actions {
+                flex-direction: column;
+            }
+            #cookieBanner button {
+                width: 100%;
+            }
+
+            /* Bulle assistant */
+            #assistantBubble {
+                bottom: 84px;
+                right: 14px;
+                width: 52px;
+                height: 52px;
+                font-size: 22px;
+            }
+            #assistantPanel {
+                bottom: 80px;
+                right: 10px;
+                left: 10px;
+                width: auto;
+                max-width: none;
+                height: calc(100vh - 160px);
+                border-radius: 16px;
+            }
+
+            /* Editeur de devis */
+            .edit-item-row {
+                grid-template-columns: 1fr 1fr !important;
+                gap: 6px;
+            }
+            .edit-item-row .ei-name {
+                grid-column: 1 / -1;
+            }
+            .edit-item-row .remove-btn {
+                grid-column: 1 / -1;
+                width: 100%;
+                padding: 10px;
+                margin-top: 4px;
+            }
+
+            /* Factures items */
+            .edit-item-row input {
+                font-size: 14px !important;
+                padding: 10px 12px;
+            }
+        }
+
+        /* Tablette */
+        @media (min-width: 769px) and (max-width: 1024px) {
+            .tabs {
+                flex-wrap: wrap;
+            }
+            .tab-btn {
+                font-size: 13px;
+                padding: 7px 14px;
+            }
+            .chart-wrapper {
+                height: 260px;
+            }
+            .modal {
+                max-width: 90%;
+            }
+        }
+
+        /* Mode paysage sur mobile */
+        @media (max-width: 768px) and (orientation: landscape) {
+            .mobile-bottom-nav {
+                padding: 4px 0;
+            }
+            .mobile-bottom-nav .nav-item {
+                padding: 4px 8px;
+                font-size: 9px;
+            }
+            .mobile-bottom-nav .nav-item .icon {
+                font-size: 16px;
+            }
+            #assistantPanel {
+                height: calc(100vh - 100px);
+            }
+        }
+
+        /* Très petits écrans */
+        @media (max-width: 380px) {
+            .stats-grid {
+                grid-template-columns: 1fr !important;
+            }
+            .hero h1 {
+                font-size: 24px !important;
+            }
+            .pricing-card .plan-price {
+                font-size: 28px;
+            }
+        }
+
+        /* Safe area iOS */
+        @supports (padding: max(0px)) {
+            .mobile-bottom-nav {
+                padding-bottom: max(8px, env(safe-area-inset-bottom));
+            }
+            .modal {
+                padding-bottom: max(24px, env(safe-area-inset-bottom));
+            }
+            #cookieBanner {
+                bottom: max(90px, calc(env(safe-area-inset-bottom) + 80px));
+            }
+        }
     </style>
 </head>
 <body>
@@ -3048,6 +3766,45 @@
 
     <div id="toast"></div>
 
+    <!-- NAVIGATION MOBILE EN BAS -->
+    <nav class="mobile-bottom-nav" id="mobileBottomNav">
+        <div class="nav-items">
+            <button class="nav-item active" data-mobile-tab="tab-devis">
+                <span class="icon">&#128196;</span>
+                <span class="label">Devis</span>
+            </button>
+            <button class="nav-item" data-mobile-tab="tab-chantiers">
+                <span class="icon">&#127959;</span>
+                <span class="label">Chantiers</span>
+            </button>
+            <button class="nav-item" data-mobile-tab="tab-invoices">
+                <span class="icon">&#129534;</span>
+                <span class="label">Factures</span>
+            </button>
+            <button class="nav-item" data-mobile-tab="tab-assistant">
+                <span class="icon">&#128172;</span>
+                <span class="label">Assistant</span>
+            </button>
+            <button class="nav-item" data-mobile-tab="tab-dashboard">
+                <span class="icon">&#128202;</span>
+                <span class="label">Tableau</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- BOUTON MENU MOBILE -->
+    <button class="mobile-menu-btn" id="mobileMenuBtn" title="Menu">&#9776;</button>
+
+    <!-- DRAWER MOBILE -->
+    <div class="mobile-drawer-overlay" id="mobileDrawerOverlay"></div>
+    <aside class="mobile-drawer" id="mobileDrawer">
+        <div class="mobile-drawer-header">
+            <h3>Menu</h3>
+            <button id="mobileDrawerClose" title="Fermer">&#10005;</button>
+        </div>
+        <div id="mobileDrawerItems"></div>
+    </aside>
+
     <!-- Indicateurs vocaux -->
     <div class="voice-hint" id="voiceHint">🎤 Enregistrement en cours...</div>
     <div class="voice-error" id="voiceError"></div>
@@ -3630,10 +4387,10 @@
         </tr></thead><tbody>`;
         filtered.forEach(c => {
             html += `<tr>
-                <td><strong>${escapeHtml(c.name)}</strong></td>
-                <td>${c.contactName ? escapeHtml(c.contactName) : '<span style="color:#475569;">—</span>'}</td>
-                <td>${c.email ? escapeHtml(c.email) : '<span style="color:#475569;">—</span>'}</td>
-                <td>${c.vatNumber ? `<span class="product-ref">${escapeHtml(c.vatNumber)}</span>` : '<span style="color:#475569;">—</span>'}</td>
+                <td data-label="Nom"><strong>${escapeHtml(c.name)}</strong></td>
+                <td data-label="NomContact>${c.contactName ? escapeHtml(c.contactName) : '<span style="color:#475569;">—</span>'}</td>
+                <td data-label="Email">${c.email ? escapeHtml(c.email) : '<span style="color:#475569;">—</span>'}</td>
+                <td data-label="NoTva">${c.vatNumber ? `<span class="product-ref">${escapeHtml(c.vatNumber)}</span>` : '<span style="color:#475569;">—</span>'}</td>
                 <td><div class="row-actions">
                     <button onclick="editClient(${c.id})">Modifier</button>
                     <button class="delete" onclick="deleteClient(${c.id})">Suppr.</button>
@@ -3820,12 +4577,12 @@
         </tr></thead><tbody>`;
         filtered.forEach(s => {
             html += `<tr>
-                <td>${s.ref ? `<span class="product-ref">${escapeHtml(s.ref)}</span>` : '<span style="color:#475569;">—</span>'}</td>
-                <td><strong>${escapeHtml(s.name)}</strong>${s.description ? `<br><span style="color:#64748b;font-size:12px;">${escapeHtml(s.description)}</span>` : ''}</td>
-                <td>${s.category ? escapeHtml(s.category) : '<span style="color:#475569;">—</span>'}</td>
-                <td style="text-align:right;" class="product-price">${s.unitPrice.toFixed(2)} €</td>
-                <td style="text-align:center;color:#94a3b8;">${escapeHtml(s.unit || 'forfait')}</td>
-                <td style="text-align:center;">${s.isLabor ? '<span style="font-size:10px;font-weight:700;padding:3px 10px;border-radius:40px;background:rgba(249,115,22,0.15);color:#f97316;border:1px solid rgba(249,115,22,0.3);">MAIN D\'ŒUVRE</span>' : '<span style="color:#64748b;font-size:12px;">Prestation</span>'}</td>
+                <td data-label="Ref.">${s.ref ? `<span class="product-ref">${escapeHtml(s.ref)}</span>` : '<span style="color:#475569;">—</span>'}</td>
+                <td data-label="Nom"><strong>${escapeHtml(s.name)}</strong>${s.description ? `<br><span style="color:#64748b;font-size:12px;">${escapeHtml(s.description)}</span>` : ''}</td>
+                <td data-label="Categorie">${s.category ? escapeHtml(s.category) : '<span style="color:#475569;">—</span>'}</td>
+                <td data-label="Prix" style="text-align:right;" class="product-price">${s.unitPrice.toFixed(2)} €</td>
+                <td data-label="Unite" style="text-align:center;color:#94a3b8;">${escapeHtml(s.unit || 'forfait')}</td>
+                <td data-label="Prestation" style="text-align:center;">${s.isLabor ? '<span style="font-size:10px;font-weight:700;padding:3px 10px;border-radius:40px;background:rgba(249,115,22,0.15);color:#f97316;border:1px solid rgba(249,115,22,0.3);">MAIN D\'ŒUVRE</span>' : '<span style="color:#64748b;font-size:12px;">Prestation</span>'}</td>
                 <td><div class="row-actions">
                     <button onclick="editService(${s.id})">Modifier</button>
                     <button class="delete" onclick="deleteService(${s.id})">Suppr.</button>
@@ -4009,11 +4766,11 @@
         </tr></thead><tbody>`;
         filtered.forEach(s => {
             html += `<tr>
-                <td><strong>${escapeHtml(s.name)}</strong></td>
-                <td>${s.contactName ? escapeHtml(s.contactName) : (s.phone ? escapeHtml(s.phone) : '<span style="color:#475569;">—</span>')}</td>
-                <td>${s.email ? escapeHtml(s.email) : '<span style="color:#475569;">—</span>'}</td>
-                <td>${s.category ? escapeHtml(s.category) : '<span style="color:#475569;">—</span>'}</td>
-                <td style="text-align:center;color:#94a3b8;font-size:12px;">${s.deliveryDays || 7}j</td>
+                <td data-label="Nom"><strong>${escapeHtml(s.name)}</strong></td>
+                <td data-label="NomContact">${s.contactName ? escapeHtml(s.contactName) : (s.phone ? escapeHtml(s.phone) : '<span style="color:#475569;">—</span>')}</td>
+                <td data-label="Email">${s.email ? escapeHtml(s.email) : '<span style="color:#475569;">—</span>'}</td>
+                <td data-label="Categorie">${s.category ? escapeHtml(s.category) : '<span style="color:#475569;">—</span>'}</td>
+                <td data-label="JourLivraison" style="text-align:center;color:#94a3b8;font-size:12px;">${s.deliveryDays || 7}j</td>
                 <td><div class="row-actions">
                     <button onclick="editSupplier(${s.id})">Modifier</button>
                     <button class="delete" onclick="deleteSupplier(${s.id})">Suppr.</button>
@@ -4416,11 +5173,11 @@
         </tr></thead><tbody>`;
         filtered.forEach(p => {
             html += `<tr>
-                <td>${p.ref ? `<span class="product-ref">${escapeHtml(p.ref)}</span>` : '<span style="color:#475569;">—</span>'}</td>
-                <td><strong>${escapeHtml(p.name)}</strong>${p.description ? `<br><span style="color:#64748b;font-size:12px;">${escapeHtml(p.description)}</span>` : ''}</td>
-                <td>${p.category ? escapeHtml(p.category) : '<span style="color:#475569;">—</span>'}</td>
-                <td style="text-align:right;" class="product-price">${p.unitPrice.toFixed(2)} €</td>
-                <td style="text-align:center;color:#94a3b8;">${escapeHtml(p.unit || 'u')}</td>
+                <td data-label="Ref.">${p.ref ? `<span class="product-ref">${escapeHtml(p.ref)}</span>` : '<span style="color:#475569;">—</span>'}</td>
+                <td data-label="Nom"><strong>${escapeHtml(p.name)}</strong>${p.description ? `<br><span style="color:#64748b;font-size:12px;">${escapeHtml(p.description)}</span>` : ''}</td>
+                <td data-label="Categorie">${p.category ? escapeHtml(p.category) : '<span style="color:#475569;">—</span>'}</td>
+                <td data-label="Prix" style="text-align:right;" class="product-price">${p.unitPrice.toFixed(2)} €</td>
+                <td data-label="Unite" style="text-align:center;color:#94a3b8;">${escapeHtml(p.unit || 'u')}</td>
                 <td><div class="row-actions">
                     <button onclick="editProduct(${p.id})">Modifier</button>
                     <button class="delete" onclick="deleteProduct(${p.id})">Suppr.</button>
@@ -9499,13 +10256,13 @@
                 actions += '<button onclick="deleteAssignment(' + a.id + ')" style="background:#3f1e24;border:1px solid #7f1d1d;color:#f87171;padding:4px 10px;border-radius:40px;font-size:11px;cursor:pointer;">Suppr.</button>';
 
                 html += '<tr>' +
-                    '<td><strong>' + escapeHtml(a.subcontractorName || '') + '</strong>' +
+                    '<td data-label="NomSousTraitant"><strong>' + escapeHtml(a.subcontractorName || '') + '</strong>' +
                     (a.subcontractorCompany ? '<br><span style="color:#64748b;font-size:11px;">' + escapeHtml(a.subcontractorCompany) + '</span>' : '') + '</td>' +
-                    '<td>' + escapeHtml(a.title || '') +
+                    '<td data-label="Titre">' + escapeHtml(a.title || '') +
                     (a.description ? '<br><span style="color:#64748b;font-size:11px;">' + escapeHtml(a.description) + '</span>' : '') + '</td>' +
-                    '<td>' + (a.chantierName ? escapeHtml(a.chantierName) : '<span style="color:#475569;">-</span>') + '</td>' +
-                    '<td style="font-weight:600;">' + (a.amount ? a.amount.toFixed(2) + ' EUR' : '-') + '</td>' +
-                    '<td><span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:40px;background:' + statusColor + '22;color:' + statusColor + ';border:1px solid ' + statusColor + '66;">' + statusLabel + '</span></td>' +
+                    '<td data-label="NomChantier">' + (a.chantierName ? escapeHtml(a.chantierName) : '<span style="color:#475569;">-</span>') + '</td>' +
+                    '<td data-label="Montant" style="font-weight:600;">' + (a.amount ? a.amount.toFixed(2) + ' EUR' : '-') + '</td>' +
+                    '<td data-label="Status"><span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:40px;background:' + statusColor + '22;color:' + statusColor + ';border:1px solid ' + statusColor + '66;">' + statusLabel + '</span></td>' +
                     '<td><div style="display:flex;flex-wrap:wrap;">' + actions + '</div></td>' +
                     '</tr>';
             });
@@ -11116,6 +11873,189 @@
         window.exitDemo = exitDemo;
     })();
 
+    // ================================================================
+    // 31. REFONTE MOBILE
+    // ================================================================
+    (function initMobileUI() {
+        const mobileNav = document.getElementById('mobileBottomNav');
+        const menuBtn = document.getElementById('mobileMenuBtn');
+        const drawer = document.getElementById('mobileDrawer');
+        const drawerOverlay = document.getElementById('mobileDrawerOverlay');
+        const drawerItems = document.getElementById('mobileDrawerItems');
+        const drawerClose = document.getElementById('mobileDrawerClose');
+
+        // Tous les onglets disponibles
+        const ALL_TABS = [
+            { id: 'tab-devis', icon: '&#128196;', label: 'Devis', mobileMain: true },
+            { id: 'tab-clients', icon: '&#128101;', label: 'Clients', mobileMain: false },
+            { id: 'tab-catalogue', icon: '&#128230;', label: 'Catalogue', mobileMain: false },
+            { id: 'tab-services', icon: '&#128295;', label: 'Services', mobileMain: false },
+            { id: 'tab-suppliers', icon: '&#128666;', label: 'Fournisseurs', mobileMain: false },
+            { id: 'tab-stock', icon: '&#128230;', label: 'Stock', mobileMain: false },
+            { id: 'tab-history', icon: '&#128220;', label: 'Historique', mobileMain: false },
+            { id: 'tab-invoices', icon: '&#129534;', label: 'Factures', mobileMain: true },
+            { id: 'tab-dashboard', icon: '&#128202;', label: 'Dashboard', mobileMain: true },
+            { id: 'tab-analytics', icon: '&#128200;', label: 'Analytics', mobileMain: false },
+            { id: 'tab-chantiers', icon: '&#127959;', label: 'Chantiers', mobileMain: true },
+            { id: 'tab-subcontractors', icon: '&#128119;', label: 'Sous-traitants', mobileMain: false },
+            { id: 'tab-api', icon: '&#128268;', label: 'API', mobileMain: false },
+            { id: 'tab-webhooks', icon: '&#128225;', label: 'Webhooks', mobileMain: false },
+            { id: 'tab-oauth', icon: '&#128273;', label: 'OAuth', mobileMain: false },
+            { id: 'tab-team', icon: '&#128101;', label: 'Equipe', mobileMain: false },
+            { id: 'tab-settings', icon: '&#9881;', label: 'Parametres', mobileMain: false },
+            { id: 'tab-assistant', icon: '&#128172;', label: 'Assistant', mobileMain: true },
+            { id: 'tab-subscription', icon: '&#128179;', label: 'Abonnement', mobileMain: false }
+        ];
+
+        // ----- Detecter si on est en mobile -----
+        function isMobile() {
+            return window.innerWidth <= 768;
+        }
+
+        // ----- Construire le drawer -----
+        function buildDrawer() {
+            if (!drawerItems) return;
+
+            const currentTab = document.querySelector('.tab-btn.active')?.dataset.tab || 'tab-devis';
+
+            drawerItems.innerHTML = ALL_TABS.map(tab => {
+                const isActive = tab.id === currentTab ? 'active' : '';
+                return '<button class="drawer-item ' + isActive + '" data-drawer-tab="' + tab.id + '">' +
+                    '<span class="icon">' + tab.icon + '</span>' +
+                    '<span>' + tab.label + '</span>' +
+                    '</button>';
+            }).join('');
+
+            drawerItems.querySelectorAll('.drawer-item').forEach(item => {
+                item.addEventListener('click', () => {
+                    const tabId = item.dataset.drawerTab;
+                    switchTab(tabId);
+                    closeDrawer();
+                });
+            });
+        }
+
+        // ----- Changer d'onglet -----
+        function switchTab(tabId) {
+            const tabBtn = document.querySelector('.tab-btn[data-tab="' + tabId + '"]');
+            if (tabBtn) {
+                tabBtn.click();
+                updateActiveStates(tabId);
+            }
+        }
+
+        // ----- Mettre a jour les etats actifs -----
+        function updateActiveStates(tabId) {
+            // Nav mobile en bas
+            if (mobileNav) {
+                mobileNav.querySelectorAll('.nav-item').forEach(item => {
+                    if (item.dataset.mobileTab === tabId) {
+                        item.classList.add('active');
+                    } else {
+                        item.classList.remove('active');
+                    }
+                });
+            }
+
+            // Drawer
+            if (drawerItems) {
+                drawerItems.querySelectorAll('.drawer-item').forEach(item => {
+                    if (item.dataset.drawerTab === tabId) {
+                        item.classList.add('active');
+                    } else {
+                        item.classList.remove('active');
+                    }
+                });
+            }
+        }
+
+        // ----- Ouvrir le drawer -----
+        function openDrawer() {
+            buildDrawer();
+            drawer.classList.add('show');
+            drawerOverlay.classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+
+        // ----- Fermer le drawer -----
+        function closeDrawer() {
+            drawer.classList.remove('show');
+            drawerOverlay.classList.remove('show');
+            document.body.style.overflow = '';
+        }
+
+        // ----- Events -----
+        menuBtn?.addEventListener('click', openDrawer);
+        drawerClose?.addEventListener('click', closeDrawer);
+        drawerOverlay?.addEventListener('click', closeDrawer);
+
+        // Nav mobile en bas
+        mobileNav?.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const tabId = item.dataset.mobileTab;
+                switchTab(tabId);
+            });
+        });
+
+        // Synchronisation avec les onglets desktop
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                updateActiveStates(btn.dataset.tab);
+            });
+        });
+
+        // Reconstruire le drawer si on redimensionne
+        let resizeTimeout;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                if (isMobile()) {
+                    // On est en mobile
+                    if (mobileNav) mobileNav.style.display = 'block';
+                    if (menuBtn) menuBtn.style.display = 'flex';
+                } else {
+                    // Desktop
+                    closeDrawer();
+                    if (mobileNav) mobileNav.style.display = 'none';
+                    if (menuBtn) menuBtn.style.display = 'none';
+                }
+            }, 200);
+        });
+
+        // Etat initial
+        if (isMobile()) {
+            if (mobileNav) mobileNav.style.display = 'block';
+            if (menuBtn) menuBtn.style.display = 'flex';
+        }
+
+        // ----- Support du swipe pour fermer le drawer -----
+        let touchStartX = 0;
+        let touchCurrentX = 0;
+
+        if (drawer) {
+            drawer.addEventListener('touchstart', (e) => {
+                touchStartX = e.touches[0].clientX;
+                touchCurrentX = touchStartX;
+            }, { passive: true });
+
+            drawer.addEventListener('touchmove', (e) => {
+                touchCurrentX = e.touches[0].clientX;
+            }, { passive: true });
+
+            drawer.addEventListener('touchend', () => {
+                const deltaX = touchCurrentX - touchStartX;
+                // Si on a glisse de plus de 80px vers la droite, fermer
+                if (deltaX > 80) {
+                    closeDrawer();
+                }
+            });
+        }
+
+        // ----- Exposer pour usage externe -----
+        window.openMobileDrawer = openDrawer;
+        window.closeMobileDrawer = closeDrawer;
+        window.switchMobileTab = switchTab;
+    })();
     </script>
 </body>
 </html>
