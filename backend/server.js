@@ -40,6 +40,11 @@ const subcontractorsRoutes = require('./routes/subcontractors');
 const apiKeysRoutes = require('./routes/api-keys');
 const apiPublicRoutes = require('./routes/api-public');
 const apiDocsRoutes = require('./routes/api-docs');
+const webhooksRoutes = require('./routes/webhooks');
+const oauthRoutes = require('./routes/oauth');
+const oauthApiRoutes = require('./routes/oauth-api');
+const onboardingRoutes = require('./routes/onboarding');
+const demoRoutes = require('./routes/demo');
 
 // ⚙️ INTERRUPTEUR DE QUOTA — Mets à `false` pour désactiver les limites pendant les tests
 const ENABLE_QUOTA_LIMITS = false;
@@ -83,6 +88,11 @@ app.use('/api/subcontractors', subcontractorsRoutes);
 app.use('/api/api-keys', apiKeysRoutes);
 app.use('/api/v1', apiPublicRoutes);
 app.use('/api/docs', apiDocsRoutes);
+app.use('/api/webhooks', webhooksRoutes);
+app.use('/api/oauth', oauthRoutes);
+app.use('/api/oauth-v1', oauthApiRoutes);
+app.use('/api/onboarding', onboardingRoutes);
+app.use('/api/demo', demoRoutes);
 
 // Multer
 const storage = multer.diskStorage({
@@ -398,6 +408,22 @@ app.post('/api/generate-quote', authenticateToken, upload.single('file'), async 
             [req.user.id, quoteNumber]
         );
         const quoteId = insertedQuote.rows[0]?.id || null;
+
+        // Webhook : devis cree
+        try {
+            const { dispatchEvent } = require('./utils/webhooks/dispatcher');
+            await dispatchEvent(req.user.id, 'quote.created', {
+                quoteId,
+                quoteNumber,
+                clientName: clientName || null,
+                clientEmail: clientEmail || null,
+                total,
+                currency: 'EUR',
+                createdAt: new Date().toISOString()
+            });
+        } catch (e) {
+            console.warn('Webhook error:', e.message);
+        }
 
         res.json({
             id: quoteId,
@@ -734,6 +760,13 @@ app.get('/api/public/quotes/:token', async (req, res) => {
             try {
                 const { notifyQuoteViewed } = require('./utils/push/notifications');
                 await notifyQuoteViewed(q.user_id, q);
+                const { dispatchEvent } = require('./utils/webhooks/dispatcher');
+                await dispatchEvent(q.user_id, 'quote.viewed', {
+                    quoteId: q.id,
+                    quoteNumber: q.quote_number,
+                    clientName: q.client_name,
+                    viewedAt: new Date().toISOString()
+                });
             } catch (e) {
                 console.warn('Push error:', e.message);
             }
@@ -835,20 +868,35 @@ app.post('/api/public/quotes/:token/sign', async (req, res) => {
             token
         ]);
 
+        // Notification push + webhook au proprietaire
         try {
             const quoteResult = await pool.query(
                 'SELECT * FROM quotes WHERE public_token = $1',
                 [token]
             );
             if (quoteResult.rows.length > 0) {
+                const quote = quoteResult.rows[0];
+
                 const { notifyQuoteSigned } = require('./utils/push/notifications');
-                await notifyQuoteSigned(quoteResult.rows[0].user_id, {
-                    ...quoteResult.rows[0],
+                await notifyQuoteSigned(quote.user_id, {
+                    ...quote,
                     signature_signed_by: signedBy.trim()
+                });
+
+                const { dispatchEvent } = require('./utils/webhooks/dispatcher');
+                await dispatchEvent(quote.user_id, 'quote.signed', {
+                    quoteId: quote.id,
+                    quoteNumber: quote.quote_number,
+                    clientName: quote.client_name,
+                    clientEmail: quote.client_email,
+                    total: parseFloat(quote.total),
+                    currency: quote.currency || 'EUR',
+                    signedBy: signedBy.trim(),
+                    signedAt: new Date().toISOString()
                 });
             }
         } catch (e) {
-            console.warn('Push error:', e.message);
+            console.warn('Post-signature error:', e.message);
         }
 
         res.json({ success: true });
@@ -1174,6 +1222,48 @@ initDB()
             console.log(`Serveur Pro lancé sur http://localhost:${port}`);
             // Demarre le cron de relances
             startRemindersCron()
+
+            const { retryFailedDeliveries } = require('./utils/webhooks/dispatcher');
+            setInterval(() => {
+                retryFailedDeliveries().catch(err => console.warn('Erreur retry webhooks:', err.message));
+            }, 15 * 60 * 1000);
+
+            const { cleanupExpiredTokens } = require('./utils/oauth/helpers');
+            setInterval(() => {
+                cleanupExpiredTokens().catch(err => console.warn('Erreur cleanup OAuth:', err.message));
+            }, 30 * 60 * 1000);
+
+            // Nettoyer les comptes demo expires toutes les 15 minutes
+            setInterval(async () => {
+                try {
+                    const result = await pool.query(`
+                        DELETE FROM users
+                        WHERE is_demo = TRUE AND demo_expires_at < NOW()
+                        RETURNING id
+                    `);
+                    if (result.rowCount > 0) {
+                        console.log('Nettoyage demo : ' + result.rowCount + ' compte(s) supprime(s)');
+                    }
+                } catch (err) {
+                    console.warn('Erreur nettoyage demo:', err.message);
+                }
+            }, 15 * 60 * 1000);
+
+            // Nettoyage au demarrage
+            setTimeout(async () => {
+                try {
+                    const result = await pool.query(`
+                        DELETE FROM users
+                        WHERE is_demo = TRUE AND demo_expires_at < NOW()
+                        RETURNING id
+                    `);
+                    if (result.rowCount > 0) {
+                        console.log('Nettoyage demo au demarrage : ' + result.rowCount + ' compte(s) supprime(s)');
+                    }
+                } catch (err) {
+                    console.warn('Erreur nettoyage demo au demarrage:', err.message);
+                }
+            }, 5000);
         });
     })
     .catch(err => {

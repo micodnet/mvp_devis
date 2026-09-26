@@ -1,0 +1,32 @@
+{
+    "name": "devis-express-pro",
+    "version": "1.0.0",
+    "description": "SDK JavaScript officiel pour l'API Devis Express Pro",
+    "main": "index.js",
+    "types": "index.d.ts",
+    "keywords": [
+        "devis",
+        "facturation",
+        "api",
+        "sdk",
+        "peppol"
+    ],
+    "author": "Micodnet",
+    "license": "MIT",
+    "homepage": "https://mvp-devis.onrender.com",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/micodnet/mvp_devis.git"
+    },
+    "engines": {
+        "node": ">=18.0.0"
+    },
+    "files": [
+        "index.js",
+        "index.d.ts",
+        "README.md"
+    ],
+    "scripts": {
+        "test": "node test.js"
+    }
+}

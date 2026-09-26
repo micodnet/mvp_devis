@@ -699,6 +699,31 @@ router.post('/:id/payments', authenticateToken, async (req, res) => {
         // Recalculer l'état
         const state = await updateInvoicePaymentState(id);
 
+        // Webhook : facture payee (si entierement payee)
+        if (state && state.status === 'paid') {
+            try {
+                const invoiceResult = await pool.query(
+                    'SELECT * FROM invoices WHERE id = $1',
+                    [id]
+                );
+                if (invoiceResult.rows.length > 0) {
+                    const inv = invoiceResult.rows[0];
+                    const { dispatchEvent } = require('../utils/webhooks/dispatcher');
+                    await dispatchEvent(req.user.id, 'invoice.paid', {
+                        invoiceId: inv.id,
+                        invoiceNumber: inv.invoice_number,
+                        clientName: inv.client_name,
+                        total: parseFloat(inv.total),
+                        amountPaid: parseFloat(inv.amount_paid),
+                        currency: inv.currency || 'EUR',
+                        paidAt: new Date().toISOString()
+                    });
+                }
+            } catch (e) {
+                console.warn('Webhook error:', e.message);
+            }
+        }
+
         res.json({ 
             success: true, 
             payment: result.rows[0],
