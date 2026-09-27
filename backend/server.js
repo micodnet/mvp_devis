@@ -47,6 +47,7 @@ const onboardingRoutes = require('./routes/onboarding');
 const demoRoutes = require('./routes/demo');
 const reportsRoutes = require('./routes/reports');
 const emailImportRoutes = require('./routes/email-import');
+const recurringRoutes = require('./routes/recurring');
 
 // ⚙️ INTERRUPTEUR DE QUOTA — Mets à `false` pour désactiver les limites pendant les tests
 const ENABLE_QUOTA_LIMITS = false;
@@ -97,6 +98,7 @@ app.use('/api/onboarding', onboardingRoutes);
 app.use('/api/demo', demoRoutes);
 app.use('/api/reports', reportsRoutes);
 app.use('/api/email-import', emailImportRoutes);
+app.use('/api/recurring', recurringRoutes);
 
 // Multer
 const storage = multer.diskStorage({
@@ -1268,6 +1270,35 @@ initDB()
                     console.warn('Erreur nettoyage demo au demarrage:', err.message);
                 }
             }, 5000);
+
+            const { processDueRecurringInvoices } = require('./utils/recurring/helpers');
+
+            // Verifier les factures recurrentes toutes les heures
+            setInterval(async () => {
+                try {
+                    const result = await processDueRecurringInvoices();
+                    if (result.processed.length > 0) {
+                        console.log('Factures recurrentes generees : ' + result.processed.length);
+                    }
+                    if (result.failed.length > 0) {
+                        console.warn('Factures recurrentes en echec : ' + result.failed.length);
+                    }
+                } catch (err) {
+                    console.warn('Erreur cron factures recurrentes:', err.message);
+                }
+            }, 60 * 60 * 1000);
+
+            // Premier passage 30 secondes apres le demarrage
+            setTimeout(async () => {
+                try {
+                    const result = await processDueRecurringInvoices();
+                    if (result.processed.length > 0) {
+                        console.log('Factures recurrentes generees au demarrage : ' + result.processed.length);
+                    }
+                } catch (err) {
+                    console.warn('Erreur process recurring au demarrage:', err.message);
+                }
+            }, 30000);
         });
     })
     .catch(err => {
