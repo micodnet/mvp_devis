@@ -287,7 +287,7 @@ router.post('/generate-po', authenticateToken, async (req, res) => {
                     issue_date, expected_date, subtotal, total,
                     source, source_reference
                 )
-                VALUES ($1, $2, $3, $4, 'draft', NOW(), $5, $6, $6, 'low_stock', 'Seuil d\'alerte atteint')
+                VALUES ($1, $2, $3, $4, 'draft', NOW(), $5, $6, $6, 'low_stock', 'Seuil d''alerte atteint')
                 RETURNING id, po_number
             `, [
                 req.user.id, poNumber, supplierId, supplier.name,
