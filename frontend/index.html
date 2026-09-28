@@ -1054,7 +1054,7 @@
             padding-top: 54px;
         }
 
-                /* ============================================================ */
+        /* ============================================================ */
         /* REFONTE MOBILE                                                */
         /* ============================================================ */
 
@@ -1391,6 +1391,9 @@
                 border-bottom: 1px solid #1e2a41;
                 margin-bottom: 6px;
             }
+            .catalog-table th:nth-child(3), .catalog-table td:nth-child(3),
+            .catalog-table th:nth-child(5), .catalog-table td:nth-child(5),
+            .catalog-table th:nth-child(6), .catalog-table td:nth-child(6) { display: none; }
             .catalog-table td:first-child::before {
                 display: none;
             }
@@ -2078,6 +2081,30 @@
                     <div id="file-name"></div>
                 </div>
                 <button class="btn-orange" id="generateBtn" disabled data-i18n="quotes.generate">🚀 Générer le devis</button>
+                <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap;">
+                    <button type="button" class="btn-secondary" id="addVariantsBtn" style="display:none;">
+                        Activer les variantes (formules)
+                    </button>
+                    <button type="button" class="btn-secondary" id="editVariantsBtn" style="display:none;">
+                        Modifier les variantes
+                    </button>
+                </div>
+
+                <!-- Panneau variantes -->
+                <div id="variantsPanel" style="display:none;margin-top:20px;background:#0b1120;border:1px solid #f97316;border-radius:16px;padding:20px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:12px;">
+                        <div>
+                            <div style="color:#f97316;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Mode multi-options</div>
+                            <div style="color:#fff;font-size:15px;font-weight:600;margin-top:4px;">Proposez jusqu'a 5 formules au client</div>
+                        </div>
+                        <button type="button" class="btn-secondary" id="addVariantRowBtn">+ Ajouter une variante</button>
+                    </div>
+                    <div id="variantsList"></div>
+                    <div style="margin-top:16px;display:flex;gap:10px;">
+                        <button type="button" class="btn-confirm" id="saveVariantsBtn">Enregistrer les variantes</button>
+                        <button type="button" class="btn-cancel" id="cancelVariantsBtn">Annuler</button>
+                    </div>
+                </div>
                 <div id="ia-panel">
                     <div class="ia-header"><span data-i18n="quotes.ia_log_title">🧠 Journal d'exécution de l'IA</span><span style="color:#22c55e;" data-i18n="quotes.ia_active">● actif</span></div>
                     <div id="ia-console"><div><span class="log-time">Système</span> <span data-i18n="quotes.ia_waiting">En attente...</span></div></div>
@@ -2178,6 +2205,7 @@
                     <h2 data-i18n="stock.title">📦 Gestion du stock</h2>
                     <div class="catalog-actions">
                         <button class="btn-secondary" id="generatePOBtn" data-i18n="stock.generate_po">🛒 Générer commandes</button>
+                        <button class="btn-primary-sm" id="newPurchaseOrderBtn">+ Nouveau BC</button>
                         <button class="btn-primary-sm" id="newMovementBtn" data-i18n="stock.new_movement">+ Mouvement manuel</button>
                     </div>
                 </div>
@@ -3010,11 +3038,17 @@
             </div>
             <div class="form-group"><label data-i18n="modal.product.name">Nom *</label><input type="text" id="productName" required /></div>
             <div class="form-group"><label data-i18n="modal.product.desc">Description</label><input type="text" id="productDescription" /></div>
-                    <div class="form-row">
-                <div class="form-group"><label data-i18n="modal.product.price">Prix HT (€) *</label><input type="number" id="productPrice" step="0.01" min="0" required /></div>
-                <div class="form-group"><label data-i18n="modal.product.cat">Catégorie</label><input type="text" id="productCategory" /></div>
+            <div class="form-row">
+                <div class="form-group"><label data-i18n="modal.product.price">Prix de vente HT (€) *</label><input type="number" id="productPrice" step="0.01" min="0" required /></div>
+                <div class="form-group"><label>Prix d'achat HT (€)</label><input type="number" id="productCostPrice" step="0.01" min="0" placeholder="Optionnel" /></div>
             </div>
-            
+            <div class="form-row">
+                <div class="form-group"><label data-i18n="modal.product.cat">Catégorie</label><input type="text" id="productCategory" /></div>
+                <div class="form-group" id="productMarginPreview" style="display:none;">
+                    <label>Marge calculée</label>
+                    <div id="productMarginValue" style="padding:10px 14px;background:#0b1120;border:1px solid #2a3a55;border-radius:12px;color:#22c55e;font-weight:600;font-size:14px;">—</div>
+                </div>
+            </div>
             <div class="card-title" style="margin-top:16px;font-size:15px;">📦 Stock</div>
             <div class="form-group">
                 <label class="checkbox-accept" style="margin:0;">
@@ -3929,6 +3963,101 @@
             <div id="recurringDetailContent" style="max-height:70vh;overflow-y:auto;"></div>
             <div class="modal-actions">
                 <button class="btn-cancel" onclick="document.getElementById('recurringDetailModal').classList.remove('show')">Fermer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL VARIANTE -->
+    <div class="modal-overlay" id="variantEditModal">
+        <div class="modal modal-wide">
+            <h3 id="variantEditTitle">Modifier la variante</h3>
+            <input type="hidden" id="variantEditIndex" />
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Nom de la variante *</label>
+                    <input type="text" id="variantName" placeholder="Formule Essentielle" />
+                </div>
+                <div class="form-group">
+                    <label>Recommandee</label>
+                    <select id="variantRecommended">
+                        <option value="false">Non</option>
+                        <option value="true">Oui (mise en avant)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Description courte</label>
+                <input type="text" id="variantDescription" placeholder="Carrelage standard, faïence basique" />
+            </div>
+
+            <div class="card-title" style="margin-top:16px;font-size:15px;">Articles de cette variante</div>
+            <div id="variantItemsContainer"></div>
+            <button type="button" class="btn-secondary" id="addVariantItemBtn" style="margin-top:8px;">+ Ajouter un article</button>
+
+            <div class="modal-actions" style="margin-top:20px;">
+                <button type="button" class="btn-cancel" id="cancelVariantEditBtn">Annuler</button>
+                <button type="button" class="btn-confirm" id="saveVariantEditBtn">Valider</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL BON DE COMMANDE (creation/edition) -->
+    <div class="modal-overlay" id="purchaseOrderModal">
+        <div class="modal modal-wide">
+            <h3 id="purchaseOrderModalTitle">Nouveau bon de commande</h3>
+            <input type="hidden" id="poIdField" />
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Fournisseur *</label>
+                    <select id="poSupplierSelector"><option value="">- Selectionner -</option></select>
+                </div>
+                <div class="form-group">
+                    <label>Email fournisseur</label>
+                    <input type="email" id="poSupplierEmail" />
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Date de commande</label>
+                    <input type="date" id="poOrderDate" />
+                </div>
+                <div class="form-group">
+                    <label>Date de livraison souhaitee</label>
+                    <input type="date" id="poExpectedDate" />
+                </div>
+            </div>
+
+            <div class="card-title" style="margin-top:16px;font-size:15px;">Articles commandes</div>
+            <div id="poItemsContainer"></div>
+            <button type="button" class="btn-secondary" id="addPoItemBtn" style="margin-top:8px;">+ Ajouter une ligne</button>
+
+            <div class="form-group" style="margin-top:16px;">
+                <label>Notes</label>
+                <input type="text" id="poNotes" />
+            </div>
+
+            <div id="poTotalsBox" class="totaux-box" style="margin-top:16px;"></div>
+
+            <div class="modal-actions">
+                <button class="btn-cancel" id="cancelPurchaseOrderBtn">Annuler</button>
+                <button class="btn-confirm" id="savePurchaseOrderBtn">Enregistrer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL HISTORIQUE BC -->
+    <div class="modal-overlay" id="poLogsModal">
+        <div class="modal modal-wide">
+            <h3>Historique du bon de commande</h3>
+            <div id="poLogsContent" style="max-height:60vh;overflow-y:auto;">
+                <p style="color:#64748b;text-align:center;padding:40px;">Chargement...</p>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="document.getElementById('poLogsModal').classList.remove('show')">Fermer</button>
             </div>
         </div>
     </div>
@@ -5455,24 +5584,57 @@
             return;
         }
         if (filtered.length === 0) { content.innerHTML = `<p style="color:#64748b; text-align:center; padding:40px;">Aucun résultat.</p>`; return; }
+        // let html = `<table class="catalog-table"><thead><tr>
+        //     <th style="width:120px;">Réf.</th><th>Nom</th><th style="width:140px;">Catégorie</th>
+        //     <th style="width:100px;text-align:right;">Prix HT</th><th style="width:80px;text-align:center;">Unité</th>
+        //     <th style="width:180px;text-align:right;">Actions</th>
+        // </tr></thead><tbody>`;
         let html = `<table class="catalog-table"><thead><tr>
-            <th style="width:120px;">Réf.</th><th>Nom</th><th style="width:140px;">Catégorie</th>
-            <th style="width:100px;text-align:right;">Prix HT</th><th style="width:80px;text-align:center;">Unité</th>
-            <th style="width:180px;text-align:right;">Actions</th>
-        </tr></thead><tbody>`;
+        <th style="width:120px;">Réf.</th><th>Nom</th><th style="width:140px;">Catégorie</th>
+        <th style="width:100px;text-align:right;">Prix vente</th>
+        <th style="width:100px;text-align:right;">Prix achat</th>
+        <th style="width:130px;text-align:right;">Marge</th>
+        <th style="width:80px;text-align:center;">Unité</th>
+        <th style="width:180px;text-align:right;">Actions</th>
+    </tr></thead><tbody>`;
         filtered.forEach(p => {
+            // html += `<tr>
+            //     <td data-label="Ref.">${p.ref ? `<span class="product-ref">${escapeHtml(p.ref)}</span>` : '<span style="color:#475569;">—</span>'}</td>
+            //     <td data-label="Nom"><strong>${escapeHtml(p.name)}</strong>${p.description ? `<br><span style="color:#64748b;font-size:12px;">${escapeHtml(p.description)}</span>` : ''}</td>
+            //     <td data-label="Categorie">${p.category ? escapeHtml(p.category) : '<span style="color:#475569;">—</span>'}</td>
+            //     <td data-label="Prix" style="text-align:right;" class="product-price">${p.unitPrice.toFixed(2)} €</td>
+            //     <td data-label="Unite" style="text-align:center;color:#94a3b8;">${escapeHtml(p.unit || 'u')}</td>
+            //     <td><div class="row-actions">
+            //         <button onclick="editProduct(${p.id})">Modifier</button>
+            //         <button class="delete" onclick="deleteProduct(${p.id})">Suppr.</button>
+            //     </div></td>
+            // </tr>`;
+            const cost = parseFloat(p.costPrice) || 0;
+            const price = parseFloat(p.unitPrice) || 0;
+            let marginHtml = '<span style="color:#475569;">—</span>';
+            
+            if (cost > 0 && price > 0) {
+                const marginEuro = price - cost;
+                const marginPercent = (marginEuro / price) * 100;
+                const color = marginEuro > 0 ? '#22c55e' : '#f87171';
+                marginHtml = '<span style="color:' + color + ';font-weight:600;">' + marginEuro.toFixed(2) + ' € <span style="color:#94a3b8;font-weight:400;font-size:11px;">(' + marginPercent.toFixed(1) + '%)</span></span>';
+            }
+
             html += `<tr>
-                <td data-label="Ref.">${p.ref ? `<span class="product-ref">${escapeHtml(p.ref)}</span>` : '<span style="color:#475569;">—</span>'}</td>
-                <td data-label="Nom"><strong>${escapeHtml(p.name)}</strong>${p.description ? `<br><span style="color:#64748b;font-size:12px;">${escapeHtml(p.description)}</span>` : ''}</td>
-                <td data-label="Categorie">${p.category ? escapeHtml(p.category) : '<span style="color:#475569;">—</span>'}</td>
-                <td data-label="Prix" style="text-align:right;" class="product-price">${p.unitPrice.toFixed(2)} €</td>
-                <td data-label="Unite" style="text-align:center;color:#94a3b8;">${escapeHtml(p.unit || 'u')}</td>
+                <td>${p.ref ? `<span class="product-ref">${escapeHtml(p.ref)}</span>` : '<span style="color:#475569;">—</span>'}</td>
+                <td><strong>${escapeHtml(p.name)}</strong>${p.description ? `<br><span style="color:#64748b;font-size:12px;">${escapeHtml(p.description)}</span>` : ''}</td>
+                <td>${p.category ? escapeHtml(p.category) : '<span style="color:#475569;">—</span>'}</td>
+                <td style="text-align:right;" class="product-price">${price.toFixed(2)} €</td>
+                <td style="text-align:right;">${cost > 0 ? cost.toFixed(2) + ' €' : '<span style="color:#475569;">—</span>'}</td>
+                <td style="text-align:right;">${marginHtml}</td>
+                <td style="text-align:center;color:#94a3b8;">${escapeHtml(p.unit || 'u')}</td>
                 <td><div class="row-actions">
                     <button onclick="editProduct(${p.id})">Modifier</button>
                     <button class="delete" onclick="deleteProduct(${p.id})">Suppr.</button>
                 </div></td>
             </tr>`;
         });
+
         html += '</tbody></table>';
         html += `<p style="color:#64748b;font-size:13px;margin-top:16px;text-align:right;">${filtered.length} produit${filtered.length>1?'s':''}</p>`;
         content.innerHTML = html;
@@ -5489,6 +5651,8 @@
         document.getElementById('productDescription').value = product ? (product.description || '') : '';
         document.getElementById('productUnit').value = product ? (product.unit || 'u') : 'u';
         document.getElementById('productPrice').value = product ? product.unitPrice : '';
+        document.getElementById('productCostPrice').value = product && product.costPrice ? product.costPrice : '';
+        updateProductMarginPreview();
         document.getElementById('productCategory').value = product ? (product.category || '') : '';
         
         // Stock
@@ -5532,6 +5696,7 @@
             description: document.getElementById('productDescription').value.trim(),
             unit: document.getElementById('productUnit').value.trim() || 'u',
             unitPrice: parseFloat(document.getElementById('productPrice').value),
+            costPrice: parseFloat(document.getElementById('productCostPrice').value) || 0,
             category: document.getElementById('productCategory').value.trim(),
             trackStock: trackStock,
             stockQuantity: trackStock ? parseFloat(document.getElementById('productStockQuantity').value) || 0 : 0,
@@ -5731,6 +5896,11 @@
         document.getElementById('issueDate').textContent = data.issueDate;
         document.getElementById('validDate').textContent = data.validDate;
         resultDiv.style.display = 'block';
+
+        // Activer les boutons variantes
+        if (typeof window.detectVariantsButtons === 'function') {
+            window.detectVariantsButtons(data);
+        }
     }
 
     downloadPdfBtn.addEventListener('click', async (e) => {
@@ -13238,7 +13408,661 @@
             });
         });
     })();
-    
+
+    // ================================================================
+    // 35. DEVIS MULTI-OPTIONS (VARIANTES)
+    // ================================================================
+    (function initVariants() {
+        let currentVariants = [];
+        let currentEditingIndex = null;
+
+        // ----- Activer le mode variantes -----
+        document.getElementById('addVariantsBtn')?.addEventListener('click', () => {
+            if (currentVariants.length === 0) {
+                // Creer 3 variantes vides par defaut
+                currentVariants = [
+                    { name: 'Formule Essentielle', description: '', recommended: false, items: [] },
+                    { name: 'Formule Confort', description: '', recommended: true, items: [] },
+                    { name: 'Formule Premium', description: '', recommended: false, items: [] }
+                ];
+            }
+            renderVariantsPanel();
+            document.getElementById('variantsPanel').style.display = 'block';
+        });
+
+        document.getElementById('editVariantsBtn')?.addEventListener('click', () => {
+            renderVariantsPanel();
+            document.getElementById('variantsPanel').style.display = 'block';
+        });
+
+        document.getElementById('cancelVariantsBtn')?.addEventListener('click', () => {
+            document.getElementById('variantsPanel').style.display = 'none';
+        });
+
+        // ----- Rendu du panneau -----
+        function renderVariantsPanel() {
+            const container = document.getElementById('variantsList');
+            if (!container) return;
+
+            if (currentVariants.length === 0) {
+                container.innerHTML = '<p style="color:#64748b;font-size:13px;text-align:center;padding:20px;">Aucune variante. Cliquez sur "+ Ajouter une variante".</p>';
+                return;
+            }
+
+            let html = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;">';
+
+            for (let i = 0; i < currentVariants.length; i++) {
+                const v = currentVariants[i];
+                const itemCount = Array.isArray(v.items) ? v.items.length : 0;
+                const total = computeVariantTotal(v);
+
+                html += '<div style="background:#161f32;border:1px solid ' + (v.recommended ? '#f97316' : '#2a3a55') + ';border-radius:12px;padding:14px;position:relative;">' +
+                    (v.recommended ? '<div style="position:absolute;top:-10px;left:14px;background:#f97316;color:#0b1120;font-size:10px;font-weight:800;padding:2px 10px;border-radius:40px;">RECOMMANDEE</div>' : '') +
+                    '<div style="color:#fff;font-weight:700;font-size:14px;margin-bottom:6px;">' + escapeHtml(v.name || 'Sans nom') + '</div>' +
+                    (v.description ? '<div style="color:#94a3b8;font-size:12px;margin-bottom:10px;">' + escapeHtml(v.description) + '</div>' : '') +
+                    '<div style="display:flex;justify-content:space-between;font-size:12px;color:#94a3b8;padding:8px 0;border-top:1px solid #1e2a41;border-bottom:1px solid #1e2a41;margin:8px 0;">' +
+                    '<span>' + itemCount + ' article' + (itemCount > 1 ? 's' : '') + '</span>' +
+                    '<span style="color:#f97316;font-weight:700;">' + total.toFixed(2) + ' EUR</span>' +
+                    '</div>' +
+                    '<div style="display:flex;gap:6px;flex-wrap:wrap;">' +
+                    '<button type="button" onclick="editVariantAt(' + i + ')" style="background:#1a253b;border:1px solid #2a3a55;color:#e2e8f0;padding:5px 10px;border-radius:40px;font-size:11px;cursor:pointer;">Editer</button>' +
+                    '<button type="button" onclick="removeVariantAt(' + i + ')" style="background:#3f1e24;border:1px solid #7f1d1d;color:#f87171;padding:5px 10px;border-radius:40px;font-size:11px;cursor:pointer;">Supprimer</button>' +
+                    '</div>' +
+                    '</div>';
+            }
+
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        function computeVariantTotal(variant) {
+            let subtotal = 0;
+            for (const item of (variant.items || [])) {
+                subtotal += (parseFloat(item.qty) || 0) * (parseFloat(item.unitPrice) || 0);
+            }
+            return subtotal;
+        }
+
+        // ----- Ajouter une variante -----
+        document.getElementById('addVariantRowBtn')?.addEventListener('click', () => {
+            if (currentVariants.length >= 5) {
+                showToast('Maximum 5 variantes par devis.', 'error');
+                return;
+            }
+
+            currentVariants.push({
+                name: 'Nouvelle formule',
+                description: '',
+                recommended: false,
+                items: []
+            });
+            renderVariantsPanel();
+        });
+
+        // ----- Supprimer une variante -----
+        window.removeVariantAt = function(index) {
+            if (currentVariants.length <= 2) {
+                showToast('Minimum 2 variantes pour un devis multi-options.', 'error');
+                return;
+            }
+            if (!confirm('Supprimer cette variante ?')) return;
+            currentVariants.splice(index, 1);
+            renderVariantsPanel();
+        };
+
+        // ----- Ouvrir l'editeur de variante -----
+        window.editVariantAt = function(index) {
+            const v = currentVariants[index];
+            if (!v) return;
+
+            currentEditingIndex = index;
+
+            document.getElementById('variantEditTitle').textContent = 'Modifier : ' + (v.name || 'Sans nom');
+            document.getElementById('variantEditIndex').value = index;
+            document.getElementById('variantName').value = v.name || '';
+            document.getElementById('variantDescription').value = v.description || '';
+            document.getElementById('variantRecommended').value = v.recommended ? 'true' : 'false';
+
+            // Rendu des items
+            renderVariantItems(v.items || []);
+
+            document.getElementById('variantEditModal').classList.add('show');
+        };
+
+        // ----- Rendu des items dans le modal -----
+        function renderVariantItems(items) {
+            const container = document.getElementById('variantItemsContainer');
+            if (!container) return;
+            container.innerHTML = '';
+
+            if (items.length === 0) {
+                addVariantItemRow();
+            } else {
+                for (const it of items) addVariantItemRow(it);
+            }
+        }
+
+        function addVariantItemRow(item) {
+            const container = document.getElementById('variantItemsContainer');
+            if (!container) return;
+
+            const row = document.createElement('div');
+            row.className = 'edit-item-row';
+            row.innerHTML =
+                '<input type="text" placeholder="Designation" class="v-name" value="' + (item ? escapeHtml(item.name) : '') + '" />' +
+                '<input type="number" placeholder="Qte" class="v-qty" min="0.01" step="0.01" value="' + (item ? item.qty : 1) + '" />' +
+                '<input type="number" placeholder="Prix HT" class="v-price" min="0" step="0.01" value="' + (item ? item.unitPrice : 0) + '" />' +
+                '<input type="text" placeholder="Total" class="v-total" disabled />' +
+                '<button type="button" class="remove-btn">X</button>';
+
+            const nameI = row.querySelector('.v-name');
+            const qtyI = row.querySelector('.v-qty');
+            const priceI = row.querySelector('.v-price');
+            const totalI = row.querySelector('.v-total');
+            const removeB = row.querySelector('.remove-btn');
+
+            function update() {
+                const qty = parseFloat(qtyI.value) || 0;
+                const price = parseFloat(priceI.value) || 0;
+                totalI.value = (qty * price).toFixed(2) + ' EUR';
+            }
+
+            nameI.addEventListener('input', update);
+            qtyI.addEventListener('input', update);
+            priceI.addEventListener('input', update);
+            removeB.addEventListener('click', () => row.remove());
+
+            if (item && item.ref) nameI.dataset.ref = item.ref;
+
+            update();
+            container.appendChild(row);
+        }
+
+        document.getElementById('addVariantItemBtn')?.addEventListener('click', () => addVariantItemRow());
+
+        // ----- Sauvegarder la variante editee -----
+        document.getElementById('saveVariantEditBtn')?.addEventListener('click', () => {
+            const index = parseInt(document.getElementById('variantEditIndex').value);
+            const name = document.getElementById('variantName').value.trim();
+            const description = document.getElementById('variantDescription').value.trim();
+            const recommended = document.getElementById('variantRecommended').value === 'true';
+
+            if (!name) {
+                showToast('Nom de la variante requis.', 'error');
+                return;
+            }
+
+            const items = [];
+            document.querySelectorAll('#variantItemsContainer .edit-item-row').forEach(row => {
+                const iName = row.querySelector('.v-name').value.trim();
+                const qty = parseFloat(row.querySelector('.v-qty').value) || 0;
+                const price = parseFloat(row.querySelector('.v-price').value) || 0;
+                if (iName && qty > 0) {
+                    items.push({
+                        ref: row.querySelector('.v-name').dataset.ref || null,
+                        name: iName,
+                        qty: qty,
+                        unitPrice: price,
+                        total: Math.round(qty * price * 100) / 100
+                    });
+                }
+            });
+
+            if (items.length === 0) {
+                showToast('Ajoutez au moins un article.', 'error');
+                return;
+            }
+
+            // Si celle-ci est recommandee, retirer le flag des autres
+            if (recommended) {
+                for (let i = 0; i < currentVariants.length; i++) {
+                    if (i !== index) currentVariants[i].recommended = false;
+                }
+            }
+
+            currentVariants[index] = { name, description, recommended, items };
+
+            document.getElementById('variantEditModal').classList.remove('show');
+            renderVariantsPanel();
+        });
+
+        document.getElementById('cancelVariantEditBtn')?.addEventListener('click', () => {
+            document.getElementById('variantEditModal').classList.remove('show');
+        });
+
+        document.getElementById('variantEditModal')?.addEventListener('click', (e) => {
+            if (e.target === e.currentTarget) {
+                e.currentTarget.classList.remove('show');
+            }
+        });
+
+        // ----- Enregistrer les variantes sur le devis -----
+        document.getElementById('saveVariantsBtn')?.addEventListener('click', async () => {
+            // Recuperer l'ID du devis courant
+            const quoteId = getCurrentQuoteId();
+            if (!quoteId) {
+                showToast('Aucun devis actif. Generez un devis d\'abord.', 'error');
+                return;
+            }
+
+            if (currentVariants.length < 2 || currentVariants.length > 5) {
+                showToast('Il faut entre 2 et 5 variantes.', 'error');
+                return;
+            }
+
+            // Verifier que chaque variante a des items
+            for (const v of currentVariants) {
+                if (!v.items || v.items.length === 0) {
+                    showToast('La variante "' + v.name + '" n\'a pas d\'articles.', 'error');
+                    return;
+                }
+            }
+
+            const btn = document.getElementById('saveVariantsBtn');
+            btn.disabled = true;
+            btn.textContent = 'Enregistrement...';
+
+            try {
+                const res = await apiFetch('/api/quotes/' + quoteId + '/variants', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ variants: currentVariants })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Erreur');
+
+                showToast('Variantes enregistrees', 'success');
+                document.getElementById('variantsPanel').style.display = 'none';
+            } catch (err) {
+                showToast('Erreur : ' + err.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Enregistrer les variantes';
+            }
+        });
+
+        // ----- Recuperer l'ID du devis courant -----
+        function getCurrentQuoteId() {
+            // Chercher dans le resultat affiche (lastDevisData) si disponible
+            if (typeof lastDevisData !== 'undefined' && lastDevisData && lastDevisData.id) {
+                return lastDevisData.id;
+            }
+            return null;
+        }
+
+        // ----- Detecter si un devis est multi-options et afficher les boutons -----
+        window.detectVariantsButtons = function(quote) {
+            const addBtn = document.getElementById('addVariantsBtn');
+            const editBtn = document.getElementById('editVariantsBtn');
+
+            if (!addBtn || !editBtn) return;
+
+            if (quote && quote.is_multi_option) {
+                addBtn.style.display = 'none';
+                editBtn.style.display = 'inline-block';
+                currentVariants = quote.variants || [];
+            } else {
+                addBtn.style.display = 'inline-block';
+                editBtn.style.display = 'none';
+            }
+        };
+    })();
+
+    // ================================================================
+    // 37. BONS DE COMMANDE (gestion manuelle)
+    // ================================================================
+    (function initPurchaseOrdersUI() {
+        let poItems = [];
+
+        const poModal = document.getElementById('purchaseOrderModal');
+
+        // ----- Ajouter une ligne d'article -----
+        function addPoItemRow(item) {
+            const container = document.getElementById('poItemsContainer');
+            if (!container) return;
+
+            const row = document.createElement('div');
+            row.className = 'edit-item-row';
+            row.innerHTML =
+                '<input type="text" placeholder="Designation" class="po-name" value="' + (item ? escapeHtml(item.productName || item.name || '') : '') + '" />' +
+                '<input type="number" placeholder="Qte" class="po-qty" min="0.01" step="0.01" value="' + (item ? item.quantity : 1) + '" />' +
+                '<input type="number" placeholder="Prix unit." class="po-price" min="0" step="0.01" value="' + (item ? item.unitPrice : 0) + '" />' +
+                '<input type="text" placeholder="Total" class="po-total" disabled />' +
+                '<button type="button" class="remove-btn">X</button>';
+
+            const nameI = row.querySelector('.po-name');
+            const qtyI = row.querySelector('.po-qty');
+            const priceI = row.querySelector('.po-price');
+            const totalI = row.querySelector('.po-total');
+            const removeB = row.querySelector('.remove-btn');
+
+            function update() {
+                const qty = parseFloat(qtyI.value) || 0;
+                const price = parseFloat(priceI.value) || 0;
+                totalI.value = (qty * price).toFixed(2) + ' EUR';
+                recomputeTotals();
+            }
+
+            nameI.addEventListener('input', update);
+            qtyI.addEventListener('input', update);
+            priceI.addEventListener('input', update);
+            removeB.addEventListener('click', () => { row.remove(); recomputeTotals(); });
+
+            if (item && item.productRef) nameI.dataset.ref = item.productRef;
+            if (item && item.productId) nameI.dataset.productId = item.productId;
+            if (item && item.unit) nameI.dataset.unit = item.unit;
+
+            update();
+            container.appendChild(row);
+        }
+
+        // ----- Recalculer les totaux -----
+        function recomputeTotals() {
+            const rows = document.querySelectorAll('#poItemsContainer .edit-item-row');
+            let subtotal = 0;
+
+            rows.forEach(row => {
+                const qty = parseFloat(row.querySelector('.po-qty').value) || 0;
+                const price = parseFloat(row.querySelector('.po-price').value) || 0;
+                subtotal += qty * price;
+            });
+
+            const box = document.getElementById('poTotalsBox');
+            if (!box) return;
+
+            box.innerHTML =
+                '<div class="totaux-line total"><span>TOTAL HT</span><span class="amount">' + subtotal.toFixed(2) + ' EUR</span></div>';
+        }
+
+        // ----- Ouvrir la modale -----
+        async function openPOModal(mode, po) {
+            document.getElementById('purchaseOrderModalTitle').textContent = mode === 'add'
+                ? 'Nouveau bon de commande'
+                : 'Modifier le bon de commande ' + (po ? po.poNumber : '');
+            document.getElementById('poIdField').value = po ? po.id : '';
+            document.getElementById('poSupplierEmail').value = po ? (po.sentToEmail || '') : '';
+            document.getElementById('poOrderDate').value = po
+                ? (po.issueDate || '').slice(0, 10)
+                : new Date().toISOString().slice(0, 10);
+            document.getElementById('poExpectedDate').value = po && po.expectedDate
+                ? po.expectedDate.slice(0, 10)
+                : '';
+            document.getElementById('poNotes').value = po ? (po.notes || '') : '';
+
+            // Remplir le select fournisseurs
+            try {
+                const res = await apiFetch('/api/suppliers');
+                const suppliers = await res.json();
+                const sel = document.getElementById('poSupplierSelector');
+                sel.innerHTML = '<option value="">- Selectionner -</option>';
+                for (const s of suppliers) {
+                    const opt = document.createElement('option');
+                    opt.value = s.id;
+                    opt.textContent = s.name + (s.email ? ' (' + s.email + ')' : '');
+                    if (po && po.supplierId === s.id) opt.selected = true;
+                    sel.appendChild(opt);
+                }
+            } catch (e) {
+                console.warn('Erreur chargement fournisseurs:', e.message);
+            }
+
+            // Charger les items si edition
+            const container = document.getElementById('poItemsContainer');
+            container.innerHTML = '';
+
+            if (po && po.id) {
+                try {
+                    const res = await apiFetch('/api/stock/purchase-orders/' + po.id);
+                    const detail = await res.json();
+                    poItems = detail.items || [];
+                } catch (e) {
+                    poItems = [];
+                }
+            } else {
+                poItems = [];
+            }
+
+            if (poItems.length === 0) {
+                addPoItemRow();
+            } else {
+                for (const it of poItems) addPoItemRow(it);
+            }
+
+            recomputeTotals();
+            poModal.classList.add('show');
+        }
+
+        // ----- Bouton nouveau BC -----
+        document.getElementById('newPurchaseOrderBtn')?.addEventListener('click', () => openPOModal('add', null));
+
+        // ----- Bouton ajouter ligne -----
+        document.getElementById('addPoItemBtn')?.addEventListener('click', () => addPoItemRow());
+
+        // ----- Annuler -----
+        document.getElementById('cancelPurchaseOrderBtn')?.addEventListener('click', () => poModal.classList.remove('show'));
+        poModal?.addEventListener('click', (e) => {
+            if (e.target === poModal) poModal.classList.remove('show');
+        });
+
+        // ----- Auto-remplir l'email si fournisseur selectionne -----
+        document.getElementById('poSupplierSelector')?.addEventListener('change', async (e) => {
+            const id = parseInt(e.target.value);
+            if (!id) return;
+            try {
+                const res = await apiFetch('/api/suppliers/' + id);
+                const s = await res.json();
+                if (s.email && !document.getElementById('poSupplierEmail').value) {
+                    document.getElementById('poSupplierEmail').value = s.email;
+                }
+            } catch (err) { /* ignore */ }
+        });
+
+        // ----- Enregistrer -----
+        document.getElementById('savePurchaseOrderBtn')?.addEventListener('click', async () => {
+            const id = document.getElementById('poIdField').value;
+            const supplierId = document.getElementById('poSupplierSelector').value;
+
+            const items = [];
+            document.querySelectorAll('#poItemsContainer .edit-item-row').forEach(row => {
+                const name = row.querySelector('.po-name').value.trim();
+                const qty = parseFloat(row.querySelector('.po-qty').value) || 0;
+                const price = parseFloat(row.querySelector('.po-price').value) || 0;
+                if (name && qty > 0) {
+                    items.push({
+                        productId: row.querySelector('.po-name').dataset.productId || null,
+                        productRef: row.querySelector('.po-name').dataset.ref || null,
+                        productName: name,
+                        quantity: qty,
+                        unit: row.querySelector('.po-name').dataset.unit || 'u',
+                        unitPrice: price
+                    });
+                }
+            });
+
+            if (items.length === 0) {
+                showToast('Ajoutez au moins un article valide.', 'error');
+                return;
+            }
+
+            const payload = {
+                supplierId: supplierId || null,
+                supplierEmail: document.getElementById('poSupplierEmail').value.trim(),
+                items: items,
+                issueDate: document.getElementById('poOrderDate').value,
+                expectedDate: document.getElementById('poExpectedDate').value || null,
+                notes: document.getElementById('poNotes').value.trim()
+            };
+
+            const btn = document.getElementById('savePurchaseOrderBtn');
+            btn.disabled = true;
+            btn.textContent = 'Enregistrement...';
+
+            try {
+                const url = id
+                    ? '/api/stock/purchase-orders/' + id
+                    : '/api/stock/purchase-orders';
+                const method = id ? 'PUT' : 'POST';
+
+                const res = await apiFetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Erreur');
+
+                showToast(id ? 'BC modifie' : 'BC cree', 'success');
+                poModal.classList.remove('show');
+
+                // Recharger l'onglet Stock
+                if (typeof loadStock === 'function') loadStock();
+            } catch (err) {
+                showToast('Erreur : ' + err.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Enregistrer';
+            }
+        });
+
+        // ----- Fonctions exposees pour les boutons de l'onglet Stock -----
+        window.editPurchaseOrder = function(id) {
+            const po = (typeof allPurchaseOrders !== 'undefined' && allPurchaseOrders)
+                ? allPurchaseOrders.find(p => p.id === id)
+                : null;
+            if (po) {
+                openPOModal('edit', po);
+            } else {
+                showToast('BC non trouve.', 'error');
+            }
+        };
+
+        window.validatePurchaseOrder = async function(id) {
+            if (!confirm('Valider ce bon de commande ?')) return;
+            try {
+                const res = await apiFetch('/api/stock/purchase-orders/' + id + '/status', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: 'sent' })
+                });
+                if (!res.ok) throw new Error('Erreur');
+                showToast('BC valide', 'success');
+                if (typeof loadStock === 'function') loadStock();
+            } catch (err) {
+                showToast('Erreur : ' + err.message, 'error');
+            }
+        };
+
+        window.sendPurchaseOrderByEmail = async function(id) {
+            const po = (typeof allPurchaseOrders !== 'undefined' && allPurchaseOrders)
+                ? allPurchaseOrders.find(p => p.id === id)
+                : null;
+            if (!po) return;
+
+            let email = po.sentToEmail || '';
+            if (!email) {
+                email = prompt('Email du fournisseur :', '');
+                if (!email) return;
+            }
+
+            if (!confirm('Envoyer le bon de commande a ' + email + ' ?')) return;
+
+            try {
+                showToast('Envoi en cours...', 'info');
+                const res = await apiFetch('/api/stock/purchase-orders/' + id + '/send-email', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: email })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Erreur');
+                showToast('Envoye a ' + data.sentTo, 'success');
+                if (typeof loadStock === 'function') loadStock();
+            } catch (err) {
+                showToast('Erreur : ' + err.message, 'error');
+            }
+        };
+
+        window.showPurchaseOrderLogs = async function(id) {
+            const modal = document.getElementById('poLogsModal');
+            const content = document.getElementById('poLogsContent');
+            modal.classList.add('show');
+            content.innerHTML = '<p style="color:#64748b;text-align:center;padding:40px;">Chargement...</p>';
+
+            try {
+                const res = await apiFetch('/api/stock/purchase-orders/' + id + '/logs');
+                const logs = await res.json();
+
+                if (logs.length === 0) {
+                    content.innerHTML = '<p style="color:#64748b;text-align:center;padding:40px;">Aucun evenement.</p>';
+                    return;
+                }
+
+                const LABELS = {
+                    created: 'Cree manuellement',
+                    auto_created: 'Cree automatiquement',
+                    updated: 'Modifie',
+                    status_changed: 'Statut change',
+                    sent_by_email: 'Envoye par email',
+                    send_error: 'Erreur envoi',
+                    received: 'Receptionne',
+                    cancelled: 'Annule'
+                };
+
+                let html = '<div style="display:flex;flex-direction:column;gap:8px;">';
+                for (const log of logs) {
+                    const date = new Date(log.createdAt).toLocaleString('fr-FR');
+                    const color = log.errorMessage ? '#f87171' : '#22c55e';
+                    const label = LABELS[log.action] || log.action;
+
+                    html += '<div style="background:#0b1120;border:1px solid #1e2a41;border-left:3px solid ' + color + ';border-radius:8px;padding:12px;">' +
+                        '<div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;">' +
+                        '<span style="color:' + color + ';font-weight:700;font-size:13px;">' + escapeHtml(label) + '</span>' +
+                        '<span style="color:#64748b;font-size:11px;">' + date + '</span>' +
+                        '</div>' +
+                        (log.details ? '<div style="color:#94a3b8;font-size:11px;margin-top:4px;font-family:monospace;">' + escapeHtml(JSON.stringify(log.details)) + '</div>' : '') +
+                        (log.errorMessage ? '<div style="color:#f87171;font-size:12px;margin-top:4px;">' + escapeHtml(log.errorMessage) + '</div>' : '') +
+                        '</div>';
+                }
+                html += '</div>';
+                content.innerHTML = html;
+            } catch (err) {
+                content.innerHTML = '<p style="color:#f87171;text-align:center;padding:40px;">Erreur.</p>';
+            }
+        };
+    })();
+
+    // ================================================================
+    // 38. APERCU DE MARGE DANS LA MODALE PRODUIT
+    // ================================================================
+    (function initProductMargin() {
+        window.updateProductMarginPreview = function() {
+            const priceInput = document.getElementById('productPrice');
+            const costInput = document.getElementById('productCostPrice');
+            const preview = document.getElementById('productMarginPreview');
+            const value = document.getElementById('productMarginValue');
+
+            if (!priceInput || !costInput || !preview || !value) return;
+
+            const price = parseFloat(priceInput.value) || 0;
+            const cost = parseFloat(costInput.value) || 0;
+
+            if (price > 0 && cost > 0) {
+                const marginEuro = price - cost;
+                const marginPercent = (marginEuro / price) * 100;
+                const color = marginEuro > 0 ? '#22c55e' : '#f87171';
+
+                value.style.color = color;
+                value.textContent = marginEuro.toFixed(2) + ' EUR (' + marginPercent.toFixed(1) + '%)';
+                preview.style.display = 'block';
+            } else {
+                preview.style.display = 'none';
+            }
+        };
+
+        // Ecouter les changements sur les 2 champs
+        document.getElementById('productPrice')?.addEventListener('input', window.updateProductMarginPreview);
+        document.getElementById('productCostPrice')?.addEventListener('input', window.updateProductMarginPreview);
+    })();
     </script>
 </body>
 </html>

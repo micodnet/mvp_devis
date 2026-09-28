@@ -168,7 +168,14 @@ async function analyzeEmail(userId, rawText, options = {}) {
         return { success: false, error: 'Le texte de l\'email est trop court.' };
     }
 
-    const { fromEmail, fromName, subject } = extractSender(rawText);
+    //const { fromEmail, fromName, subject } = extractSender(rawText);
+    //const cleanedText = cleanEmailText(rawText);
+
+    const extracted = extractSender(rawText);
+    // Les valeurs du formulaire prennent le pas sur ce qui est extrait du texte
+    const fromEmail = options.fromEmail || extracted.fromEmail;
+    const fromName = options.fromName || extracted.fromName;
+    const subject = options.subject || extracted.subject;
     const cleanedText = cleanEmailText(rawText);
 
     // Charger le catalogue
@@ -190,6 +197,13 @@ async function analyzeEmail(userId, rawText, options = {}) {
     }));
 
     // Extraire avec l'IA
+    // const extraction = await extractWithAI(cleanedText, products, services);
+    // if (!extraction.success) {
+    //     return { success: false, error: extraction.error };
+    // }
+
+    // const data = extraction.data;
+        // Extraire avec l'IA
     const extraction = await extractWithAI(cleanedText, products, services);
     if (!extraction.success) {
         return { success: false, error: extraction.error };
@@ -197,6 +211,10 @@ async function analyzeEmail(userId, rawText, options = {}) {
 
     const data = extraction.data;
 
+    // Si l'utilisateur a saisi un nom ou email dans le formulaire, ils prennent le pas
+    if (fromName) data.clientName = fromName;
+    if (fromEmail) data.clientEmail = fromEmail;
+    
     // Si l'IA a detecte un metier + dimensions, on utilise le calculateur metier
     let calculatedItems = null;
     let calculatedLogs = null;

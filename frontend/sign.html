@@ -105,6 +105,8 @@
                 <div class="meta" id="quoteMeta"></div>
             </div>
 
+            <div id="variantsPublicContainer" style="display:none;"></div>
+
             <div class="company-block">
                 <div>
                     <div class="label">Émetteur</div>
@@ -199,6 +201,14 @@
             return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
         }
 
+        function showToast(msg, type) {
+            const toast = document.getElementById('toast');
+            if (!toast) { console.log(msg); return; }
+            toast.textContent = msg;
+            toast.className = 'show ' + (type || 'info');
+            setTimeout(() => { toast.className = ''; }, 3000);
+        }
+
         function formatMoney(n) {
             return parseFloat(n || 0).toFixed(2) + ' €';
         }
@@ -216,6 +226,12 @@
             try {
                 const res = await fetch(`/api/public/quotes/${token}`);
                 const data = await res.json();
+
+                // Affichage des variantes si devis multi-options
+                if (data.quote && data.quote.isMultiOption && Array.isArray(data.quote.variants) && data.quote.variants.length > 0) {
+                    renderPublicVariants(data.quote);
+                }
+
                 if (!res.ok) throw new Error(data.error || 'Erreur');
                 quoteData = data.quote;
                 companyData = data.company;
@@ -437,6 +453,88 @@
                 btn.textContent = '✍️ Signer le devis';
             }
         });
+
+        function renderPublicVariants(quote) {
+            const container = document.getElementById('variantsPublicContainer');
+            if (!container) return;
+
+            container.style.display = 'block';
+
+            let selectedIndex = quote.selectedVariantIndex !== null && quote.selectedVariantIndex !== undefined
+                ? quote.selectedVariantIndex
+                : null;
+
+            function render() {
+                let html = '<div style="margin-bottom:20px;">' +
+                    '<h2 style="color:#fff;font-size:20px;margin-bottom:6px;">Choisissez votre formule</h2>' +
+                    '<p style="color:#94a3b8;font-size:13px;margin-bottom:20px;">Selectionnez l\'option qui vous convient. Le devis sera signe sur cette variante.</p>' +
+                    '</div>';
+
+                html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin-bottom:24px;">';
+
+                for (let i = 0; i < quote.variants.length; i++) {
+                    const v = quote.variants[i];
+                    const isSelected = selectedIndex === i;
+                    const borderColor = isSelected ? '#22c55e' : (v.recommended ? '#f97316' : '#2a3a55');
+                    const bgColor = isSelected ? 'rgba(34,197,94,0.08)' : '#0b1120';
+
+                    html += '<div class="variant-card" data-index="' + i + '" style="background:' + bgColor + ';border:2px solid ' + borderColor + ';border-radius:14px;padding:20px;cursor:pointer;transition:0.2s;position:relative;">' +
+                        (v.recommended ? '<div style="position:absolute;top:-11px;left:50%;transform:translateX(-50%);background:#f97316;color:#0b1120;font-size:10px;font-weight:800;padding:3px 12px;border-radius:40px;white-space:nowrap;">RECOMMANDE</div>' : '') +
+                        (isSelected ? '<div style="position:absolute;top:12px;right:12px;background:#22c55e;color:#0b1120;font-size:14px;font-weight:800;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;">✓</div>' : '') +
+                        '<div style="color:#fff;font-weight:700;font-size:16px;margin-bottom:6px;">' + escapeHtml(v.name) + '</div>' +
+                        (v.description ? '<div style="color:#94a3b8;font-size:12px;margin-bottom:14px;line-height:1.5;">' + escapeHtml(v.description) + '</div>' : '') +
+                        '<div style="color:#f97316;font-size:24px;font-weight:800;margin:16px 0 8px;">' + v.total.toFixed(2) + ' EUR</div>' +
+                        '<div style="color:#64748b;font-size:11px;">HT : ' + v.subtotal.toFixed(2) + ' EUR' + (v.vatAmount > 0 ? ' - TVA : ' + v.vatAmount.toFixed(2) + ' EUR' : '') + '</div>' +
+                        '<div style="margin-top:14px;padding-top:14px;border-top:1px solid #1e2a41;">' +
+                        v.items.slice(0, 4).map(it => '<div style="color:#cbd5e1;font-size:12px;padding:3px 0;">- ' + escapeHtml(it.name) + '</div>').join('') +
+                        (v.items.length > 4 ? '<div style="color:#64748b;font-size:11px;padding-top:4px;font-style:italic;">... et ' + (v.items.length - 4) + ' autres lignes</div>' : '') +
+                        '</div>' +
+                        '</div>';
+                }
+
+                html += '</div>';
+
+                container.innerHTML = html;
+
+                // Events
+                container.querySelectorAll('.variant-card').forEach(card => {
+                    card.addEventListener('click', async () => {
+                        const idx = parseInt(card.dataset.index);
+                        await selectVariant(idx);
+                    });
+                });
+            }
+
+            async function selectVariant(idx) {
+                if (selectedIndex === idx) return;
+
+                try {
+                    const res = await fetch('/api/public/quotes/' + quote.publicToken + '/select-variant', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ variantIndex: idx })
+                    });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error || 'Erreur');
+
+                    selectedIndex = idx;
+                    render();
+
+                    // Signaler le changement
+                    if (typeof showToast === 'function') {
+                        showToast('Formule "' + quote.variants[idx].name + '" selectionnee', 'success');
+                    }
+                } catch (err) {
+                    if (typeof showToast === 'function') {
+                        showToast('Erreur : ' + err.message, 'error');
+                    } else {
+                        alert('Erreur : ' + err.message);
+                    }
+                }
+            }
+
+            render();
+        }
 
         // Démarrage
         loadQuote();

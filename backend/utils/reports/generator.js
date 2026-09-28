@@ -23,15 +23,19 @@ const COLORS = {
 // Convertit un montant en chaine avec 2 decimales
 function fmtMoney(n) {
     const num = parseFloat(n) || 0;
-    return num.toLocaleString('fr-FR', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-    }) + ' EUR';
+    // Formatage manuel pour eviter l'espace insecable fine (U+202F) de toLocaleString fr-FR
+    const parts = num.toFixed(2).split('.');
+    const intPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+    return intPart + ',' + parts[1] + ' EUR';
 }
 
 function fmtNumber(n) {
     const num = parseFloat(n) || 0;
-    return num.toLocaleString('fr-FR', { maximumFractionDigits: 2 });
+    const rounded = Math.round(num * 100) / 100;
+    const parts = rounded.toFixed(2).split('.');
+    const intPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+    if (parts[1] === '00') return intPart;
+    return intPart + ',' + parts[1];
 }
 
 function fmtPercent(n) {
@@ -41,7 +45,11 @@ function fmtPercent(n) {
 function fmtDate(d) {
     if (!d) return '-';
     try {
-        return new Date(d).toLocaleDateString('fr-FR');
+        const date = new Date(d);
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const year = date.getFullYear();
+        return day + '/' + month + '/' + year;
     } catch (e) {
         return '-';
     }

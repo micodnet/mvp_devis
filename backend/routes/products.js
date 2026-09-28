@@ -28,6 +28,7 @@ router.get('/', authenticateToken, async (req, res) => {
             description: p.description,
             unit: p.unit,
             unitPrice: parseFloat(p.unit_price),
+            costPrice: parseFloat(p.cost_price) || 0,
             category: p.category,
             trackStock: p.track_stock || false,
             stockQuantity: parseFloat(p.stock_quantity) || 0,
@@ -35,7 +36,6 @@ router.get('/', authenticateToken, async (req, res) => {
             stockMax: parseFloat(p.stock_max) || 0,
             reorderQuantity: parseFloat(p.reorder_quantity) || 0,
             supplierId: p.supplier_id,
-            costPrice: parseFloat(p.cost_price) || 0,
         })));
     } catch (err) {
         console.error(err);
@@ -48,7 +48,7 @@ router.get('/', authenticateToken, async (req, res) => {
 // ============================================================
 router.post('/', authenticateToken, async (req, res) => {
     const {
-        ref, name, description, unit, unitPrice, category,
+        ref, name, description, unit, unitPrice, costPrice, category,
         trackStock, stockQuantity, stockAlertThreshold, stockMax, reorderQuantity, supplierId
     } = req.body;
 
@@ -59,14 +59,16 @@ router.post('/', authenticateToken, async (req, res) => {
     if (isNaN(price) || price < 0) {
         return res.status(400).json({ error: 'Prix invalide.' });
     }
+    const cost = parseFloat(costPrice);
+    const finalCost = isNaN(cost) || cost < 0 ? 0 : cost;
 
     try {
         const result = await pool.query(`
             INSERT INTO products (
-                user_id, ref, name, description, unit, unit_price, category,
+                user_id, ref, name, description, unit, unit_price, cost_price, category,
                 track_stock, stock_quantity, stock_alert_threshold, stock_max, reorder_quantity, supplier_id
             )
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
             RETURNING *
         `, [
             req.user.id,
@@ -75,6 +77,7 @@ router.post('/', authenticateToken, async (req, res) => {
             description || null,
             unit || 'u',
             price,
+            finalCost,
             category || null,
             trackStock === true,
             parseFloat(stockQuantity) || 0,
@@ -92,6 +95,7 @@ router.post('/', authenticateToken, async (req, res) => {
             description: p.description,
             unit: p.unit,
             unitPrice: parseFloat(p.unit_price),
+            costPrice: parseFloat(p.cost_price) || 0,
             category: p.category,
             trackStock: p.track_stock || false,
             stockQuantity: parseFloat(p.stock_quantity) || 0,
@@ -114,7 +118,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
     if (!productId) return res.status(400).json({ error: 'ID invalide.' });
 
     const {
-        ref, name, description, unit, unitPrice, category,
+        ref, name, description, unit, unitPrice, costPrice, category,
         trackStock, stockQuantity, stockAlertThreshold, stockMax, reorderQuantity, supplierId
     } = req.body;
 
@@ -125,15 +129,18 @@ router.put('/:id', authenticateToken, async (req, res) => {
     if (isNaN(price) || price < 0) {
         return res.status(400).json({ error: 'Prix invalide.' });
     }
+    const cost = parseFloat(costPrice);
+    const finalCost = isNaN(cost) || cost < 0 ? 0 : cost;
 
     try {
         const result = await pool.query(`
             UPDATE products
-            SET ref = $1, name = $2, description = $3, unit = $4, unit_price = $5, category = $6,
-                track_stock = $7, stock_quantity = $8, stock_alert_threshold = $9,
-                stock_max = $10, reorder_quantity = $11, supplier_id = $12,
+            SET ref = $1, name = $2, description = $3, unit = $4, unit_price = $5,
+                cost_price = $6, category = $7,
+                track_stock = $8, stock_quantity = $9, stock_alert_threshold = $10,
+                stock_max = $11, reorder_quantity = $12, supplier_id = $13,
                 updated_at = NOW()
-            WHERE id = $13 AND user_id = $14
+            WHERE id = $14 AND user_id = $15
             RETURNING *
         `, [
             ref || null,
@@ -141,6 +148,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
             description || null,
             unit || 'u',
             price,
+            finalCost,
             category || null,
             trackStock === true,
             parseFloat(stockQuantity) || 0,
@@ -163,6 +171,7 @@ router.put('/:id', authenticateToken, async (req, res) => {
             description: p.description,
             unit: p.unit,
             unitPrice: parseFloat(p.unit_price),
+            costPrice: parseFloat(p.cost_price) || 0,
             category: p.category,
             trackStock: p.track_stock || false,
             stockQuantity: parseFloat(p.stock_quantity) || 0,
@@ -214,41 +223,22 @@ router.post('/import', authenticateToken, upload.single('file'), async (req, res
             return res.status(400).json({ error: 'Fichier vide ou sans données.' });
         }
 
-        // Détection des colonnes via la première ligne (headers)
-        // const headers = rows[0].map(h => String(h).toLowerCase().trim());
-        // const findCol = (...keys) => {
-        //     for (const key of keys) {
-        //         const idx = headers.findIndex(h => h.includes(key));
-        //         if (idx !== -1) return idx;
-        //     }
-        //     return -1;
-        // };
-
-        // const idxName = findCol('name', 'nom', 'designation', 'désignation', 'produit');
-        // const idxRef = findCol('ref', 'réf', 'reference', 'référence', 'sku');
-        // const idxPrice = findCol('prix', 'price', 'pu', 'unit_price', 'tarif', 'montant');
-        // const idxUnit = findCol('unite', 'unité', 'unit');
-        // const idxCategory = findCol('categorie', 'catégorie', 'category');
-        // const idxDesc = findCol('description', 'desc');
-
         // Normalise un header : enlève accents, espaces, caractères spéciaux
         const normalizeHeader = (str) => String(str || '')
             .toLowerCase()
-            .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // enlève les accents
-            .replace(/[^a-z0-9]/g, '')                        // garde uniquement lettres + chiffres
+            .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^a-z0-9]/g, '')
             .trim();
-            
-        // Détection des colonnes via la première ligne (headers)
+
         const headers = rows[0].map(h => normalizeHeader(h));
 
         const findCol = (...keys) => {
             for (const key of keys) {
                 const keyNorm = normalizeHeader(key);
                 if (!keyNorm) continue;
-                const idx = headers.findIndex(h => h === keyNorm);   // match exact prioritaire
+                const idx = headers.findIndex(h => h === keyNorm);
                 if (idx !== -1) return idx;
             }
-            // 2ème passe : recherche partielle
             for (const key of keys) {
                 const keyNorm = normalizeHeader(key);
                 if (!keyNorm) continue;
@@ -261,6 +251,7 @@ router.post('/import', authenticateToken, upload.single('file'), async (req, res
         const idxName = findCol('name', 'nom', 'designation', 'désignation', 'produit', 'libelle', 'label', 'title', 'titre');
         const idxRef = findCol('ref', 'reference', 'référence', 'réf', 'sku', 'code', 'article', 'code article', 'codearticle');
         const idxPrice = findCol('prix', 'price', 'pu', 'unitprice', 'unit_price', 'tarif', 'montant', 'priceht', 'prixht', 'prix unitaire', 'prixunitaire');
+        const idxCost = findCol('cout', 'coût', 'cost', 'costprice', 'coutant', 'prixachat', 'prix achat', 'achat', 'prixdachat');
         const idxUnit = findCol('unite', 'unité', 'unit', 'unite de mesure', 'uom');
         const idxCategory = findCol('categorie', 'catégorie', 'category', 'famille', 'type', 'groupe', 'rubrique');
         const idxDesc = findCol('description', 'desc', 'detail', 'détail', 'commentaire');
@@ -280,12 +271,20 @@ router.post('/import', authenticateToken, upload.single('file'), async (req, res
 
             if (!name || isNaN(price)) continue;
 
+            let cost = 0;
+            if (idxCost !== -1) {
+                const costStr = String(row[idxCost] || '').replace(',', '.').replace(/[^0-9.-]/g, '');
+                const parsed = parseFloat(costStr);
+                if (!isNaN(parsed) && parsed >= 0) cost = parsed;
+            }
+
             produits.push({
                 ref: idxRef !== -1 ? String(row[idxRef] || '').trim() || null : null,
                 name,
                 description: idxDesc !== -1 ? String(row[idxDesc] || '').trim() || null : null,
                 unit: idxUnit !== -1 ? String(row[idxUnit] || '').trim() || 'u' : 'u',
                 unitPrice: price,
+                costPrice: cost,
                 category: idxCategory !== -1 ? String(row[idxCategory] || '').trim() || null : null,
             });
         }
@@ -298,13 +297,13 @@ router.post('/import', authenticateToken, upload.single('file'), async (req, res
         const values = [];
         const params = [];
         produits.forEach((p, idx) => {
-            const base = idx * 7;
-            values.push(`($${base+1}, $${base+2}, $${base+3}, $${base+4}, $${base+5}, $${base+6}, $${base+7})`);
-            params.push(req.user.id, p.ref, p.name, p.description, p.unit, p.unitPrice, p.category);
+            const base = idx * 8;
+            values.push(`($${base+1}, $${base+2}, $${base+3}, $${base+4}, $${base+5}, $${base+6}, $${base+7}, $${base+8})`);
+            params.push(req.user.id, p.ref, p.name, p.description, p.unit, p.unitPrice, p.costPrice, p.category);
         });
 
         await pool.query(`
-            INSERT INTO products (user_id, ref, name, description, unit, unit_price, category)
+            INSERT INTO products (user_id, ref, name, description, unit, unit_price, cost_price, category)
             VALUES ${values.join(', ')}
         `, params);
 

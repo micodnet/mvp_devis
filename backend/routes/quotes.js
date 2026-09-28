@@ -3,6 +3,7 @@
 const express = require('express');
 const { pool } = require('../db');
 const { authenticateToken } = require('../middleware/auth');
+const { computeAllVariants, validateVariants, getSelectedVariant } = require('../utils/variants/helpers');
 
 const router = express.Router();
 
@@ -35,6 +36,9 @@ router.get('/:id', authenticateToken, async (req, res) => {
             clientAddress: q.client_address,
             clientVat: q.client_vat,
             clientEmail: q.client_email,
+            isMultiOption: q.is_multi_option || false,
+            variants: q.variants || [],
+            selectedVariantIndex: q.selected_variant_index,
             signature: {
                 method: q.signature_method,
                 data: q.signature_data,
@@ -71,14 +75,14 @@ router.put('/:id/status', authenticateToken, async (req, res) => {
 });
 
 // ============================================================
-// PUT /api/quotes/:id — Éditer un devis complet (items, client, TVA)
+// PUT /api/quotes/:id — Éditer un devis complet
 // ============================================================
 router.put('/:id', authenticateToken, async (req, res) => {
     const quoteId = parseInt(req.params.id);
     if (!quoteId) return res.status(400).json({ error: 'ID invalide.' });
 
     try {
-        // 🔑 Charger l'ANCIEN devis AVANT modification
+        // Charger l'ANCIEN devis AVANT modification
         const oldResult = await pool.query(
             'SELECT * FROM quotes WHERE id = $1 AND user_id = $2',
             [quoteId, req.user.id]
@@ -101,39 +105,11 @@ router.put('/:id', authenticateToken, async (req, res) => {
                 subtotal += (parseFloat(it.qty) || 0) * (parseFloat(it.unitPrice) || 0);
             }
         }
+
         //const subtotal = items.reduce((sum, item) => sum + (parseFloat(item.total) || 0), 0);
         const vatAmount = vatRegime === 'assujetti' ? subtotal * ((parseFloat(vatRate) || 0) / 100) : 0;
         const total = subtotal + vatAmount;
 
-        // const result = await pool.query(`
-        //     UPDATE quotes
-        //     SET items = $1,
-        //         subtotal = $2,
-        //         vat_amount = $3,
-        //         total = $4,
-        //         vat_regime = $5,
-        //         client_name = $6,
-        //         client_address = $7,
-        //         client_vat = $8,
-        //         client_email = $9,
-        //         valid_date = $10,
-        //         updated_at = NOW()
-        //     WHERE id = $11 AND user_id = $12
-        //     RETURNING *
-        // `, [
-        //     JSON.stringify(items),
-        //     subtotal,
-        //     vatAmount,
-        //     total,
-        //     vatRegime,
-        //     client?.name || null,
-        //     client?.address || null,
-        //     client?.vat || null,
-        //     client?.email || null,
-        //     validDate || null,
-        //     req.params.id,
-        //     req.user.id
-        // ]);
         await pool.query(`
             UPDATE quotes
             SET items = $1,
@@ -163,36 +139,14 @@ router.put('/:id', authenticateToken, async (req, res) => {
             req.user.id
         ]);
 
-        // if (result.rows.length === 0) return res.status(404).json({ error: 'Devis non trouvé.' });
-        // const q = result.rows[0];
-        // res.json({
-        //     success: true,
-        //     quote: {
-        //         id: q.id,
-        //         quoteNumber: q.quote_number,
-        //         issueDate: q.issue_date,
-        //         validDate: q.valid_date,
-        //         subtotal: parseFloat(q.subtotal),
-        //         vatAmount: parseFloat(q.vat_amount),
-        //         total: parseFloat(q.total),
-        //         vatRegime: q.vat_regime,
-        //         status: q.status,
-        //         items: q.items,
-        //         clientName: q.client_name,
-        //         clientAddress: q.client_address,
-        //         clientVat: q.client_vat,
-        //         clientEmail: q.client_email,
-        //     }
-        // });
-
-        // 🔑 Charger le NOUVEAU devis et analyser les changements
+        // Charger le NOUVEAU devis et analyser les changements
         const newResult = await pool.query(
             'SELECT * FROM quotes WHERE id = $1',
             [quoteId]
         );
         const newQuote = newResult.rows[0];
 
-        // 🆕 Enregistrer les observations en arrière-plan (non bloquant)
+        // Enregistrer les observations en arrière-plan (non bloquant)
         try {
             const { analyzeQuoteChanges } = require('../utils/assistant/observations');
             await analyzeQuoteChanges(req.user.id, oldQuote, newQuote);
@@ -283,6 +237,149 @@ router.delete('/:id', authenticateToken, async (req, res) => {
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Erreur serveur.' });
+    }
+});
+
+// ============================================================
+// POST /api/quotes/:id/variants — Definir les variantes
+// ============================================================
+router.post('/:id/variants', authenticateToken, async (req, res) => {
+    const id = parseInt(req.params.id);
+    if (!id) return res.status(400).json({ error: 'ID invalide.' });
+
+    const { variants } = req.body;
+
+    const validation = validateVariants(variants);
+    if (!validation.valid) {
+        return res.status(400).json({ error: validation.error });
+    }
+
+    try {
+        // Charger le devis et les settings
+        const quoteResult = await pool.query(
+            'SELECT * FROM quotes WHERE id = $1 AND user_id = $2',
+            [id, req.user.id]
+        );
+        if (quoteResult.rows.length === 0) {
+            return res.status(404).json({ error: 'Devis introuvable.' });
+        }
+
+        const settingsResult = await pool.query(
+            'SELECT vat_regime, vat_rate FROM settings WHERE user_id = $1',
+            [req.user.id]
+        );
+        const settings = settingsResult.rows[0] || {};
+        const vatRegime = quoteResult.rows[0].vat_regime || settings.vat_regime || 'franchise';
+        const vatRate = parseFloat(settings.vat_rate) || 21;
+
+        // Recalculer chaque variante
+        const computed = computeAllVariants(variants, vatRegime, vatRate);
+
+        // Mettre a jour le devis
+        await pool.query(`
+            UPDATE quotes
+            SET is_multi_option = TRUE,
+                variants = $1,
+                subtotal = 0,
+                vat_amount = 0,
+                total = 0,
+                updated_at = NOW()
+            WHERE id = $2 AND user_id = $3
+        `, [JSON.stringify(computed), id, req.user.id]);
+
+        res.json({ success: true, variants: computed });
+    } catch (err) {
+        console.error('Erreur set variants:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ============================================================
+// GET /api/quotes/:id/variants — Recuperer les variantes
+// ============================================================
+router.get('/:id/variants', authenticateToken, async (req, res) => {
+    const id = parseInt(req.params.id);
+    if (!id) return res.status(400).json({ error: 'ID invalide.' });
+
+    try {
+        const result = await pool.query(
+            'SELECT variants, selected_variant_index, is_multi_option FROM quotes WHERE id = $1 AND user_id = $2',
+            [id, req.user.id]
+        );
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Devis introuvable.' });
+        }
+
+        const row = result.rows[0];
+        res.json({
+            isMultiOption: row.is_multi_option,
+            variants: row.variants || [],
+            selectedVariantIndex: row.selected_variant_index
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ============================================================
+// POST /api/quotes/:id/select-variant — Selectionner une variante
+// ============================================================
+router.post('/:id/select-variant', authenticateToken, async (req, res) => {
+    const id = parseInt(req.params.id);
+    if (!id) return res.status(400).json({ error: 'ID invalide.' });
+
+    const { variantIndex } = req.body;
+
+    if (variantIndex === undefined || variantIndex === null || isNaN(parseInt(variantIndex))) {
+        return res.status(400).json({ error: 'variantIndex requis.' });
+    }
+
+    try {
+        const quoteResult = await pool.query(
+            'SELECT variants, is_multi_option FROM quotes WHERE id = $1 AND user_id = $2',
+            [id, req.user.id]
+        );
+        if (quoteResult.rows.length === 0) {
+            return res.status(404).json({ error: 'Devis introuvable.' });
+        }
+
+        const quote = quoteResult.rows[0];
+        if (!quote.is_multi_option) {
+            return res.status(400).json({ error: 'Ce devis n\'est pas multi-options.' });
+        }
+
+        const variants = quote.variants || [];
+        const idx = parseInt(variantIndex);
+        if (idx < 0 || idx >= variants.length) {
+            return res.status(400).json({ error: 'Index de variante invalide.' });
+        }
+
+        const selected = variants[idx];
+
+        // Mettre a jour : copier les items de la variante dans le devis principal
+        await pool.query(`
+            UPDATE quotes
+            SET selected_variant_index = $1,
+                items = $2,
+                subtotal = $3,
+                vat_amount = $4,
+                total = $5,
+                updated_at = NOW()
+            WHERE id = $6 AND user_id = $7
+        `, [
+            idx,
+            JSON.stringify(selected.items || []),
+            selected.subtotal || 0,
+            selected.vatAmount || 0,
+            selected.total || 0,
+            id,
+            req.user.id
+        ]);
+
+        res.json({ success: true, selectedVariant: selected });
+    } catch (err) {
+        console.error('Erreur select variant:', err);
+        res.status(500).json({ error: err.message });
     }
 });
 

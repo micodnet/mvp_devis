@@ -42,7 +42,239 @@ const PALETTES = {
     }
 };
 
-async function generateQuotePDF(items, subtotal, vatAmount, total, vatRegime, vatRate, quoteNumber, issueDate, validDate, company, client, signature = null, lang = 'fr', template = 'classic') {
+// ------------------------------------------------------------
+// Dessine les variantes cote a cote dans le PDF
+// ------------------------------------------------------------
+async function drawVariantsSection(pdfDoc, page, font, boldFont, variants, options) {
+    const { width, height } = page.getSize();
+    const company = options.company || {};
+    const selectedVariantIndex = options.selectedVariantIndex !== undefined ? options.selectedVariantIndex : null;
+
+    let y = height - 400;
+
+    // Titre de la section
+    page.drawText('Choisissez votre formule', {
+        x: 40, y, size: 18, font: boldFont, color: rgb(0.043, 0.066, 0.125)
+    });
+    y -= 6;
+    page.drawRectangle({
+        x: 40, y: y - 4, width: 80, height: 3, color: rgb(0.976, 0.451, 0.086)
+    });
+    y -= 24;
+
+    page.drawText('Selectionnez l\'option qui vous convient. Le devis sera signe sur cette formule.', {
+        x: 40, y, size: 10, font, color: rgb(0.392, 0.455, 0.545)
+    });
+    y -= 30;
+
+    const variantCount = variants.length;
+    const gap = 14;
+    const leftMargin = 40;
+    const rightMargin = 40;
+    const availableWidth = width - leftMargin - rightMargin;
+    const columnWidth = (availableWidth - gap * (variantCount - 1)) / variantCount;
+
+    const maxColumnHeight = 400;
+    const columnTop = y;
+    const columnBottom = 80;
+
+    for (let i = 0; i < variantCount; i++) {
+        const v = variants[i];
+        const x = leftMargin + i * (columnWidth + gap);
+
+        const isRecommended = v.recommended === true;
+        const isSelected = selectedVariantIndex === i;
+        const bgColor = isSelected
+            ? rgb(0.94, 0.99, 0.95)
+            : (isRecommended ? rgb(1, 0.976, 0.941) : rgb(0.98, 0.98, 0.99));
+        const borderColor = isSelected
+            ? rgb(0.133, 0.773, 0.369)
+            : (isRecommended ? rgb(0.976, 0.451, 0.086) : rgb(0.85, 0.88, 0.92));
+        const borderWidth = (isSelected || isRecommended) ? 2 : 1;
+
+        const columnHeight = maxColumnHeight;
+        page.drawRectangle({
+            x: x,
+            y: columnTop - columnHeight,
+            width: columnWidth,
+            height: columnHeight,
+            color: bgColor,
+            borderColor: borderColor,
+            borderWidth: borderWidth
+        });
+
+        let currentY = columnTop - 20;
+
+        if (isSelected) {
+            const badgeWidth = 80;
+            const badgeHeight = 16;
+            page.drawRectangle({
+                x: x + (columnWidth - badgeWidth) / 2,
+                y: currentY - badgeHeight + 4,
+                width: badgeWidth,
+                height: badgeHeight,
+                color: rgb(0.133, 0.773, 0.369)
+            });
+            page.drawText('SELECTIONNEE', {
+                x: x + (columnWidth - badgeWidth) / 2 + 6,
+                y: currentY - badgeHeight + 9,
+                size: 8,
+                font: boldFont,
+                color: rgb(1, 1, 1)
+            });
+            currentY -= (badgeHeight + 8);
+        } else if (isRecommended) {
+            const badgeWidth = 90;
+            const badgeHeight = 18;
+            page.drawRectangle({
+                x: x + (columnWidth - badgeWidth) / 2,
+                y: currentY - badgeHeight + 4,
+                width: badgeWidth,
+                height: badgeHeight,
+                color: rgb(0.976, 0.451, 0.086)
+            });
+            page.drawText('RECOMMANDE', {
+                x: x + (columnWidth - badgeWidth) / 2 + 10,
+                y: currentY - badgeHeight + 10,
+                size: 9,
+                font: boldFont,
+                color: rgb(1, 1, 1)
+            });
+            currentY -= (badgeHeight + 8);
+        }
+
+        const nameText = v.name || 'Formule';
+        page.drawText(nameText, {
+            x: x + 12, y: currentY - 16, size: 14, font: boldFont,
+            color: rgb(0.043, 0.066, 0.125), maxWidth: columnWidth - 24
+        });
+        currentY -= 34;
+
+        if (v.description) {
+            const desc = v.description.substring(0, 80);
+            page.drawText(desc, {
+                x: x + 12, y: currentY - 12, size: 9, font,
+                color: rgb(0.392, 0.455, 0.545), maxWidth: columnWidth - 24, lineHeight: 12
+            });
+            currentY -= 26;
+        }
+
+        page.drawLine({
+            start: { x: x + 12, y: currentY },
+            end: { x: x + columnWidth - 12, y: currentY },
+            thickness: 0.5, color: rgb(0.85, 0.88, 0.92)
+        });
+        currentY -= 16;
+
+        const totalFormatted = (v.total || 0).toFixed(2) + ' EUR';
+        page.drawText(totalFormatted, {
+            x: x + 12, y: currentY - 24, size: 22, font: boldFont,
+            color: rgb(0.976, 0.451, 0.086)
+        });
+        currentY -= 32;
+
+        const subtotalText = 'HT : ' + (v.subtotal || 0).toFixed(2) + ' EUR';
+        page.drawText(subtotalText, {
+            x: x + 12, y: currentY - 12, size: 9, font,
+            color: rgb(0.392, 0.455, 0.545)
+        });
+        currentY -= 14;
+
+        if ((v.vatAmount || 0) > 0) {
+            const vatText = 'TVA : ' + (v.vatAmount || 0).toFixed(2) + ' EUR';
+            page.drawText(vatText, {
+                x: x + 12, y: currentY - 12, size: 9, font,
+                color: rgb(0.392, 0.455, 0.545)
+            });
+            currentY -= 14;
+        }
+
+        currentY -= 6;
+        page.drawLine({
+            start: { x: x + 12, y: currentY },
+            end: { x: x + columnWidth - 12, y: currentY },
+            thickness: 0.5, color: rgb(0.85, 0.88, 0.92)
+        });
+        currentY -= 14;
+
+        page.drawText('Inclus :', {
+            x: x + 12, y: currentY - 12, size: 9, font: boldFont,
+            color: rgb(0.043, 0.066, 0.125)
+        });
+        currentY -= 20;
+
+        const items = v.items || [];
+        const maxItems = 8;
+        const itemsToShow = items.slice(0, maxItems);
+
+        for (const it of itemsToShow) {
+            if (currentY < columnBottom + 20) break;
+
+            const itemName = (it.name || 'Article').substring(0, 35);
+            const itemQty = it.qty || 1;
+
+            page.drawCircle({
+                x: x + 14, y: currentY + 4, size: 1.5,
+                color: isRecommended ? rgb(0.976, 0.451, 0.086) : rgb(0.58, 0.64, 0.72)
+            });
+
+            page.drawText(itemName, {
+                x: x + 20, y: currentY, size: 8.5, font,
+                color: rgb(0.13, 0.17, 0.23), maxWidth: columnWidth - 32
+            });
+            currentY -= 11;
+
+            const lineText = itemQty + ' x ' + (it.unitPrice || 0).toFixed(2) + ' EUR';
+            page.drawText(lineText, {
+                x: x + 20, y: currentY, size: 7.5, font,
+                color: rgb(0.58, 0.64, 0.72)
+            });
+            currentY -= 13;
+        }
+
+        if (items.length > maxItems) {
+            page.drawText('+ ' + (items.length - maxItems) + ' autres lignes', {
+                x: x + 14, y: currentY, size: 8, font,
+                color: rgb(0.58, 0.64, 0.72), maxWidth: columnWidth - 28
+            });
+        }
+    }
+
+    page.drawLine({
+        start: { x: 40, y: 60 },
+        end: { x: width - 40, y: 60 },
+        thickness: 0.5, color: rgb(0.85, 0.88, 0.92)
+    });
+
+    page.drawText('Chaque formule est detaillee ci-dessus. Selectionnez celle qui vous convient lors de la signature.', {
+        x: 40, y: 44, size: 8, font, color: rgb(0.58, 0.64, 0.72), maxWidth: width - 80
+    });
+
+    if (selectedVariantIndex !== null && variants[selectedVariantIndex]) {
+        page.drawText('Formule selectionnee : ' + (variants[selectedVariantIndex].name || ''), {
+            x: 40, y: 70, size: 9, font: boldFont, color: rgb(0.133, 0.773, 0.369)
+        });
+    }
+
+    if (company.companyName) {
+        page.drawText(company.companyName + (company.email ? ' - ' + company.email : ''), {
+            x: 40, y: 30, size: 7, font, color: rgb(0.7, 0.74, 0.78)
+        });
+    }
+}
+
+// ------------------------------------------------------------
+// Genere le PDF d'un devis
+// ------------------------------------------------------------
+async function generateQuotePDF(
+    items, subtotal, vatAmount, total,
+    vatRegime, vatRate, quoteNumber, issueDate, validDate,
+    company, client, signature = null, lang = 'fr', template = 'classic',
+    signatureVerificationToken = null,
+    isMultiOption = false,
+    variants = [],
+    selectedVariantIndex = null
+) {
     const palette = PALETTES[template] || PALETTES.classic;
     const pdfDoc = await PDFDocument.create();
     const page = pdfDoc.addPage([595, 842]);
@@ -101,14 +333,8 @@ async function generateQuotePDF(items, subtotal, vatAmount, total, vatRegime, va
         // Bande accent en bas du bandeau
         page.drawRectangle({ x: 0, y: height - bannerH, width: width, height: 4, color: palette.accent });
 
-        page.drawText(L('title'), { x: 0, y: height - 50, size: 32, font: boldFont, color: white });
-
         // Centrer le titre
         const titleW = boldFont.widthOfTextAtSize(L('title'), 32);
-        page.drawRectangle({ x: 0, y: 0, width: 0, height: 0 }); // noop
-        // Redessiner à la bonne position
-        page.drawRectangle({ x: 0, y: height - bannerH, width: width, height: bannerH, color: palette.primary });
-        page.drawRectangle({ x: 0, y: height - bannerH, width: width, height: 4, color: palette.accent });
         page.drawText(L('title'), { x: (width - titleW) / 2, y: height - 50, size: 32, font: boldFont, color: white });
 
         // Ligne fine sous le titre
@@ -199,7 +425,101 @@ async function generateQuotePDF(items, subtotal, vatAmount, total, vatRegime, va
     if (client?.vat) { page.drawText(`TVA : ${client.vat}`, { x: colRightX, y: ry, size: 9, font, color: darkGray }); ry -= 11; }
     if (client?.email) { page.drawText(client.email, { x: colRightX, y: ry, size: 9, font, color: darkGray }); }
 
-    // ========== TABLEAU ==========
+     // ========== TABLEAU ==========
+    // ========== CAS SPECIAL : DEVIS MULTI-OPTIONS ==========
+    if (isMultiOption && Array.isArray(variants) && variants.length >= 2) {
+        // Dessiner l'en-tete du devis (infos client, numero, dates)
+        // ... (le code existant au-dessus s'en charge deja)
+
+        // Dessiner les variantes cote a cote
+        await drawVariantsSection(pdfDoc, page, font, boldFont, variants, {
+            company: company,
+            vatRegime: vatRegime,
+            selectedVariantIndex: selectedVariantIndex
+        });
+
+        // Page de signature si signe
+        if (signature && signature.signedAt) {
+            const sigPage = pdfDoc.addPage([595, 842]);
+            const { width: sigW, height: sigH } = sigPage.getSize();
+            let sigY = sigH - 80;
+
+            sigPage.drawText('SIGNATURE ELECTRONIQUE', {
+                x: 50, y: sigY, size: 16, font: boldFont, color: rgb(0.043, 0.066, 0.125)
+            });
+            sigY -= 6;
+            sigPage.drawRectangle({
+                x: 50, y: sigY - 3, width: 100, height: 3, color: rgb(0.976, 0.451, 0.086)
+            });
+            sigY -= 40;
+
+            // Trouver la variante selectionnee
+            const selectedVariant = (selectedVariantIndex !== null && selectedVariantIndex !== undefined && variants[selectedVariantIndex])
+                ? variants[selectedVariantIndex]
+                : null;
+
+            sigPage.drawText('Signe par : ' + (signature.signedBy || ''), {
+                x: 50, y: sigY, size: 12, font: boldFont, color: rgb(0.13, 0.17, 0.23)
+            });
+            sigY -= 20;
+
+            sigPage.drawText('Date : ' + new Date(signature.signedAt).toLocaleString('fr-FR'), {
+                x: 50, y: sigY, size: 11, font: font, color: rgb(0.392, 0.455, 0.545)
+            });
+            sigY -= 20;
+
+            if (selectedVariant) {
+                sigPage.drawText('Formule choisie : ' + selectedVariant.name, {
+                    x: 50, y: sigY, size: 12, font: boldFont, color: rgb(0.976, 0.451, 0.086)
+                });
+                sigY -= 20;
+                sigPage.drawText('Montant signe : ' + (selectedVariant.total || 0).toFixed(2) + ' EUR', {
+                    x: 50, y: sigY, size: 12, font: boldFont, color: rgb(0.13, 0.17, 0.23)
+                });
+                sigY -= 30;
+            }
+
+            // Image de la signature si presente
+            if (signature.method === 'draw' && signature.data) {
+                try {
+                    const base64Data = signature.data.split(',')[1];
+                    const imgBytes = Buffer.from(base64Data, 'base64');
+                    const sigImage = await pdfDoc.embedPng(imgBytes);
+                    const sigDims = sigImage.scale(0.5);
+                    sigPage.drawImage(sigImage, {
+                        x: 50,
+                        y: sigY - sigDims.height,
+                        width: sigDims.width,
+                        height: sigDims.height
+                    });
+                } catch (e) {
+                    console.warn('Impossible d\'ajouter l\'image de signature:', e.message);
+                }
+            }
+        }
+
+        // QR code si token present
+        if (signatureVerificationToken) {
+            try {
+                const QRCode = require('qrcode');
+                const lastPage = pdfDoc.getPages()[pdfDoc.getPageCount() - 1];
+                const verifyUrl = (process.env.APP_URL || 'https://mvp-devis.onrender.com') + '/verify.html?token=' + signatureVerificationToken;
+                const qrDataUrl = await QRCode.toDataURL(verifyUrl, { width: 100, margin: 1, color: { dark: '#0b1120', light: '#ffffff' } });
+                const qrBase64 = qrDataUrl.split(',')[1];
+                const qrBytes = Buffer.from(qrBase64, 'base64');
+                const qrImage = await pdfDoc.embedPng(qrBytes);
+                const qrSize = 60;
+                lastPage.drawImage(qrImage, { x: lastPage.getWidth() - qrSize - 40, y: 40, width: qrSize, height: qrSize });
+                lastPage.drawText('Scan pour verifier', { x: lastPage.getWidth() - qrSize - 55, y: 110, size: 7, font, color: rgb(0.4, 0.4, 0.4) });
+            } catch (err) {
+                console.warn('Erreur QR code:', err.message);
+            }
+        }
+
+        return await pdfDoc.save();
+    }
+
+    // ========== TABLEAU CLASSIQUE ==========
     let y = Math.min(ly, currentY - clientBoxHeight) - 30;
 
     const colRef = mL;
@@ -301,33 +621,35 @@ async function generateQuotePDF(items, subtotal, vatAmount, total, vatRegime, va
         }
     }
 
-    const QRCode = require('qrcode');
-
-    // 🆕 Ajouter le QR code de vérification si le devis est signé
-    if (quoteData.signatureVerificationToken) {
+    // ========== QR CODE ==========
+    if (signatureVerificationToken) {
         try {
-            const verifyUrl = `${process.env.APP_URL || 'https://mvp-devis.onrender.com'}/verify.html?token=${quoteData.signatureVerificationToken}`;
+            const QRCode = require('qrcode');
+            const verifyUrl = (process.env.APP_URL || 'https://mvp-devis.onrender.com') + '/verify.html?token=' + signatureVerificationToken;
             
             // Générer le QR code en base64
-            const qrDataUrl = await QRCode.toDataURL(verifyUrl, { width: 100, margin: 1, color: { dark: '#0b1120', light: '#ffffff' } });
-            
+            const qrDataUrl = await QRCode.toDataURL(verifyUrl, {
+                width: 100, margin: 1, color: { dark: '#0b1120', light: '#ffffff' }
+            });
+
             // Extraire les données base64
             const qrBase64 = qrDataUrl.split(',')[1];
             const qrBytes = Buffer.from(qrBase64, 'base64');
             
             // Intégrer dans le PDF
             const qrImage = await pdfDoc.embedPng(qrBytes);
-            
+
             // Positionner le QR code en bas à droite
             const qrSize = 60;
-            page.drawImage(qrImage, { x: page.getWidth() - qrSize - 40, y: 40, width: qrSize, height: qrSize });
+            page.drawImage(qrImage, { x: width - qrSize - 40, y: 40, width: qrSize, height: qrSize });
             
             // Texte explicatif
-            page.drawText('Scan pour vérifier', { x: page.getWidth() - qrSize - 55, y: 110, size: 7, font: font, color: rgb(0.4, 0.4, 0.4) });
-        } catch (err) { console.warn('Erreur intégration QR code:', err.message); }
+            page.drawText('Scan pour verifier', { x: width - qrSize - 55, y: 110, size: 7, font, color: rgb(0.4, 0.4, 0.4) });
+        } catch (err) {
+            console.warn('Erreur integration QR code:', err.message);
+        }
     }
-        
-    
+
     // ========== PIED DE PAGE ==========
     const footerY = 55;
     page.drawLine({ start: { x: mL, y: footerY + 25 }, end: { x: width - mR, y: footerY + 25 }, thickness: 0.5, color: rgb(0.85, 0.88, 0.92) });

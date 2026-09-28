@@ -15,6 +15,7 @@ const { extractItemsFromText } = require('./utils/extractor');
 const { generateQuotePDF } = require('./utils/pdf-generator');
 const { checkAndIncrementQuota } = require('./utils/quota');
 const { startRemindersCron } = require('./utils/cron/reminders-cron');
+const { autoPrepareFromSignedQuote } = require('./utils/purchase-orders/auto-prepare');
 
 const authRoutes = require('./routes/auth');
 const { router: stripeRoutes, stripeWebhook } = require('./routes/stripe');
@@ -55,7 +56,7 @@ const ENABLE_QUOTA_LIMITS = false;
 const app = express();
 const port = process.env.PORT || 3000;
 
-app.set('trust proxy', 1); // Trust Render's proxy (needed for req.protocol = https)
+app.set('trust proxy', 1);// Trust Render's proxy (needed for req.protocol = https)
 
 // Webhook Stripe: a besoin du body brut pour vérifier la signature
 app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), stripeWebhook);
@@ -158,7 +159,7 @@ app.get('/api/settings', authenticateToken, async (req, res) => {
 // POST /api/settings
 // ============================================================
 app.post('/api/settings', authenticateToken, async (req, res) => {
-        const { companyName, address, siret, tva, phone, email, website, logo, vatRegime, vatRate, signatureMethod, iban, bic, bankName, invoicePrefix, paymentTerms, language, pdfTemplate } = req.body;
+    const { companyName, address, siret, tva, phone, email, website, logo, vatRegime, vatRate, signatureMethod, iban, bic, bankName, invoicePrefix, paymentTerms, language, pdfTemplate } = req.body;
     try {
         await pool.query(`
             INSERT INTO settings (
@@ -248,6 +249,9 @@ app.get('/api/history', authenticateToken, async (req, res) => {
             publicToken: r.public_token,
             sentToClientAt: r.sent_to_client_at,
             clientViewedAt: r.client_viewed_at,
+            isMultiOption: r.is_multi_option || false,
+            variants: r.variants || [],
+            selectedVariantIndex: r.selected_variant_index,
             signature: r.signature_signed_at ? {
                 method: r.signature_method,
                 signedAt: r.signature_signed_at,
@@ -350,7 +354,6 @@ app.post('/api/generate-quote', authenticateToken, upload.single('file'), async 
         } else {
             logs.push(`Franchise de TVA : pas de TVA appliquée.`);
         }
-
         // ---- Numéro de devis unique par utilisateur ----
         const counterResult = await pool.query(
             'SELECT last_number FROM counters WHERE user_id = $1',
@@ -396,9 +399,9 @@ app.post('/api/generate-quote', authenticateToken, upload.single('file'), async 
         //     [req.user.id]
         // );
         const currency = req.body.currency || settingsResult.rows[0]?.default_currency || 'EUR';
-
+        
         // Recuperer le taux de change
-        const { getRate } = require('../utils/currency/rates');
+        const { getRate } = require('./utils/currency/rates');
         const exchangeRate = await getRate(currency, 'EUR');
 
         // ---- Insertion du devis en base ----
@@ -449,11 +452,17 @@ app.post('/api/generate-quote', authenticateToken, upload.single('file'), async 
 });
 
 // ============================================================
-// GET /api/download-pdf
+// POST /api/download-pdf
 // ============================================================
 app.post('/api/download-pdf', authenticateToken, async (req, res) => {
     try {
         const { items, subtotal, vatAmount, total, vatRegime, vatRate, quoteNumber, issueDate, validDate, company, client, signature, lang, template } = req.body;
+
+        //         const dataParam = req.query.data;
+        //         if (!dataParam) return res.status(400).send('Données manquantes');
+        //         const data = JSON.parse(dataParam);
+        //         const { items, subtotal, vatAmount, total, vatRegime, vatRate, quoteNumber, issueDate, validDate, company, client, signature } = data;
+
 
         // Si la langue n'est pas spécifiée, on la lit dans les settings
         let finalLang = lang;
@@ -467,10 +476,20 @@ app.post('/api/download-pdf', authenticateToken, async (req, res) => {
             return res.status(400).json({ error: 'Aucun article' });
         }
 
+        const quoteResult = await pool.query(
+            'SELECT signature_verification_token, is_multi_option, variants, selected_variant_index FROM quotes WHERE user_id = $1 AND quote_number = $2 ORDER BY id DESC LIMIT 1',
+            [req.user.id, quoteNumber]
+        );
+        const quoteRow = quoteResult.rows[0] || {};
+
         const pdfBytes = await generateQuotePDF(
             items, subtotal, vatAmount, total,
             vatRegime, vatRate, quoteNumber, issueDate, validDate,
-            company, client, signature, finalLang, finalTemplate
+            company, client, signature, finalLang, finalTemplate,
+            quoteRow.signature_verification_token || null,
+            quoteRow.is_multi_option === true,
+            quoteRow.variants || [],
+            quoteRow.selected_variant_index
         );
 
         res.setHeader('Content-Type', 'application/pdf');
@@ -481,28 +500,7 @@ app.post('/api/download-pdf', authenticateToken, async (req, res) => {
         res.status(500).json({ error: 'Erreur génération PDF : ' + err.message });
     }
 });
-// app.post('/api/download-pdf', authenticateToken, async (req, res) => {
-//     try {
-//         const dataParam = req.query.data;
-//         if (!dataParam) return res.status(400).send('Données manquantes');
-//         const data = JSON.parse(dataParam);
-//         const { items, subtotal, vatAmount, total, vatRegime, vatRate, quoteNumber, issueDate, validDate, company, client, signature } = data;
 
-//         if (!items || items.length === 0) return res.status(400).send('Aucun article');
-
-//         const pdfBytes = await generateQuotePDF(
-//             items, subtotal, vatAmount, total,
-//             vatRegime, vatRate, quoteNumber, issueDate, validDate,
-//             company, client, signature
-//         );
-//         res.setHeader('Content-Type', 'application/pdf');
-//         res.setHeader('Content-Disposition', `attachment; filename=devis_${quoteNumber}.pdf`);
-//         res.send(Buffer.from(pdfBytes));
-//     } catch (err) {
-//         console.error(err);
-//         res.status(500).send('Erreur génération PDF');
-//     }
-// });
 // ============================================================
 // POST /api/send-email
 // ============================================================
@@ -515,13 +513,25 @@ app.post('/api/send-email', authenticateToken, async (req, res) => {
 
         const settingsLangRes = await pool.query('SELECT language FROM settings WHERE user_id = $1', [req.user.id]);
         const mailLang = settingsLangRes.rows[0]?.language || 'fr';
-        
+
         const settingsTplRes = await pool.query('SELECT pdf_template FROM settings WHERE user_id = $1', [req.user.id]);
         const mailTemplate = settingsTplRes.rows[0]?.pdf_template || 'classic';
+
+        const quoteExtraResult = await pool.query(
+            'SELECT signature_verification_token, is_multi_option, variants, selected_variant_index FROM quotes WHERE user_id = $1 AND quote_number = $2 ORDER BY id DESC LIMIT 1',
+            [req.user.id, quoteNumber]
+        );
+        const quoteExtra = quoteExtraResult.rows[0] || {};
+
         const pdfBytes = await generateQuotePDF(
             items, subtotal, vatAmount, total, vatRegime, vatRate,
-            quoteNumber, issueDate, validDate, company, client, signature, mailLang, mailTemplate
+            quoteNumber, issueDate, validDate, company, client, signature, mailLang, mailTemplate,
+            quoteExtra.signature_verification_token || null,
+            quoteExtra.is_multi_option === true,
+            quoteExtra.variants || [],
+            quoteExtra.selected_variant_index
         );
+
         const resend = new Resend(process.env.RESEND_API_KEY);
 
         const vatLine = vatRegime === 'assujetti'
@@ -568,10 +578,7 @@ app.post('/api/send-email', authenticateToken, async (req, res) => {
 });
 
 // ============================================================
-// GET /api/dashboard
-// ==================
-// ============================================================
-// POST /api/quotes/:id/sign — Enregistrer la signature d'un devis
+// POST /api/quotes/:id/sign
 // ============================================================
 app.post('/api/quotes/:id/sign', authenticateToken, async (req, res) => {
     const quoteId = parseInt(req.params.id);
@@ -735,10 +742,8 @@ app.post('/api/quotes/:id/send-to-client', authenticateToken, async (req, res) =
 });
 
 // ============================================================
-// ROUTES PUBLIQUES (pas d'authentification)
-// ============================================================
-
 // GET /api/public/quotes/:token — Récupérer un devis par son token
+// ============================================================
 app.get('/api/public/quotes/:token', async (req, res) => {
     try {
         const { token } = req.params;
@@ -761,7 +766,7 @@ app.get('/api/public/quotes/:token', async (req, res) => {
         // Marquer comme vu (seulement la première fois)
         if (!q.client_viewed_at) {
             await pool.query('UPDATE quotes SET client_viewed_at = NOW() WHERE id = $1', [q.id]);
-            
+
             // Notification push au propriétaire
             try {
                 const { notifyQuoteViewed } = require('./utils/push/notifications');
@@ -793,6 +798,10 @@ app.get('/api/public/quotes/:token', async (req, res) => {
                 clientAddress: q.client_address,
                 clientVat: q.client_vat,
                 clientEmail: q.client_email,
+                isMultiOption: q.is_multi_option || false,
+                variants: q.variants || [],
+                selectedVariantIndex: q.selected_variant_index,
+                publicToken: q.public_token,
                 signature: q.signature_signed_at ? {
                     method: q.signature_method,
                     data: q.signature_data,
@@ -820,7 +829,73 @@ app.get('/api/public/quotes/:token', async (req, res) => {
     }
 });
 
+// ============================================================
+// POST /api/public/quotes/:token/select-variant — Client choisit sa variante
+// ============================================================
+app.post('/api/public/quotes/:token/select-variant', async (req, res) => {
+    const { token } = req.params;
+    const { variantIndex } = req.body;
+
+    if (!token) return res.status(400).json({ error: 'Token manquant.' });
+    if (variantIndex === undefined || variantIndex === null) {
+        return res.status(400).json({ error: 'variantIndex requis.' });
+    }
+
+    try {
+        const quoteResult = await pool.query(
+            'SELECT * FROM quotes WHERE public_token = $1',
+            [token]
+        );
+        if (quoteResult.rows.length === 0) {
+            return res.status(404).json({ error: 'Devis introuvable.' });
+        }
+
+        const quote = quoteResult.rows[0];
+
+        if (!quote.is_multi_option) {
+            return res.status(400).json({ error: 'Ce devis n\'est pas multi-options.' });
+        }
+
+        if (quote.signature_signed_at) {
+            return res.status(400).json({ error: 'Ce devis est deja signe. Impossible de changer la variante.' });
+        }
+
+        const variants = quote.variants || [];
+        const idx = parseInt(variantIndex);
+        if (idx < 0 || idx >= variants.length) {
+            return res.status(400).json({ error: 'Index de variante invalide.' });
+        }
+
+        const selected = variants[idx];
+
+        await pool.query(`
+            UPDATE quotes
+            SET selected_variant_index = $1,
+                items = $2,
+                subtotal = $3,
+                vat_amount = $4,
+                total = $5,
+                updated_at = NOW()
+            WHERE id = $6
+        `, [
+            idx,
+            JSON.stringify(selected.items || []),
+            selected.subtotal || 0,
+            selected.vatAmount || 0,
+            selected.total || 0,
+            quote.id
+        ]);
+
+        res.json({ success: true, selectedVariant: selected });
+    } catch (err) {
+        console.error('Erreur public select variant:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ============================================================
 // POST /api/public/quotes/:token/sign — Signature par le client (sans auth)
+// ============================================================
 app.post('/api/public/quotes/:token/sign', async (req, res) => {
     try {
         try {
@@ -875,6 +950,36 @@ app.post('/api/public/quotes/:token/sign', async (req, res) => {
         ]);
 
         // Notification push + webhook au proprietaire
+        // try {
+        //     const quoteResult = await pool.query(
+        //         'SELECT * FROM quotes WHERE public_token = $1',
+        //         [token]
+        //     );
+        //     if (quoteResult.rows.length > 0) {
+        //         const quote = quoteResult.rows[0];
+
+        //         const { notifyQuoteSigned } = require('./utils/push/notifications');
+        //         await notifyQuoteSigned(quote.user_id, {
+        //             ...quote,
+        //             signature_signed_by: signedBy.trim()
+        //         });
+
+        //         const { dispatchEvent } = require('./utils/webhooks/dispatcher');
+        //         await dispatchEvent(quote.user_id, 'quote.signed', {
+        //             quoteId: quote.id,
+        //             quoteNumber: quote.quote_number,
+        //             clientName: quote.client_name,
+        //             clientEmail: quote.client_email,
+        //             total: parseFloat(quote.total),
+        //             currency: quote.currency || 'EUR',
+        //             signedBy: signedBy.trim(),
+        //             signedAt: new Date().toISOString()
+        //         });
+        //     }
+        // } catch (e) {
+        //     console.warn('Post-signature error:', e.message);
+        // }
+
         try {
             const quoteResult = await pool.query(
                 'SELECT * FROM quotes WHERE public_token = $1',
@@ -900,6 +1005,16 @@ app.post('/api/public/quotes/:token/sign', async (req, res) => {
                     signedBy: signedBy.trim(),
                     signedAt: new Date().toISOString()
                 });
+
+                // Preparer automatiquement les bons de commande pour les produits en stock insuffisant
+                try {
+                    const poResult = await autoPrepareFromSignedQuote(quote.user_id, quote.id);
+                    if (poResult.created > 0) {
+                        console.log('Bons de commande prepares apres signature : ' + poResult.created);
+                    }
+                } catch (poErr) {
+                    console.warn('Erreur preparation BC apres signature :', poErr.message);
+                }
             }
         } catch (e) {
             console.warn('Post-signature error:', e.message);
@@ -912,7 +1027,9 @@ app.post('/api/public/quotes/:token/sign', async (req, res) => {
     }
 });
 
+// ============================================================
 // GET /api/public/quotes/:token/pdf — Télécharger le PDF du devis (sans auth)
+// ============================================================
 app.get('/api/public/quotes/:token/pdf', async (req, res) => {
     try {
         const { token } = req.params;
@@ -969,7 +1086,13 @@ app.get('/api/public/quotes/:token/pdf', async (req, res) => {
             q.valid_date,
             company,
             client,
-            signature
+            signature,
+            s.language || 'fr',
+            s.pdf_template || 'classic',
+            q.signature_verification_token || null,
+            q.is_multi_option === true,
+            q.variants || [],
+            q.selected_variant_index
         );
 
         res.setHeader('Content-Type', 'application/pdf');
@@ -1182,6 +1305,9 @@ app.get('/api/dashboard/charts', authenticateToken, async (req, res) => {
     }
 });
 
+// ============================================================
+// GET /api/dashboard
+// ============================================================
 app.get('/api/dashboard', authenticateToken, async (req, res) => {
     try {
         const result = await pool.query(
@@ -1227,7 +1353,7 @@ initDB()
         app.listen(port, () => {
             console.log(`Serveur Pro lancé sur http://localhost:${port}`);
             // Demarre le cron de relances
-            startRemindersCron()
+            startRemindersCron();
 
             const { retryFailedDeliveries } = require('./utils/webhooks/dispatcher');
             setInterval(() => {
