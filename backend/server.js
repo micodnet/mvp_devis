@@ -19,6 +19,10 @@ const { autoPrepareFromSignedQuote } = require('./utils/purchase-orders/auto-pre
 
 const authRoutes = require('./routes/auth');
 const { router: stripeRoutes, stripeWebhook } = require('./routes/stripe');
+const clientPortalRoutes = require('./routes/client-portal');
+const onlinePaymentsRoutes = require('./routes/online-payments');
+const stripeWebhookRoutes = require('./routes/stripe-webhook');
+const publicPaymentsRoutes = require('./routes/public-payments');
 const productsRoutes = require('./routes/products');
 const clientsRoutes = require('./routes/clients');
 const quotesRoutes = require('./routes/quotes');
@@ -51,7 +55,6 @@ const emailImportRoutes = require('./routes/email-import');
 const recurringRoutes = require('./routes/recurring');
 const purchaseOrdersRoutes = require('./routes/purchase-orders');
 const smsRoutes = require('./routes/sms');
-const clientPortalRoutes = require('./routes/client-portal');
 
 // ⚙️ INTERRUPTEUR DE QUOTA — Mets à `false` pour désactiver les limites pendant les tests
 const ENABLE_QUOTA_LIMITS = false;
@@ -64,6 +67,9 @@ app.set('trust proxy', 1);// Trust Render's proxy (needed for req.protocol = htt
 // Webhook Stripe: a besoin du body brut pour vérifier la signature
 app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), stripeWebhook);
 
+// Webhook Stripe (paiements en ligne): doit être AVANT express.json()
+app.use('/api/stripe-webhooks', express.raw({ type: 'application/json' }), stripeWebhookRoutes);
+
 // Middleware
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
@@ -73,6 +79,10 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // Routes publiques
 app.use('/api/auth', authRoutes);
 app.use('/api/stripe', stripeRoutes);
+app.use('/api/client-portal', clientPortalRoutes);
+app.use('/api/online-payments', onlinePaymentsRoutes);
+app.use('/api/stripe-webhook', stripeWebhookRoutes);
+app.use('/api/public-payments', publicPaymentsRoutes);
 app.use('/api/products', productsRoutes);
 app.use('/api/clients', clientsRoutes);
 app.use('/api/quotes', quotesRoutes);
@@ -105,7 +115,6 @@ app.use('/api/email-import', emailImportRoutes);
 app.use('/api/recurring', recurringRoutes);
 app.use('/api/purchase-orders', purchaseOrdersRoutes);
 app.use('/api/sms', smsRoutes);
-app.use('/api/client-portal', clientPortalRoutes);
 
 // Multer
 const storage = multer.diskStorage({

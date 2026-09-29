@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paiement annule</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body {
+            background: #0b1120;
+            color: #e2e8f0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .card {
+            background: #161f32;
+            border: 1px solid #2a3a55;
+            border-radius: 24px;
+            padding: 48px 36px;
+            max-width: 480px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.5);
+        }
+        .icon-cancel {
+            width: 80px;
+            height: 80px;
+            background: rgba(248, 113, 113, 0.15);
+            border: 2px solid #f87171;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+            font-size: 40px;
+            color: #f87171;
+        }
+        h1 {
+            color: #fff;
+            font-size: 26px;
+            font-weight: 800;
+            margin-bottom: 12px;
+        }
+        p {
+            color: #cbd5e1;
+            font-size: 15px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        .hint {
+            font-size: 13px;
+            color: #94a3b8;
+            background: #0b1120;
+            border: 1px solid #1e2a41;
+            border-radius: 12px;
+            padding: 14px 18px;
+            text-align: left;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="icon-cancel">X</div>
+        <h1>Paiement annule</h1>
+        <p>Votre paiement n'a pas ete finalise.</p>
+        <p style="font-size:14px;">
+            Vous pouvez fermer cette page et reprendre le paiement depuis le lien que vous avez recu par email.
+        </p>
+        <div class="hint">
+            Si vous rencontrez des difficultes, contactez directement l'entreprise qui vous a envoye la facture.
+        </div>
+    </div>
+</body>
+</html>

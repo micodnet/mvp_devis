@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paiement reussi</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body {
+            background: #0b1120;
+            color: #e2e8f0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .card {
+            background: #161f32;
+            border: 1px solid #2a3a55;
+            border-radius: 24px;
+            padding: 48px 36px;
+            max-width: 480px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.5);
+        }
+        .icon-success {
+            width: 80px;
+            height: 80px;
+            background: rgba(34, 197, 94, 0.15);
+            border: 2px solid #22c55e;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+            font-size: 40px;
+            color: #22c55e;
+        }
+        h1 {
+            color: #fff;
+            font-size: 26px;
+            font-weight: 800;
+            margin-bottom: 12px;
+        }
+        p {
+            color: #cbd5e1;
+            font-size: 15px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+        .amount {
+            font-size: 32px;
+            font-weight: 800;
+            color: #22c55e;
+            margin: 24px 0;
+        }
+        .info {
+            background: #0b1120;
+            border: 1px solid #1e2a41;
+            border-radius: 12px;
+            padding: 14px 18px;
+            font-size: 13px;
+            color: #94a3b8;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        .info strong { color: #e2e8f0; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="icon-success">OK</div>
+        <h1>Paiement reussi</h1>
+        <p>Merci, votre paiement a bien ete enregistre.</p>
+
+        <div class="amount" id="paymentAmount">-</div>
+
+        <div class="info" id="paymentInfo" style="display:none;">
+            <div><strong>Facture :</strong> <span id="paymentInvoice">-</span></div>
+            <div><strong>Entreprise :</strong> <span id="paymentCompany">-</span></div>
+            <div><strong>Date :</strong> <span id="paymentDate">-</span></div>
+        </div>
+
+        <p style="font-size:13px;color:#94a3b8;">
+            Un recu vous sera envoye par email. Vous pouvez fermer cette page.
+        </p>
+    </div>
+
+    <script>
+        (async function() {
+            const params = new URLSearchParams(window.location.search);
+            const sessionId = params.get('session_id');
+
+            if (!sessionId) return;
+
+            try {
+                const res = await fetch('/api/online-payments/public/session/' + sessionId);
+                const data = await res.json();
+
+                if (!res.ok) throw new Error(data.error || 'Erreur');
+
+                const amountEl = document.getElementById('paymentAmount');
+                amountEl.textContent = (data.amount || 0).toFixed(2) + ' ' + (data.currency || 'EUR');
+
+                if (data.invoiceNumber) {
+                    document.getElementById('paymentInfo').style.display = 'block';
+                    document.getElementById('paymentInvoice').textContent = data.invoiceNumber;
+                    document.getElementById('paymentCompany').textContent = data.companyName || '-';
+                    document.getElementById('paymentDate').textContent = data.paidAt
+                        ? new Date(data.paidAt).toLocaleString('fr-FR')
+                        : '-';
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        })();
+    </script>
+</body>
+</html>

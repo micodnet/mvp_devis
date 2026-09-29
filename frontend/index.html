@@ -1900,6 +1900,8 @@
             .tab-btn[data-tab="tab-dashboard"]       { order: 40; }
             .tab-btn[data-tab="tab-analytics"]       { order: 41; }
             .tab-btn[data-tab="tab-reports"]         { order: 42; }
+            .tab-btn[data-tab="tab-client-portal"]   { order: 43; }
+            .tab-btn[data-tab="tab-online-payments"] { order: 44; }
             .tab-btn[data-tab="tab-assistant"]       { order: 50; }
             .tab-btn[data-tab="tab-sms"]             { order: 51; }
             .tab-btn[data-tab="tab-api"]             { order: 60; }
@@ -2271,6 +2273,7 @@
             <button class="tab-btn" data-tab="tab-webhooks" data-i18n="app.tab.webhooks">Webhooks</button>
             <button class="tab-btn" data-tab="tab-sms">SMS</button>
             <button class="tab-btn" data-tab="tab-client-portal">Portail client</button>
+            <button class="tab-btn" data-tab="tab-online-payments">Paiements</button>
             <button class="tab-btn" data-tab="tab-reports">Rapports</button>
             <button class="tab-btn" data-tab="tab-email-import">Import email</button>
             <button class="tab-btn" data-tab="tab-recurring">Factures recurrentes</button>
@@ -2805,6 +2808,84 @@
                         <li>Liste detaillee des devis de la periode</li>
                     </ul>
                 </div>
+            </div>
+        </div>
+
+        <!-- PAIEMENTS EN LIGNE -->
+        <div id="tab-online-payments" class="tab-content">
+            <div class="card">
+                <div class="catalog-header">
+                    <h2>Paiements en ligne</h2>
+                </div>
+                <p style="color:#94a3b8;font-size:13px;margin-bottom:20px;line-height:1.6;">
+                    Permettez a vos clients de payer leurs factures en ligne (carte bancaire, Bancontact, iDEAL, virement SEPA) via Stripe.
+                    Configurez vos cles API, puis generez un lien de paiement pour chaque facture.
+                </p>
+
+                <div class="card-title" style="margin-top:8px;font-size:15px;">Configuration Stripe</div>
+
+                <div class="form-group">
+                    <label class="checkbox-accept" style="margin:0;">
+                        <input type="checkbox" id="stripeEnabled" />
+                        <div class="text">Activer les paiements en ligne via Stripe</div>
+                    </label>
+                </div>
+
+                <div id="stripeConfigFields" style="display:none;">
+                    <div class="form-group">
+                        <label>Cle publique Stripe (pk_live_... ou pk_test_...)</label>
+                        <input type="text" id="stripePublicKey" placeholder="pk_test_..." />
+                    </div>
+                    <div class="form-group">
+                        <label>Cle secrete Stripe (sk_live_... ou sk_test_...)</label>
+                        <input type="password" id="stripeSecretKey" placeholder="sk_test_..." />
+                        <div id="stripeSecretHint" style="color:#64748b;font-size:11px;margin-top:4px;"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>Webhook secret Stripe (whsec_...)</label>
+                        <input type="password" id="stripeWebhookSecret" placeholder="whsec_..." />
+                        <div id="stripeWebhookHint" style="color:#64748b;font-size:11px;margin-top:4px;"></div>
+                    </div>
+                </div>
+
+                <div style="display:flex;gap:10px;margin-top:20px;flex-wrap:wrap;">
+                    <button class="btn-save" id="stripeSaveBtn">Enregistrer la configuration</button>
+                    <button class="btn-secondary" id="stripeTestBtn" style="display:none;">Tester la connexion</button>
+                </div>
+
+                <div id="stripeTestResult" style="margin-top:12px;font-size:13px;"></div>
+
+                <div style="background:#0b1120;border-left:3px solid #3b82f6;padding:14px 18px;margin-top:20px;border-radius:8px;">
+                    <div style="color:#3b82f6;font-weight:600;font-size:13px;margin-bottom:6px;">Comment obtenir ces cles ?</div>
+                    <ol style="color:#94a3b8;font-size:12px;padding-left:20px;line-height:1.8;">
+                        <li>Creez un compte sur <a href="https://dashboard.stripe.com/register" target="_blank" style="color:#3b82f6;">stripe.com</a> (gratuit)</li>
+                        <li>Allez dans Developpeurs &gt; Cles API</li>
+                        <li>Copiez la cle publique et la cle secrete</li>
+                        <li>Pour le webhook : Developpeurs &gt; Webhooks &gt; Ajouter un endpoint</li>
+                        <li>URL : <span style="font-family:monospace;color:#f97316;" id="webhookUrlHint">https://votre-domaine.com/api/stripe-webhooks/events</span></li>
+                        <li>Evenements a cocher : <code>checkout.session.completed</code>, <code>checkout.session.expired</code></li>
+                        <li>Copiez le "Signing secret" (whsec_...) dans le champ ci-dessus</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="catalog-header">
+                    <h2>Statistiques</h2>
+                </div>
+                <div id="paymentStatsBox" class="stats-grid" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr));">
+                    <p style="color:#64748b;">Chargement...</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="catalog-header">
+                    <h2>Historique des paiements</h2>
+                    <div class="catalog-actions">
+                        <button class="btn-secondary" id="refreshPaymentsBtn">Rafraichir</button>
+                    </div>
+                </div>
+                <div id="paymentsList"><p style="color:#64748b;text-align:center;padding:40px;">Chargement...</p></div>
             </div>
         </div>
 
@@ -7651,6 +7732,11 @@
 
                 let menuItems = '';
                 menuItems += `<button onclick="closeAllMenus(); downloadInvoicePdf(${inv.id})"><span class="icon">⬇</span> Télécharger PDF</button>`;
+                // Bouton lien de paiement en ligne (si la facture n'est pas payee)
+                if (inv.status !== 'paid' && inv.status !== 'cancelled') {
+                    menuItems += `<button onclick="closeAllMenus(); generatePaymentLink(${inv.id})"><span class="icon">💳</span> Lien de paiement</button>`;
+                }
+
                 // Bouton paiement (si pas encore payée)
                 if (inv.status !== 'paid' && inv.status !== 'cancelled') {
                     menuItems += `<button onclick="closeAllMenus(); recordPayment(${inv.id}, ${inv.total})"><span class="icon">💰</span> Enregistrer paiement</button>`;
@@ -15299,6 +15385,234 @@
             });
         })();
 
+        // ================================================================
+        // 41. PAIEMENTS EN LIGNE (Stripe)
+        // ================================================================
+        (function initOnlinePayments() {
+            // Afficher l'URL du webhook (dynamique selon le domaine)
+            const webhookHint = document.getElementById('webhookUrlHint');
+            if (webhookHint) {
+                webhookHint.textContent = window.location.origin + '/api/stripe-webhooks/events';
+            }
+
+            // ----- Charger la config -----
+            async function loadStripeConfig() {
+                try {
+                    const res = await apiFetch('/api/online-payments/config');
+                    const data = await res.json();
+
+                    document.getElementById('stripeEnabled').checked = data.enabled;
+                    document.getElementById('stripeConfigFields').style.display = data.enabled ? 'block' : 'none';
+
+                    document.getElementById('stripePublicKey').value = data.publicKey || '';
+
+                    const secretHint = document.getElementById('stripeSecretHint');
+                    const webhookHint2 = document.getElementById('stripeWebhookHint');
+                    const testBtn = document.getElementById('stripeTestBtn');
+
+                    if (data.hasSecretKey) {
+                        document.getElementById('stripeSecretKey').placeholder = 'Laisser vide pour conserver la cle actuelle';
+                        secretHint.textContent = 'Une cle secrete est deja enregistree.';
+                    } else {
+                        document.getElementById('stripeSecretKey').placeholder = 'sk_test_...';
+                        secretHint.textContent = '';
+                    }
+
+                    if (data.hasWebhookSecret) {
+                        document.getElementById('stripeWebhookSecret').placeholder = 'Laisser vide pour conserver le secret actuel';
+                        webhookHint2.textContent = 'Un webhook secret est deja enregistre.';
+                    } else {
+                        document.getElementById('stripeWebhookSecret').placeholder = 'whsec_...';
+                        webhookHint2.textContent = '';
+                    }
+
+                    testBtn.style.display = data.hasSecretKey ? 'inline-block' : 'none';
+                } catch (err) {
+                    console.warn('Erreur load stripe config:', err.message);
+                }
+            }
+
+            // ----- Toggle affichage -----
+            document.getElementById('stripeEnabled')?.addEventListener('change', (e) => {
+                document.getElementById('stripeConfigFields').style.display = e.target.checked ? 'block' : 'none';
+            });
+
+            // ----- Enregistrer -----
+            document.getElementById('stripeSaveBtn')?.addEventListener('click', async () => {
+                const btn = document.getElementById('stripeSaveBtn');
+                btn.disabled = true;
+                btn.textContent = 'Enregistrement...';
+
+                const payload = {
+                    enabled: document.getElementById('stripeEnabled').checked,
+                    publicKey: document.getElementById('stripePublicKey').value.trim(),
+                    secretKey: document.getElementById('stripeSecretKey').value.trim(),
+                    webhookSecret: document.getElementById('stripeWebhookSecret').value.trim()
+                };
+
+                try {
+                    const res = await apiFetch('/api/online-payments/config', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error || 'Erreur');
+
+                    showToast('Configuration enregistree', 'success');
+                    document.getElementById('stripeSecretKey').value = '';
+                    document.getElementById('stripeWebhookSecret').value = '';
+                    loadStripeConfig();
+                } catch (err) {
+                    showToast('Erreur : ' + err.message, 'error');
+                } finally {
+                    btn.disabled = false;
+                    btn.textContent = 'Enregistrer la configuration';
+                }
+            });
+
+            // ----- Test -----
+            document.getElementById('stripeTestBtn')?.addEventListener('click', async () => {
+                const result = document.getElementById('stripeTestResult');
+                result.innerHTML = '<span style="color:#94a3b8;">Test en cours...</span>';
+
+                try {
+                    const res = await apiFetch('/api/online-payments/test', { method: 'POST' });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error || 'Erreur');
+
+                    result.innerHTML = '<span style="color:#22c55e;">Connexion Stripe OK (compte : ' + escapeHtml(data.accountId) + ')</span>';
+                } catch (err) {
+                    result.innerHTML = '<span style="color:#f87171;">Erreur : ' + escapeHtml(err.message) + '</span>';
+                }
+            });
+
+            // ----- Stats -----
+            async function loadPaymentStats() {
+                const box = document.getElementById('paymentStatsBox');
+                if (!box) return;
+
+                try {
+                    const res = await apiFetch('/api/online-payments/stats');
+                    const s = await res.json();
+
+                    box.innerHTML =
+                        '<div class="stat-card"><div class="number">' + s.paidTotal + '</div><div class="label">Paiements recus</div></div>' +
+                        '<div class="stat-card"><div class="number" style="color:#22c55e;">' + s.paidAmount.toFixed(2) + ' €</div><div class="label">Montant encaisse</div></div>' +
+                        '<div class="stat-card"><div class="number">' + s.last30Days + '</div><div class="label">30 derniers jours</div></div>' +
+                        '<div class="stat-card"><div class="number" style="color:' + (s.pending > 0 ? '#eab308' : '#94a3b8') + ';">' + s.pending + '</div><div class="label">En attente</div></div>';
+                } catch (err) {
+                    box.innerHTML = '<p style="color:#f87171;">Erreur.</p>';
+                }
+            }
+
+            // ----- Liste des paiements -----
+            async function loadPaymentsList() {
+                const container = document.getElementById('paymentsList');
+                if (!container) return;
+                container.innerHTML = '<p style="color:#64748b;text-align:center;padding:40px;">Chargement...</p>';
+
+                try {
+                    const res = await apiFetch('/api/online-payments/list?limit=100');
+                    const payments = await res.json();
+
+                    if (payments.length === 0) {
+                        container.innerHTML = '<p style="color:#64748b;text-align:center;padding:40px;">Aucun paiement en ligne pour le moment.</p>';
+                        return;
+                    }
+
+                    const STATUS_LABELS = {
+                        paid: 'Paye',
+                        pending: 'En attente',
+                        expired: 'Expire',
+                        failed: 'Echec'
+                    };
+                    const STATUS_COLORS = {
+                        paid: '#22c55e',
+                        pending: '#eab308',
+                        expired: '#94a3b8',
+                        failed: '#f87171'
+                    };
+
+                    let html = '<div style="overflow-x:auto;"><table class="catalog-table"><thead><tr>' +
+                        '<th>Date</th><th>Facture</th><th>Client</th><th>Montant</th><th>Methode</th><th>Statut</th>' +
+                        '</tr></thead><tbody>';
+
+                    for (const p of payments) {
+                        const date = p.paidAt
+                            ? new Date(p.paidAt).toLocaleString('fr-FR')
+                            : new Date(p.createdAt).toLocaleString('fr-FR');
+                        const color = STATUS_COLORS[p.status] || '#94a3b8';
+                        const label = STATUS_LABELS[p.status] || p.status;
+
+                        html += '<tr>' +
+                            '<td style="font-size:11px;color:#94a3b8;">' + date + '</td>' +
+                            '<td style="font-size:12px;font-weight:600;color:#f97316;">' + escapeHtml(p.invoiceNumber || '-') + '</td>' +
+                            '<td style="font-size:12px;">' + escapeHtml(p.customerEmail || '-') + '</td>' +
+                            '<td style="font-weight:700;">' + p.amount.toFixed(2) + ' ' + escapeHtml(p.currency) + '</td>' +
+                            '<td style="font-size:12px;text-transform:capitalize;">' + escapeHtml(p.paymentMethod || '-') + '</td>' +
+                            '<td><span style="font-weight:700;color:' + color + ';font-size:12px;">' + label + '</span></td>' +
+                            '</tr>';
+                    }
+
+                    html += '</tbody></table></div>';
+                    container.innerHTML = html;
+                } catch (err) {
+                    container.innerHTML = '<p style="color:#f87171;text-align:center;padding:40px;">Erreur.</p>';
+                }
+            }
+
+            document.getElementById('refreshPaymentsBtn')?.addEventListener('click', () => {
+                loadPaymentsList();
+                loadPaymentStats();
+            });
+
+            // ----- Charger quand on ouvre l'onglet -----
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    if (btn.dataset.tab === 'tab-online-payments') {
+                        setTimeout(() => {
+                            loadStripeConfig();
+                            loadPaymentStats();
+                            loadPaymentsList();
+                        }, 100);
+                    }
+                });
+            });
+        })();
+
+        // ================================================================
+        // 42. GENERATION D'UN LIEN DE PAIEMENT
+        // ================================================================
+        window.generatePaymentLink = async function(invoiceId) {
+            try {
+                showToast('Generation du lien...', 'info');
+
+                const res = await apiFetch('/api/online-payments/invoices/' + invoiceId + '/checkout', {
+                    method: 'POST'
+                });
+                const data = await res.json();
+
+                if (!res.ok) throw new Error(data.error || 'Erreur');
+
+                // Copier automatiquement le lien dans le presse-papier
+                if (navigator.clipboard && window.isSecureContext) {
+                    await navigator.clipboard.writeText(data.url);
+                    showToast('Lien copie dans le presse-papier', 'success');
+                } else {
+                    // Fallback : prompt
+                    prompt('Lien de paiement (copiez-le) :', data.url);
+                }
+
+                // Proposer d'ouvrir le lien
+                if (confirm('Lien de paiement genere et copie.\n\nVoulez-vous l\'ouvrir dans un nouvel onglet pour tester ?')) {
+                    window.open(data.url, '_blank');
+                }
+            } catch (err) {
+                console.error('Erreur generate payment link:', err);
+                showToast('Erreur : ' + err.message, 'error');
+            }
+        };
     </script>
 </body>
 </html>

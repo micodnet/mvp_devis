@@ -184,6 +184,18 @@ router.post('/', authenticateToken, async (req, res) => {
 
         await clientPg.query('COMMIT');
 
+        // Generer un token public pour permettre le paiement en ligne
+        const invoiceId = result.rows[0].id;
+        const crypto = require('crypto');
+        const publicToken = crypto.randomBytes(24).toString('hex');
+
+        await pool.query(
+            'UPDATE invoices SET public_token = $1 WHERE id = $2',
+            [publicToken, invoiceId]
+        );
+
+        result.rows[0].public_token = publicToken;
+        
         res.json({
             success: true,
             id: result.rows[0].id,
