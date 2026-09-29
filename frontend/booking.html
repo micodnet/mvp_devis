@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prendre rendez-vous</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body {
+            background: #0b1120;
+            color: #e2e8f0;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .header {
+            background: #161f32;
+            border: 1px solid #2a3a55;
+            border-radius: 20px;
+            padding: 28px 32px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .header .logo {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            object-fit: contain;
+            background: #0b1120;
+            border: 1px solid #2a3a55;
+        }
+        .header .info h1 {
+            color: #fff;
+            font-size: 24px;
+            font-weight: 800;
+            margin-bottom: 6px;
+        }
+        .header .info p {
+            color: #94a3b8;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        .card {
+            background: #161f32;
+            border: 1px solid #2a3a55;
+            border-radius: 20px;
+            padding: 28px;
+            margin-bottom: 20px;
+        }
+        .card h2 {
+            color: #fff;
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+        .slots-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 14px;
+        }
+        .day-card {
+            background: #0b1120;
+            border: 1px solid #1e2a41;
+            border-radius: 14px;
+            padding: 16px;
+        }
+        .day-card .day-header {
+            color: #fff;
+            font-weight: 700;
+            font-size: 14px;
+            margin-bottom: 12px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #1e2a41;
+        }
+        .day-card .day-header .weekday {
+            color: #f97316;
+            font-size: 11px;
+            text-transform: uppercase;
+            font-weight: 700;
+            display: block;
+            margin-bottom: 2px;
+        }
+        .slots-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        .slot-btn {
+            background: #1a253b;
+            border: 1px solid #2a3a55;
+            color: #e2e8f0;
+            padding: 8px 14px;
+            border-radius: 40px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .slot-btn:hover {
+            background: #f97316;
+            border-color: #f97316;
+            color: #0b1120;
+        }
+        .no-slots {
+            color: #64748b;
+            font-size: 12px;
+            font-style: italic;
+        }
+        .unavailable-tag {
+            display: inline-block;
+            background: rgba(248,113,113,0.15);
+            color: #f87171;
+            padding: 3px 10px;
+            border-radius: 40px;
+            font-size: 10px;
+            font-weight: 700;
+            border: 1px solid rgba(248,113,113,0.3);
+        }
+
+        /* Formulaire */
+        .form-group {
+            margin-bottom: 16px;
+        }
+        .form-group label {
+            display: block;
+            color: #94a3b8;
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 6px;
+        }
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: 12px;
+            background: #0b1120;
+            border: 1px solid #2a3a55;
+            color: #e2e8f0;
+            font-size: 14px;
+            font-family: inherit;
+            outline: none;
+            transition: 0.2s;
+        }
+        .form-group input:focus,
+        .form-group textarea:focus {
+            border-color: #f97316;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+        @media (max-width: 600px) {
+            .form-row { grid-template-columns: 1fr; }
+        }
+        .btn-primary {
+            width: 100%;
+            padding: 16px;
+            border-radius: 60px;
+            background: #f97316;
+            color: #0b1120;
+            border: none;
+            font-weight: 700;
+            font-size: 15px;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-top: 8px;
+        }
+        .btn-primary:hover { background: #ea580c; }
+        .btn-primary:disabled { background: #334155; color: #94a3b8; cursor: not-allowed; }
+        .error {
+            background: #1f1220;
+            color: #f87171;
+            padding: 12px 16px;
+            border-radius: 12px;
+            border: 1px solid #3f1e24;
+            margin-bottom: 16px;
+            font-size: 13px;
+            display: none;
+        }
+        .error.show { display: block; }
+
+        /* Recap / confirmation */
+        .recap {
+            background: #0b1120;
+            border: 1px solid #f97316;
+            border-radius: 14px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .recap .slot-info {
+            font-size: 18px;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 4px;
+        }
+        .recap .slot-date {
+            color: #f97316;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .recap .change-link {
+            color: #94a3b8;
+            font-size: 12px;
+            text-decoration: underline;
+            cursor: pointer;
+            margin-top: 10px;
+            display: inline-block;
+        }
+        .recap .change-link:hover { color: #f97316; }
+
+        /* Success */
+        .success-box {
+            text-align: center;
+            padding: 40px 24px;
+        }
+        .success-box .icon {
+            width: 80px;
+            height: 80px;
+            background: rgba(34,197,94,0.15);
+            border: 2px solid #22c55e;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 40px;
+            color: #22c55e;
+            font-weight: 700;
+        }
+        .success-box h2 {
+            color: #fff;
+            font-size: 24px;
+            margin-bottom: 12px;
+        }
+        .success-box p {
+            color: #cbd5e1;
+            font-size: 15px;
+            line-height: 1.6;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #94a3b8;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- En-tete entreprise -->
+    <div class="header" id="header" style="display:none;">
+        <img class="logo" id="companyLogo" style="display:none;" />
+        <div class="info">
+            <h1 id="companyName"></h1>
+            <p id="companyInfo"></p>
+            <p id="bookingMessage" style="color:#f97316;margin-top:8px;font-weight:500;"></p>
+        </div>
+    </div>
+
+    <!-- Etapes -->
+    <div id="stepLoading" class="card">
+        <div class="loading">Chargement des creneaux disponibles...</div>
+    </div>
+
+    <div id="stepSlots" class="card" style="display:none;">
+        <h2>Choisissez un creneau</h2>
+        <div id="slotsContainer" class="slots-grid"></div>
+    </div>
+
+    <div id="stepForm" class="card" style="display:none;">
+        <h2>Vos coordonnees</h2>
+        <div class="recap" id="recap"></div>
+        <div class="error" id="formError"></div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Nom complet *</label>
+                <input type="text" id="clientName" placeholder="Jean Dupont" />
+            </div>
+            <div class="form-group">
+                <label>Telephone</label>
+                <input type="tel" id="clientPhone" placeholder="+32 470 12 34 56" />
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Email *</label>
+            <input type="email" id="clientEmail" placeholder="vous@exemple.com" />
+        </div>
+        <div class="form-group">
+            <label>Sujet</label>
+            <input type="text" id="subject" placeholder="Visite technique, presentation devis..." />
+        </div>
+        <div class="form-group">
+            <label>Message (optionnel)</label>
+            <textarea id="notes" rows="3" placeholder="Precisions sur votre demande..."></textarea>
+        </div>
+        <button class="btn-primary" id="submitBtn">Confirmer le rendez-vous</button>
+    </div>
+
+    <div id="stepSuccess" class="card" style="display:none;">
+        <div class="success-box">
+            <div class="icon">OK</div>
+            <h2>Demande envoyee</h2>
+            <p>
+                Votre demande de rendez-vous a bien ete transmise.<br>
+                Vous recevrez une confirmation par email dans les plus brefs delais.
+            </p>
+            <p id="successRecap" style="margin-top:20px;color:#f97316;font-weight:600;"></p>
+        </div>
+    </div>
+</div>
+
+<script>
+const API_BASE = '/api/appointments/public';
+
+// Recuperer l'identifiant depuis l'URL : ?u=slug ou ?user=id
+function getIdentifier() {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('u') || params.get('user') || null;
+}
+
+const identifier = getIdentifier();
+
+let config = null;
+let selectedDate = null;
+let selectedStartTime = null;
+
+function escapeHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+function showError(msg) {
+    const el = document.getElementById('formError');
+    el.textContent = msg;
+    el.classList.add('show');
+}
+
+function hideError() {
+    document.getElementById('formError').classList.remove('show');
+}
+
+// ============================================================
+// CHARGEMENT INITIAL
+// ============================================================
+(async function init() {
+    if (!identifier) {
+        document.getElementById('stepLoading').innerHTML = '<div class="loading" style="color:#f87171;">Lien invalide. Il manque l\'identifiant.</div>';
+        return;
+    }
+
+    try {
+        const res = await fetch(API_BASE + '/config/' + encodeURIComponent(identifier));
+        if (!res.ok) {
+            const err = await res.json().catch(() => ({ error: 'Page introuvable.' }));
+            document.getElementById('stepLoading').innerHTML = '<div class="loading" style="color:#f87171;">' + escapeHtml(err.error) + '</div>';
+            return;
+        }
+
+        config = await res.json();
+
+        // Afficher l'en-tete entreprise
+        document.getElementById('companyName').textContent = config.companyName || 'Prendre rendez-vous';
+        const infoParts = [];
+        if (config.address) infoParts.push(config.address);
+        if (config.phone) infoParts.push(config.phone);
+        if (config.email) infoParts.push(config.email);
+        document.getElementById('companyInfo').textContent = infoParts.join(' - ');
+
+        if (config.message) {
+            document.getElementById('bookingMessage').textContent = config.message;
+        }
+
+        if (config.logo) {
+            const logo = document.getElementById('companyLogo');
+            logo.src = config.logo;
+            logo.style.display = 'block';
+        }
+
+        document.getElementById('header').style.display = 'flex';
+
+        await loadSlots();
+    } catch (err) {
+        document.getElementById('stepLoading').innerHTML = '<div class="loading" style="color:#f87171;">Erreur de chargement.</div>';
+    }
+})();
+
+// ============================================================
+// CHARGEMENT DES CRENEAUX
+// ============================================================
+async function loadSlots() {
+    const container = document.getElementById('slotsContainer');
+    container.innerHTML = '<div class="loading">Chargement...</div>';
+    document.getElementById('stepLoading').style.display = 'none';
+    document.getElementById('stepSlots').style.display = 'block';
+
+    try {
+        const res = await fetch(API_BASE + '/slots/' + encodeURIComponent(identifier));
+        const slots = await res.json();
+
+        if (!res.ok) throw new Error(slots.error || 'Erreur');
+
+        // Filtrer les jours sans creneaux et dans le passe
+        const today = new Date().toISOString().slice(0, 10);
+        const available = slots.filter(s => !s.unavailable && s.date >= today && s.slots.length > 0);
+
+        if (available.length === 0) {
+            container.innerHTML = '<div class="loading">Aucun creneau disponible pour le moment.</div>';
+            return;
+        }
+
+        let html = '';
+        for (const day of available.slice(0, 20)) {
+            const dateObj = new Date(day.date);
+            const dateLabel = dateObj.toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
+
+            html += '<div class="day-card">' +
+                '<div class="day-header">' +
+                '<span class="weekday">' + escapeHtml(day.weekday) + '</span>' +
+                dateLabel +
+                '</div>' +
+                '<div class="slots-list">' +
+                day.slots.map(s =>
+                    '<button class="slot-btn" data-date="' + day.date + '" data-time="' + s.start + '">' + s.start + '</button>'
+                ).join('') +
+                '</div>' +
+                '</div>';
+        }
+
+        container.innerHTML = html;
+
+        // Brancher les boutons
+        container.querySelectorAll('.slot-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                selectedDate = btn.dataset.date;
+                selectedStartTime = btn.dataset.time;
+                showForm();
+            });
+        });
+    } catch (err) {
+        container.innerHTML = '<div class="loading" style="color:#f87171;">Erreur : ' + escapeHtml(err.message) + '</div>';
+    }
+}
+
+// ============================================================
+// AFFICHAGE DU FORMULAIRE
+// ============================================================
+function showForm() {
+    const dateObj = new Date(selectedDate);
+    const dateLabel = dateObj.toLocaleDateString('fr-FR', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
+
+    document.getElementById('recap').innerHTML =
+        '<div class="slot-info">' + selectedStartTime + ' - ' + config.duration + ' min</div>' +
+        '<div class="slot-date">' + dateLabel + '</div>' +
+        '<span class="change-link" onclick="backToSlots()">Changer de creneau</span>';
+
+    document.getElementById('stepSlots').style.display = 'none';
+    document.getElementById('stepForm').style.display = 'block';
+    document.getElementById('stepSuccess').style.display = 'none';
+    window.scrollTo(0, 0);
+}
+
+function backToSlots() {
+    document.getElementById('stepSlots').style.display = 'block';
+    document.getElementById('stepForm').style.display = 'none';
+}
+
+// ============================================================
+// SOUMISSION
+// ============================================================
+document.getElementById('submitBtn').addEventListener('click', async () => {
+    hideError();
+
+    const clientName = document.getElementById('clientName').value.trim();
+    const clientEmail = document.getElementById('clientEmail').value.trim();
+    const clientPhone = document.getElementById('clientPhone').value.trim();
+    const subject = document.getElementById('subject').value.trim();
+    const notes = document.getElementById('notes').value.trim();
+
+    if (!clientName) {
+        showError('Le nom est requis.');
+        return;
+    }
+    if (!clientEmail && !clientPhone) {
+        showError('Un email ou un telephone est requis pour vous recontacter.');
+        return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(clientEmail)) {
+        showError('Email invalide.');
+        return;
+    }
+
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.textContent = 'Envoi en cours...';
+
+    try {
+        const res = await fetch(API_BASE + '/book/' + encodeURIComponent(identifier), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                clientName: clientName,
+                clientEmail: clientEmail,
+                clientPhone: clientPhone,
+                subject: subject,
+                notes: notes,
+                date: selectedDate,
+                startTime: selectedStartTime
+            })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) throw new Error(data.error || 'Erreur');
+
+        // Afficher le succes
+        const dateObj = new Date(selectedDate);
+        const dateLabel = dateObj.toLocaleDateString('fr-FR', { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' });
+        document.getElementById('successRecap').textContent = dateLabel + ' a ' + selectedStartTime;
+
+        document.getElementById('stepSlots').style.display = 'none';
+        document.getElementById('stepForm').style.display = 'none';
+        document.getElementById('stepSuccess').style.display = 'block';
+        window.scrollTo(0, 0);
+    } catch (err) {
+        showError(err.message);
+        btn.disabled = false;
+        btn.textContent = 'Confirmer le rendez-vous';
+    }
+});
+</script>
+</body>
+</html>

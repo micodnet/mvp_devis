@@ -2019,33 +2019,34 @@
             }
 
             /* --- Regroupement des onglets (sans toucher au HTML) --- */
-            .tab-btn[data-tab="tab-devis"]           { order: 10; }
-            .tab-btn[data-tab="tab-templates"]       { order: 11; }
-            .tab-btn[data-tab="tab-clients"]         { order: 12; }
-            .tab-btn[data-tab="tab-history"]         { order: 13; }
-            .tab-btn[data-tab="tab-invoices"]        { order: 14; }
-            .tab-btn[data-tab="tab-recurring"]       { order: 15; }
-            .tab-btn[data-tab="tab-email-import"]    { order: 16; }
-            .tab-btn[data-tab="tab-catalogue"]       { order: 20; }
-            .tab-btn[data-tab="tab-services"]        { order: 21; }
-            .tab-btn[data-tab="tab-suppliers"]       { order: 22; }
-            .tab-btn[data-tab="tab-stock"]           { order: 23; }
-            .tab-btn[data-tab="tab-purchase-orders"] { order: 24; }
-            .tab-btn[data-tab="tab-chantiers"]       { order: 30; }
-            .tab-btn[data-tab="tab-subcontractors"]  { order: 31; }
-            .tab-btn[data-tab="tab-dashboard"]       { order: 40; }
-            .tab-btn[data-tab="tab-analytics"]       { order: 41; }
-            .tab-btn[data-tab="tab-reports"]         { order: 42; }
-            .tab-btn[data-tab="tab-client-portal"]   { order: 43; }
-            .tab-btn[data-tab="tab-online-payments"] { order: 44; }
-            .tab-btn[data-tab="tab-assistant"]       { order: 50; }
-            .tab-btn[data-tab="tab-sms"]             { order: 51; }
-            .tab-btn[data-tab="tab-api"]             { order: 60; }
-            .tab-btn[data-tab="tab-webhooks"]        { order: 61; }
-            .tab-btn[data-tab="tab-oauth"]           { order: 62; }
-            .tab-btn[data-tab="tab-settings"]        { order: 70; }
-            .tab-btn[data-tab="tab-team"]            { order: 71; }
-            .tab-btn[data-tab="tab-subscription"]    { order: 72; }
+            .tab-btn[data-tab="tab-devis"]               { order: 10; }
+            .tab-btn[data-tab="tab-templates"]           { order: 11; }
+            .tab-btn[data-tab="tab-clients"]             { order: 12; }
+            .tab-btn[data-tab="tab-history"]             { order: 13; }
+            .tab-btn[data-tab="tab-invoices"]            { order: 14; }
+            .tab-btn[data-tab="tab-recurring"]           { order: 15; }
+            .tab-btn[data-tab="tab-email-import"]        { order: 16; }
+            .tab-btn[data-tab="tab-catalogue"]           { order: 20; }
+            .tab-btn[data-tab="tab-services"]            { order: 21; }
+            .tab-btn[data-tab="tab-suppliers"]           { order: 22; }
+            .tab-btn[data-tab="tab-stock"]               { order: 23; }
+            .tab-btn[data-tab="tab-purchase-orders"]     { order: 24; }
+            .tab-btn[data-tab="tab-chantiers"]           { order: 30; }
+            .tab-btn[data-tab="tab-subcontractors"]      { order: 31; }
+            .tab-btn[data-tab="tab-dashboard"]           { order: 40; }
+            .tab-btn[data-tab="tab-analytics"]           { order: 41; }
+            .tab-btn[data-tab="tab-reports"]             { order: 42; }
+            .tab-btn[data-tab="tab-client-portal"]       { order: 43; }
+            .tab-btn[data-tab="tab-online-payments"]     { order: 44; }
+            .tab-btn[data-tab="tab-online-appointments"] { order: 44; }
+            .tab-btn[data-tab="tab-assistant"]           { order: 50; }
+            .tab-btn[data-tab="tab-sms"]                 { order: 51; }
+            .tab-btn[data-tab="tab-api"]                 { order: 60; }
+            .tab-btn[data-tab="tab-webhooks"]            { order: 61; }
+            .tab-btn[data-tab="tab-oauth"]               { order: 62; }
+            .tab-btn[data-tab="tab-settings"]            { order: 70; }
+            .tab-btn[data-tab="tab-team"]                { order: 71; }
+            .tab-btn[data-tab="tab-subscription"]        { order: 72; }
 
             /* --- Titres de section --- */
             .tab-btn[data-tab="tab-devis"],
@@ -2411,6 +2412,7 @@
             <button class="tab-btn" data-tab="tab-sms">SMS</button>
             <button class="tab-btn" data-tab="tab-client-portal">Portail client</button>
             <button class="tab-btn" data-tab="tab-online-payments">Paiements</button>
+            <button class="tab-btn" data-tab="tab-appointments">Rendez-vous</button>
             <button class="tab-btn" data-tab="tab-reports">Rapports</button>
             <button class="tab-btn" data-tab="tab-email-import">Import email</button>
             <button class="tab-btn" data-tab="tab-recurring">Factures recurrentes</button>
@@ -3024,6 +3026,41 @@
                     </div>
                 </div>
                 <div id="paymentsList"><p style="color:#64748b;text-align:center;padding:40px;">Chargement...</p></div>
+            </div>
+        </div>
+
+        <!-- RENDEZ-VOUS -->
+        <div id="tab-appointments" class="tab-content">
+            <div class="card">
+                <div class="catalog-header">
+                    <h2>Mes rendez-vous</h2>
+                    <div class="catalog-actions">
+                        <button class="btn-secondary" id="bookingSettingsBtn">Parametres</button>
+                        <button class="btn-secondary" id="availabilityBtn">Disponibilites</button>
+                        <button class="btn-primary-sm" id="newAppointmentBtn">+ Nouveau RDV</button>
+                    </div>
+                </div>
+
+                <div id="bookingLinkBox" style="display:none;background:#0b1120;border:1px solid #f97316;border-radius:12px;padding:14px 18px;margin-bottom:20px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+                        <div>
+                            <div style="color:#f97316;font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Lien public de reservation</div>
+                            <div id="bookingLinkUrl" style="color:#e2e8f0;font-size:13px;font-family:monospace;word-break:break-all;"></div>
+                        </div>
+                        <button class="btn-secondary" id="copyBookingLinkBtn" style="font-size:12px;padding:8px 16px;">Copier</button>
+                    </div>
+                </div>
+
+                <div class="history-filters" id="appointmentFilters">
+                    <button class="history-filter active" data-afilter="upcoming">A venir</button>
+                    <button class="history-filter" data-afilter="pending">En attente</button>
+                    <button class="history-filter" data-afilter="confirmed">Confirmes</button>
+                    <button class="history-filter" data-afilter="past">Passes</button>
+                    <button class="history-filter" data-afilter="cancelled">Annules</button>
+                    <button class="history-filter" data-afilter="all">Tous</button>
+                </div>
+
+                <div id="appointmentsList"><p style="color:#64748b;text-align:center;padding:40px;">Chargement...</p></div>
             </div>
         </div>
 
@@ -4877,6 +4914,176 @@
         </div>
     </div>
 </div>-->
+
+    <!-- MODAL PARAMETRES BOOKING -->
+    <div class="modal-overlay" id="bookingSettingsModal">
+        <div class="modal modal-wide">
+            <h3>Parametres de reservation</h3>
+
+            <div class="form-group" style="margin-top:16px;">
+                <label class="checkbox-accept" style="margin:0;">
+                    <input type="checkbox" id="bookingEnabled" />
+                    <div class="text">Activer la prise de rendez-vous en ligne</div>
+                </label>
+            </div>
+
+            <div id="bookingSettingsFields" style="display:none;">
+                <div class="form-group">
+                    <label>Slug personnalise (URL courte)</label>
+                    <input type="text" id="bookingSlug" placeholder="mon-entreprise" />
+                    <div style="color:#64748b;font-size:11px;margin-top:4px;">Utilise dans l'URL de votre page de reservation. Laissez vide pour utiliser votre ID.</div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Duree d'un RDV (minutes)</label>
+                        <input type="number" id="bookingDuration" min="15" max="480" step="15" value="60" />
+                    </div>
+                    <div class="form-group">
+                        <label>Battement entre 2 RDV (minutes)</label>
+                        <input type="number" id="bookingBuffer" min="0" max="120" step="5" value="15" />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Nombre de jours a afficher</label>
+                    <input type="number" id="bookingDaysAhead" min="7" max="365" value="60" />
+                </div>
+
+                <div class="form-group">
+                    <label>Message d'accueil (visible sur la page publique)</label>
+                    <textarea id="bookingMessage" rows="2" placeholder="Merci de choisir un creneau pour votre visite technique."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="checkbox-accept" style="margin:0;">
+                        <input type="checkbox" id="bookingNotifyEmail" checked />
+                        <div class="text">Recevoir un email quand un client reserve</div>
+                    </label>
+                </div>
+
+                <div class="form-group">
+                    <label class="checkbox-accept" style="margin:0;">
+                        <input type="checkbox" id="bookingNotifySms" />
+                        <div class="text">Recevoir un SMS quand un client reserve (necessite la config SMS)</div>
+                    </label>
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="document.getElementById('bookingSettingsModal').classList.remove('show')">Annuler</button>
+                <button class="btn-confirm" id="saveBookingSettingsBtn">Enregistrer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DISPONIBILITES -->
+    <div class="modal-overlay" id="availabilityModal">
+        <div class="modal modal-wide">
+            <h3>Disponibilites hebdomadaires</h3>
+            <p style="color:#94a3b8;font-size:13px;margin:12px 0 20px;line-height:1.6;">
+                Definissez vos plages horaires de travail. Les clients ne pourront reserver que dans ces plages.
+            </p>
+
+            <div id="availabilityList" style="max-height:60vh;overflow-y:auto;"></div>
+
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="document.getElementById('availabilityModal').classList.remove('show')">Fermer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL AJOUT DISPONIBILITE -->
+    <div class="modal-overlay" id="addAvailabilityModal">
+        <div class="modal">
+            <h3>Ajouter une plage</h3>
+            <div class="form-group" style="margin-top:16px;">
+                <label>Jour de la semaine</label>
+                <select id="availWeekday">
+                    <option value="1">Lundi</option>
+                    <option value="2">Mardi</option>
+                    <option value="3">Mercredi</option>
+                    <option value="4">Jeudi</option>
+                    <option value="5">Vendredi</option>
+                    <option value="6">Samedi</option>
+                    <option value="0">Dimanche</option>
+                </select>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Heure de debut</label>
+                    <input type="time" id="availStart" value="09:00" />
+                </div>
+                <div class="form-group">
+                    <label>Heure de fin</label>
+                    <input type="time" id="availEnd" value="17:00" />
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="document.getElementById('addAvailabilityModal').classList.remove('show')">Annuler</button>
+                <button class="btn-confirm" id="saveAvailabilityBtn">Ajouter</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL NOUVEAU RDV -->
+    <div class="modal-overlay" id="appointmentModal">
+        <div class="modal modal-wide">
+            <h3>Nouveau rendez-vous</h3>
+
+            <div class="form-row" style="margin-top:16px;">
+                <div class="form-group">
+                    <label>Nom du client *</label>
+                    <input type="text" id="apptClientName" required />
+                </div>
+                <div class="form-group">
+                    <label>Telephone</label>
+                    <input type="tel" id="apptClientPhone" />
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="apptClientEmail" />
+            </div>
+
+            <div class="form-group">
+                <label>Adresse (lieu du RDV)</label>
+                <input type="text" id="apptClientAddress" />
+            </div>
+
+            <div class="form-group">
+                <label>Sujet</label>
+                <input type="text" id="apptSubject" placeholder="Visite technique..." />
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Date *</label>
+                    <input type="date" id="apptDate" />
+                </div>
+                <div class="form-group">
+                    <label>Heure de debut *</label>
+                    <input type="time" id="apptStartTime" value="09:00" />
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Duree (minutes)</label>
+                <input type="number" id="apptDuration" min="15" max="480" step="15" value="60" />
+            </div>
+
+            <div class="form-group">
+                <label>Notes</label>
+                <textarea id="apptNotes" rows="3"></textarea>
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn-cancel" onclick="document.getElementById('appointmentModal').classList.remove('show')">Annuler</button>
+                <button class="btn-confirm" id="saveAppointmentBtn">Enregistrer</button>
+            </div>
+        </div>
+    </div>
 
     <!-- ============================================================ -->
     <!-- ASSISTANT IA - BULLE FLOTTANTE                               -->
@@ -8065,10 +8272,10 @@
 
                 let menuItems = '';
                 menuItems += `<button onclick="closeAllMenus(); downloadInvoicePdf(${inv.id})"><span class="icon">⬇</span> Télécharger PDF</button>`;
-                menuItems += `<button onclick="closeAllMenus(); openPaymentScheduleModal(${inv.id})"><span class="icon">📅</span> Plan de paiement</button>`;
                 // Bouton lien de paiement en ligne (si la facture n'est pas payee)
                 if (inv.status !== 'paid' && inv.status !== 'cancelled') {
                     menuItems += `<button onclick="closeAllMenus(); generatePaymentLink(${inv.id})"><span class="icon">💳</span> Lien de paiement</button>`;
+                    menuItems += `<button onclick="closeAllMenus(); openPaymentScheduleModal(${inv.id})"><span class="icon">📅</span> Plan de paiement</button>`;
                 }
 
                 // Bouton paiement (si pas encore payée)
@@ -17168,6 +17375,479 @@
                 currentScheduleInvoiceId = invoiceId;
                 return originalOpen(invoiceId);
             };
+        })();
+        
+        // ================================================================
+        // 47. RENDEZ-VOUS
+        // ================================================================
+        (function initAppointments() {
+            let allAppointments = [];
+            let currentFilter = 'upcoming';
+
+            const STATUS_LABELS = {
+                pending: 'En attente',
+                confirmed: 'Confirme',
+                completed: 'Termine',
+                cancelled: 'Annule',
+                no_show: 'Absent'
+            };
+
+            const STATUS_COLORS = {
+                pending: '#eab308',
+                confirmed: '#3b82f6',
+                completed: '#22c55e',
+                cancelled: '#94a3b8',
+                no_show: '#f87171'
+            };
+
+            // ----- Charger la config -----
+            async function loadBookingConfig() {
+                try {
+                    const res = await apiFetch('/api/appointments/config');
+                    const data = await res.json();
+
+                    document.getElementById('bookingEnabled').checked = data.enabled;
+                    document.getElementById('bookingSettingsFields').style.display = data.enabled ? 'block' : 'none';
+                    document.getElementById('bookingSlug').value = data.slug || '';
+                    document.getElementById('bookingDuration').value = data.duration;
+                    document.getElementById('bookingBuffer').value = data.bufferMinutes;
+                    document.getElementById('bookingDaysAhead').value = data.daysAhead;
+                    document.getElementById('bookingMessage').value = data.message || '';
+                    document.getElementById('bookingNotifyEmail').checked = data.notifyEmail;
+                    document.getElementById('bookingNotifySms').checked = data.notifySms;
+
+                    // Afficher le lien public
+                    if (data.enabled) {
+                        const linkEl = document.getElementById('bookingLinkBox');
+                        const urlEl = document.getElementById('bookingLinkUrl');
+                        const baseUrl = window.location.origin;
+
+                        let url;
+                        if (data.slug) {
+                            url = baseUrl + '/booking.html?u=' + encodeURIComponent(data.slug);
+                        } else {
+                            const user = getUser();
+                            url = baseUrl + '/booking.html?user=' + (user?.id || '');
+                        }
+
+                        urlEl.textContent = url;
+                        linkEl.style.display = 'block';
+                    } else {
+                        document.getElementById('bookingLinkBox').style.display = 'none';
+                    }
+                } catch (err) {
+                    console.warn('Erreur load booking config:', err.message);
+                }
+            }
+
+            // Toggle affichage
+            document.getElementById('bookingEnabled')?.addEventListener('change', (e) => {
+                document.getElementById('bookingSettingsFields').style.display = e.target.checked ? 'block' : 'none';
+            });
+
+            // Ouvrir la modale
+            document.getElementById('bookingSettingsBtn')?.addEventListener('click', () => {
+                document.getElementById('bookingSettingsModal').classList.add('show');
+                loadBookingConfig();
+            });
+
+            // Copier le lien
+            document.getElementById('copyBookingLinkBtn')?.addEventListener('click', async () => {
+                const url = document.getElementById('bookingLinkUrl').textContent;
+                try {
+                    if (navigator.clipboard && window.isSecureContext) {
+                        await navigator.clipboard.writeText(url);
+                        showToast('Lien copie', 'success');
+                    } else {
+                        await showPrompt({
+                            title: 'Lien de reservation',
+                            message: 'Copiez ce lien pour le partager avec vos clients.',
+                            label: 'Lien',
+                            defaultValue: url
+                        });
+                    }
+                } catch (err) {
+                    showToast('Erreur : ' + err.message, 'error');
+                }
+            });
+
+            // ----- Enregistrer la config -----
+            document.getElementById('saveBookingSettingsBtn')?.addEventListener('click', async () => {
+                const btn = document.getElementById('saveBookingSettingsBtn');
+                btn.disabled = true;
+                btn.textContent = 'Enregistrement...';
+
+                const payload = {
+                    enabled: document.getElementById('bookingEnabled').checked,
+                    slug: document.getElementById('bookingSlug').value.trim(),
+                    duration: parseInt(document.getElementById('bookingDuration').value) || 60,
+                    bufferMinutes: parseInt(document.getElementById('bookingBuffer').value) || 15,
+                    daysAhead: parseInt(document.getElementById('bookingDaysAhead').value) || 60,
+                    message: document.getElementById('bookingMessage').value.trim(),
+                    notifyEmail: document.getElementById('bookingNotifyEmail').checked,
+                    notifySms: document.getElementById('bookingNotifySms').checked
+                };
+
+                try {
+                    const res = await apiFetch('/api/appointments/config', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error || 'Erreur');
+
+                    showToast('Parametres enregistres', 'success');
+                    document.getElementById('bookingSettingsModal').classList.remove('show');
+                    loadBookingConfig();
+                } catch (err) {
+                    showToast('Erreur : ' + err.message, 'error');
+                } finally {
+                    btn.disabled = false;
+                    btn.textContent = 'Enregistrer';
+                }
+            });
+
+            // ----- Disponibilites -----
+            document.getElementById('availabilityBtn')?.addEventListener('click', async () => {
+                document.getElementById('availabilityModal').classList.add('show');
+                await loadAvailability();
+            });
+
+            async function loadAvailability() {
+                const container = document.getElementById('availabilityList');
+                container.innerHTML = '<p style="color:#64748b;text-align:center;padding:20px;">Chargement...</p>';
+
+                try {
+                    const res = await apiFetch('/api/appointments/availability');
+                    const data = await res.json();
+
+                    let html = '';
+                    for (let weekday = 1; weekday <= 6; weekday++) {
+                        const dayName = data.weekdays[weekday];
+                        const slots = data.slots[weekday] || [];
+
+                        html += '<div style="background:#0b1120;border:1px solid #1e2a41;border-radius:10px;padding:14px 16px;margin-bottom:8px;">' +
+                            '<div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">' +
+                            '<div style="color:#fff;font-weight:600;font-size:14px;">' + dayName + '</div>' +
+                            '<button onclick="openAddAvailability(' + weekday + ')" style="background:#1a253b;border:1px solid #2a3a55;color:#e2e8f0;padding:4px 10px;border-radius:40px;font-size:11px;cursor:pointer;">+ Ajouter</button>' +
+                            '</div>';
+
+                        if (slots.length === 0) {
+                            html += '<div style="color:#64748b;font-size:12px;margin-top:8px;">Aucune plage definie</div>';
+                        } else {
+                            html += '<div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap;">';
+                            for (const s of slots) {
+                                html += '<span style="background:#1a253b;border:1px solid #2a3a55;color:#e2e8f0;padding:4px 10px;border-radius:40px;font-size:12px;display:inline-flex;align-items:center;gap:6px;">' +
+                                    s.startTime.slice(0, 5) + ' - ' + s.endTime.slice(0, 5) +
+                                    '<button onclick="deleteAvailability(' + s.id + ')" style="background:none;border:none;color:#f87171;cursor:pointer;font-size:14px;padding:0;line-height:1;">×</button>' +
+                                    '</span>';
+                            }
+                            html += '</div>';
+                        }
+
+                        html += '</div>';
+                    }
+
+                    container.innerHTML = html;
+                } catch (err) {
+                    container.innerHTML = '<p style="color:#f87171;text-align:center;padding:20px;">Erreur.</p>';
+                }
+            }
+
+            window.openAddAvailability = function(weekday) {
+                document.getElementById('availWeekday').value = weekday;
+                document.getElementById('availStart').value = '09:00';
+                document.getElementById('availEnd').value = '17:00';
+                document.getElementById('addAvailabilityModal').classList.add('show');
+            };
+
+            document.getElementById('saveAvailabilityBtn')?.addEventListener('click', async () => {
+                const payload = {
+                    weekday: parseInt(document.getElementById('availWeekday').value),
+                    startTime: document.getElementById('availStart').value,
+                    endTime: document.getElementById('availEnd').value
+                };
+
+                if (!payload.startTime || !payload.endTime || payload.startTime >= payload.endTime) {
+                    showToast('Heures invalides.', 'error');
+                    return;
+                }
+
+                try {
+                    const res = await apiFetch('/api/appointments/availability', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error || 'Erreur');
+
+                    showToast('Plage ajoutee', 'success');
+                    document.getElementById('addAvailabilityModal').classList.remove('show');
+                    loadAvailability();
+                } catch (err) {
+                    showToast('Erreur : ' + err.message, 'error');
+                }
+            });
+
+            window.deleteAvailability = async function(id) {
+                const ok = await showConfirm({
+                    title: 'Supprimer la plage',
+                    message: 'Cette plage ne sera plus disponible.',
+                    confirmText: 'Supprimer',
+                    danger: true
+                });
+                if (!ok) return;
+
+                try {
+                    const res = await apiFetch('/api/appointments/availability/' + id, { method: 'DELETE' });
+                    if (!res.ok) throw new Error('Erreur');
+                    showToast('Plage supprimee', 'success');
+                    loadAvailability();
+                } catch (err) {
+                    showToast('Erreur : ' + err.message, 'error');
+                }
+            };
+
+            // ----- Liste des rendez-vous -----
+            async function loadAppointments() {
+                const container = document.getElementById('appointmentsList');
+                if (!container) return;
+                container.innerHTML = '<p style="color:#64748b;text-align:center;padding:40px;">Chargement...</p>';
+
+                try {
+                    const params = new URLSearchParams();
+
+                    if (currentFilter === 'upcoming') {
+                        params.set('upcoming', 'true');
+                    } else if (currentFilter === 'past') {
+                        const today = new Date().toISOString().slice(0, 10);
+                        params.set('to', today);
+                    } else if (currentFilter === 'pending') {
+                        params.set('status', 'pending');
+                    } else if (currentFilter === 'confirmed') {
+                        params.set('status', 'confirmed');
+                    } else if (currentFilter === 'cancelled') {
+                        params.set('status', 'cancelled');
+                    }
+
+                    const res = await apiFetch('/api/appointments?' + params.toString());
+                    allAppointments = await res.json();
+                    renderAppointments();
+                } catch (err) {
+                    console.error('Erreur load appointments:', err);
+                    container.innerHTML = '<p style="color:#f87171;text-align:center;padding:40px;">Erreur.</p>';
+                }
+            }
+
+            function renderAppointments() {
+                const container = document.getElementById('appointmentsList');
+                if (!container) return;
+
+                if (allAppointments.length === 0) {
+                    container.innerHTML = '<div class="catalog-empty"><div class="big-icon">-</div><h3>Aucun rendez-vous</h3><p>Activez la prise de rendez-vous en ligne ou creez-en un manuellement.</p></div>';
+                    return;
+                }
+
+                let html = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;">';
+
+                for (const a of allAppointments) {
+                    const statusLabel = STATUS_LABELS[a.status] || a.status;
+                    const statusColor = STATUS_COLORS[a.status] || '#94a3b8';
+                    const dateObj = new Date(a.date);
+                    const dateLabel = dateObj.toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: 'short' });
+
+                    let actions = '';
+                    if (a.status === 'pending') {
+                        actions += '<button onclick="confirmAppointment(' + a.id + ')" style="background:#22c55e;border:none;color:#0b1120;padding:5px 12px;border-radius:40px;font-size:11px;font-weight:700;cursor:pointer;">Confirmer</button>';
+                    }
+                    if (a.status === 'confirmed') {
+                        actions += '<button onclick="markCompleted(' + a.id + ')" style="background:#3b82f6;border:none;color:#fff;padding:5px 12px;border-radius:40px;font-size:11px;font-weight:700;cursor:pointer;">Termine</button>';
+                    }
+                    if (a.status !== 'cancelled' && a.status !== 'completed') {
+                        actions += '<button onclick="cancelAppointment(' + a.id + ')" style="background:#3f1e24;border:1px solid #7f1d1d;color:#f87171;padding:5px 12px;border-radius:40px;font-size:11px;cursor:pointer;">Annuler</button>';
+                    }
+                    actions += '<button onclick="deleteAppointment(' + a.id + ')" style="background:#3f1e24;border:1px solid #7f1d1d;color:#f87171;padding:5px 12px;border-radius:40px;font-size:11px;cursor:pointer;">Suppr.</button>';
+
+                    html += '<div style="background:#0b1120;border:1px solid #1e2a41;border-left:4px solid ' + statusColor + ';border-radius:14px;padding:16px;">' +
+                        '<div style="display:flex;justify-content:space-between;gap:12px;margin-bottom:12px;">' +
+                        '<div style="flex:1;min-width:0;">' +
+                        '<div style="color:#fff;font-weight:700;font-size:14px;margin-bottom:4px;">' + escapeHtml(a.clientName) + '</div>' +
+                        (a.subject ? '<div style="color:#94a3b8;font-size:12px;">' + escapeHtml(a.subject) + '</div>' : '') +
+                        '</div>' +
+                        '<span style="font-size:10px;font-weight:700;padding:3px 10px;border-radius:40px;background:' + statusColor + '22;color:' + statusColor + ';border:1px solid ' + statusColor + '66;white-space:nowrap;height:fit-content;">' + statusLabel + '</span>' +
+                        '</div>' +
+
+                        '<div style="background:#161f32;border-radius:10px;padding:10px 14px;margin-bottom:12px;">' +
+                        '<div style="color:#f97316;font-weight:700;font-size:14px;">' + dateLabel + ' - ' + a.startTime.slice(0, 5) + '</div>' +
+                        '<div style="color:#64748b;font-size:11px;margin-top:2px;">' + a.durationMinutes + ' min' + (a.source === 'public' ? ' - via page publique' : '') + '</div>' +
+                        '</div>' +
+
+                        (a.clientPhone ? '<div style="color:#94a3b8;font-size:12px;margin-bottom:4px;">Tel : ' + escapeHtml(a.clientPhone) + '</div>' : '') +
+                        (a.clientEmail ? '<div style="color:#94a3b8;font-size:12px;margin-bottom:4px;word-break:break-all;">' + escapeHtml(a.clientEmail) + '</div>' : '') +
+
+                        '<div style="display:flex;gap:6px;margin-top:12px;flex-wrap:wrap;">' + actions + '</div>' +
+                        '</div>';
+                }
+
+                html += '</div>';
+                container.innerHTML = html;
+            }
+
+            // ----- Filtres -----
+            document.querySelectorAll('#appointmentFilters .history-filter').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('#appointmentFilters .history-filter').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentFilter = btn.dataset.afilter;
+                    loadAppointments();
+                });
+            });
+
+            // ----- Actions -----
+            window.confirmAppointment = async function(id) {
+                try {
+                    const res = await apiFetch('/api/appointments/' + id + '/status', {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ status: 'confirmed' })
+                    });
+                    if (!res.ok) throw new Error('Erreur');
+                    showToast('Rendez-vous confirme', 'success');
+                    loadAppointments();
+                } catch (err) {
+                    showToast('Erreur : ' + err.message, 'error');
+                }
+            };
+
+            window.markCompleted = async function(id) {
+                try {
+                    const res = await apiFetch('/api/appointments/' + id + '/status', {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ status: 'completed' })
+                    });
+                    if (!res.ok) throw new Error('Erreur');
+                    showToast('Rendez-vous termine', 'success');
+                    loadAppointments();
+                } catch (err) {
+                    showToast('Erreur : ' + err.message, 'error');
+                }
+            };
+
+            window.cancelAppointment = async function(id) {
+                const reason = await showPrompt({
+                    title: 'Annuler le rendez-vous',
+                    message: 'Raison (optionnel)',
+                    label: 'Raison',
+                    placeholder: 'Indisponibilite, report...'
+                });
+
+                try {
+                    const res = await apiFetch('/api/appointments/' + id + '/status', {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ status: 'cancelled', reason: reason || null })
+                    });
+                    if (!res.ok) throw new Error('Erreur');
+                    showToast('Rendez-vous annule', 'success');
+                    loadAppointments();
+                } catch (err) {
+                    showToast('Erreur : ' + err.message, 'error');
+                }
+            };
+
+            window.deleteAppointment = async function(id) {
+                const ok = await showConfirm({
+                    title: 'Supprimer le rendez-vous',
+                    message: 'Le rendez-vous sera definitivement supprime.',
+                    confirmText: 'Supprimer',
+                    danger: true
+                });
+                if (!ok) return;
+
+                try {
+                    const res = await apiFetch('/api/appointments/' + id, { method: 'DELETE' });
+                    if (!res.ok) throw new Error('Erreur');
+                    showToast('Rendez-vous supprime', 'success');
+                    loadAppointments();
+                } catch (err) {
+                    showToast('Erreur : ' + err.message, 'error');
+                }
+            };
+
+            // ----- Nouveau RDV manuel -----
+            document.getElementById('newAppointmentBtn')?.addEventListener('click', () => {
+                document.getElementById('apptClientName').value = '';
+                document.getElementById('apptClientPhone').value = '';
+                document.getElementById('apptClientEmail').value = '';
+                document.getElementById('apptClientAddress').value = '';
+                document.getElementById('apptSubject').value = '';
+                document.getElementById('apptNotes').value = '';
+                document.getElementById('apptDate').value = new Date().toISOString().slice(0, 10);
+                document.getElementById('apptStartTime').value = '09:00';
+                document.getElementById('apptDuration').value = 60;
+                document.getElementById('appointmentModal').classList.add('show');
+            });
+
+            document.getElementById('saveAppointmentBtn')?.addEventListener('click', async () => {
+                const payload = {
+                    clientName: document.getElementById('apptClientName').value.trim(),
+                    clientPhone: document.getElementById('apptClientPhone').value.trim(),
+                    clientEmail: document.getElementById('apptClientEmail').value.trim(),
+                    clientAddress: document.getElementById('apptClientAddress').value.trim(),
+                    subject: document.getElementById('apptSubject').value.trim(),
+                    notes: document.getElementById('apptNotes').value.trim(),
+                    date: document.getElementById('apptDate').value,
+                    startTime: document.getElementById('apptStartTime').value,
+                    durationMinutes: parseInt(document.getElementById('apptDuration').value) || 60
+                };
+
+                if (!payload.clientName) {
+                    showToast('Nom du client requis.', 'error');
+                    return;
+                }
+                if (!payload.date || !payload.startTime) {
+                    showToast('Date et heure requises.', 'error');
+                    return;
+                }
+
+                const btn = document.getElementById('saveAppointmentBtn');
+                btn.disabled = true;
+                btn.textContent = 'Enregistrement...';
+
+                try {
+                    const res = await apiFetch('/api/appointments', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error || 'Erreur');
+
+                    showToast('Rendez-vous cree', 'success');
+                    document.getElementById('appointmentModal').classList.remove('show');
+                    loadAppointments();
+                } catch (err) {
+                    showToast('Erreur : ' + err.message, 'error');
+                } finally {
+                    btn.disabled = false;
+                    btn.textContent = 'Enregistrer';
+                }
+            });
+
+            // ----- Charger au clic sur l'onglet -----
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    if (btn.dataset.tab === 'tab-appointments') {
+                        setTimeout(() => {
+                            loadBookingConfig();
+                            loadAppointments();
+                        }, 100);
+                    }
+                });
+            });
         })();
         
     </script>
