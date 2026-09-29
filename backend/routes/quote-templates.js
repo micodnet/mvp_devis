@@ -75,6 +75,54 @@ router.get('/categories', authenticateToken, async (req, res) => {
 });
 
 // ============================================================
+// POST /api/quote-templates/categories/rename — Renommer une categorie
+// ============================================================
+router.post('/categories/rename', authenticateToken, async (req, res) => {
+    const { oldName, newName } = req.body;
+
+    if (!oldName || !newName || !newName.trim()) {
+        return res.status(400).json({ error: 'Ancien et nouveau nom requis.' });
+    }
+
+    try {
+        const result = await pool.query(`
+            UPDATE quote_templates
+            SET category = $1, updated_at = NOW()
+            WHERE user_id = $2 AND category = $3
+        `, [newName.trim(), req.user.id, oldName]);
+
+        res.json({ success: true, updated: result.rowCount });
+    } catch (err) {
+        console.error('Erreur rename category:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ============================================================
+// DELETE /api/quote-templates/categories/:name — Supprimer une categorie
+// ============================================================
+router.delete('/categories/:name', authenticateToken, async (req, res) => {
+    const categoryName = decodeURIComponent(req.params.name);
+
+    if (!categoryName) {
+        return res.status(400).json({ error: 'Nom de categorie requis.' });
+    }
+
+    try {
+        const result = await pool.query(`
+            UPDATE quote_templates
+            SET category = NULL, updated_at = NOW()
+            WHERE user_id = $1 AND category = $2
+        `, [req.user.id, categoryName]);
+
+        res.json({ success: true, updated: result.rowCount });
+    } catch (err) {
+        console.error('Erreur delete category:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ============================================================
 // GET /api/quote-templates/:id — Detail d'un modele
 // ============================================================
 router.get('/:id', authenticateToken, async (req, res) => {
@@ -552,5 +600,6 @@ router.post('/:id/duplicate', authenticateToken, async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+
 
 module.exports = router;

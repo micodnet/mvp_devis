@@ -3163,6 +3163,24 @@
             </div>
         </div>
 
+        <!-- MODAL GESTION DES CATEGORIES -->
+        <div class="modal-overlay" id="templateCategoriesModal">
+            <div class="modal modal-wide">
+                <h3>Gerer les categories</h3>
+                <p style="color:#94a3b8;font-size:13px;margin:12px 0 20px;line-height:1.6;">
+                    Renommez une categorie pour mettre a jour tous les modeles associes. La suppression d'une categorie retire le tag des modeles mais ne les supprime pas.
+                </p>
+
+                <div id="templateCategoriesList" style="max-height:60vh;overflow-y:auto;">
+                    <p style="color:#64748b;text-align:center;padding:20px;">Chargement...</p>
+                </div>
+
+                <div class="modal-actions" style="margin-top:16px;">
+                    <button class="btn-cancel" onclick="document.getElementById('templateCategoriesModal').classList.remove('show')">Fermer</button>
+                </div>
+            </div>
+        </div>
+
         <!-- PORTAIL CLIENT -->
         <div id="tab-client-portal" class="tab-content">
             <div class="card">
@@ -8047,6 +8065,7 @@
 
                 let menuItems = '';
                 menuItems += `<button onclick="closeAllMenus(); downloadInvoicePdf(${inv.id})"><span class="icon">⬇</span> Télécharger PDF</button>`;
+                menuItems += `<button onclick="closeAllMenus(); openPaymentScheduleModal(${inv.id})"><span class="icon">📅</span> Plan de paiement</button>`;
                 // Bouton lien de paiement en ligne (si la facture n'est pas payee)
                 if (inv.status !== 'paid' && inv.status !== 'cancelled') {
                     menuItems += `<button onclick="closeAllMenus(); generatePaymentLink(${inv.id})"><span class="icon">💳</span> Lien de paiement</button>`;
@@ -16651,6 +16670,506 @@
             });
         })();
 
+        // ================================================================
+        // 45. GESTION DES CATEGORIES DE MODELES
+        // ================================================================
+        (function initTemplateCategories() {
+            // ----- Ouvrir la modale -----
+            document.getElementById('templateCategoriesBtn')?.addEventListener('click', async () => {
+                document.getElementById('templateCategoriesModal').classList.add('show');
+                await loadCategoriesManagement();
+            });
+
+            // ----- Charger la liste des categories avec compteur -----
+            async function loadCategoriesManagement() {
+                const container = document.getElementById('templateCategoriesList');
+                if (!container) return;
+                container.innerHTML = '<p style="color:#64748b;text-align:center;padding:20px;">Chargement...</p>';
+
+                try {
+                    // Charger tous les modeles pour compter par categorie
+                    const res = await apiFetch('/api/quote-templates');
+                    const templates = await res.json();
+
+                    // Compter par categorie
+                    const counts = {};
+                    for (const t of templates) {
+                        const cat = t.category || null;
+                        if (cat) {
+                            counts[cat] = (counts[cat] || 0) + 1;
+                        }
+                    }
+
+                    const categories = Object.keys(counts).sort();
+
+                    if (categories.length === 0) {
+                        container.innerHTML = '<p style="color:#64748b;text-align:center;padding:20px;">Aucune categorie pour le moment. Creez un modele avec une categorie pour la voir apparaitre ici.</p>';
+                        return;
+                    }
+
+                    let html = '<div style="display:flex;flex-direction:column;gap:8px;">';
+                    for (const cat of categories) {
+                        html += '<div style="background:#0b1120;border:1px solid #1e2a41;border-radius:10px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">' +
+                            '<div style="flex:1;min-width:150px;">' +
+                            '<div style="color:#fff;font-weight:600;font-size:14px;">' + escapeHtml(cat) + '</div>' +
+                            '<div style="color:#64748b;font-size:12px;margin-top:2px;">' + counts[cat] + ' modele' + (counts[cat] > 1 ? 's' : '') + '</div>' +
+                            '</div>' +
+                            '<div style="display:flex;gap:6px;">' +
+                            '<button onclick="renameTemplateCategory(\'' + cat.replace(/'/g, "\\'") + '\')" style="background:#1a253b;border:1px solid #2a3a55;color:#e2e8f0;padding:6px 12px;border-radius:40px;font-size:12px;cursor:pointer;">Renommer</button>' +
+                            '<button onclick="deleteTemplateCategory(\'' + cat.replace(/'/g, "\\'") + '\')" style="background:#3f1e24;border:1px solid #7f1d1d;color:#f87171;padding:6px 12px;border-radius:40px;font-size:12px;cursor:pointer;">Supprimer</button>' +
+                            '</div>' +
+                            '</div>';
+                    }
+                    html += '</div>';
+                    container.innerHTML = html;
+                } catch (err) {
+                    console.error('Erreur load categories management:', err);
+                    container.innerHTML = '<p style="color:#f87171;text-align:center;padding:20px;">Erreur.</p>';
+                }
+            }
+
+            // ----- Renommer une categorie -----
+            window.renameTemplateCategory = async function(oldName) {
+                const newName = await showPrompt({
+                    title: 'Renommer la categorie',
+                    message: 'Tous les modeles de la categorie "' + oldName + '" seront mis a jour.',
+                    label: 'Nouveau nom',
+                    defaultValue: oldName
+                });
+
+                if (!newName || newName.trim() === '' || newName === oldName) return;
+
+                try {
+                    const res = await apiFetch('/api/quote-templates/categories/rename', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ oldName: oldName, newName: newName.trim() })
+                    });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error || 'Erreur');
+
+                    showToast(data.updated + ' modele(s) mis a jour', 'success');
+                    await loadCategoriesManagement();
+
+                    // Rafraichir l'onglet principal
+                    if (typeof loadTemplates === 'function') {
+                        const event = new Event('templateCategoriesChanged');
+                        document.dispatchEvent(event);
+                    }
+                } catch (err) {
+                    showToast('Erreur : ' + err.message, 'error');
+                }
+            };
+
+            // ----- Supprimer une categorie -----
+            window.deleteTemplateCategory = async function(catName) {
+                const ok = await showConfirm({
+                    title: 'Supprimer la categorie',
+                    message: 'La categorie "' + catName + '" sera retiree de tous les modeles associes. Les modeles eux-memes ne seront pas supprimes.',
+                    confirmText: 'Supprimer',
+                    danger: true
+                });
+                if (!ok) return;
+
+                try {
+                    const res = await apiFetch('/api/quote-templates/categories/' + encodeURIComponent(catName), {
+                        method: 'DELETE'
+                    });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error || 'Erreur');
+
+                    showToast(data.updated + ' modele(s) mis a jour', 'success');
+                    await loadCategoriesManagement();
+
+                    // Rafraichir l'onglet principal
+                    const event = new Event('templateCategoriesChanged');
+                    document.dispatchEvent(event);
+                } catch (err) {
+                    showToast('Erreur : ' + err.message, 'error');
+                }
+            };
+
+            // ----- Ecouter les changements pour rafraichir l'onglet principal -----
+            document.addEventListener('templateCategoriesChanged', () => {
+                // Recharger les categories et modeles de l'onglet principal
+                const event = new Event('click');
+                const tabBtn = document.querySelector('.tab-btn[data-tab="tab-templates"]');
+                if (tabBtn && tabBtn.classList.contains('active')) {
+                    // Re-declencher le chargement via le listener existant
+                    const templatesList = document.getElementById('templatesList');
+                    if (templatesList) {
+                        // On invalide juste pour forcer un rechargement au prochain clic
+                        // Le prochain clic sur l'onglet rechargera
+                    }
+                }
+            });
+        })();
+
+        // ================================================================
+        // 46. PAIEMENTS PARTIELS PLANIFIES
+        // ================================================================
+        (function initPaymentSchedules() {
+            // ------------------------------------------------------------
+            // Ouvrir la modale de gestion d'un plan pour une facture
+            // ------------------------------------------------------------
+            window.openPaymentScheduleModal = async function(invoiceId) {
+                try {
+                    const res = await apiFetch('/api/payment-schedules/invoice/' + invoiceId);
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error || 'Erreur');
+
+                    renderScheduleModal(data);
+                    document.getElementById('scheduleModal').classList.add('show');
+                } catch (err) {
+                    showToast('Erreur : ' + err.message, 'error');
+                }
+            };
+
+            // ------------------------------------------------------------
+            // Rendu du contenu de la modale
+            // ------------------------------------------------------------
+            function renderScheduleModal(data) {
+                const container = document.getElementById('scheduleModalContent');
+                const inv = data.invoice;
+
+                let html = '';
+
+                // Entete
+                html += '<div style="background:#0b1120;border:1px solid #1e2a41;border-radius:12px;padding:16px;margin-bottom:20px;">' +
+                    '<div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;">' +
+                    '<div>' +
+                    '<div style="color:#f97316;font-weight:700;font-size:14px;">Facture ' + escapeHtml(inv.number) + '</div>' +
+                    '<div style="color:#94a3b8;font-size:12px;margin-top:2px;">Total : ' + inv.total.toFixed(2) + ' ' + inv.currency + '</div>' +
+                    '</div>' +
+                    '<div style="text-align:right;">' +
+                    '<div style="color:#22c55e;font-weight:700;">Paye : ' + inv.amountPaid.toFixed(2) + ' ' + inv.currency + '</div>' +
+                    '<div style="color:' + (inv.amountDue > 0 ? '#f97316' : '#64748b') + ';font-size:12px;margin-top:2px;font-weight:600;">Reste du : ' + inv.amountDue.toFixed(2) + ' ' + inv.currency + '</div>' +
+                    '</div>' +
+                    '</div>' +
+                    '</div>';
+
+                if (!data.hasSchedule) {
+                    // Pas de plan : proposer la generation automatique
+                    html += '<div style="background:#0b1120;border:1px dashed #2a3a55;border-radius:12px;padding:24px;text-align:center;margin-bottom:16px;">' +
+                        '<div style="color:#94a3b8;font-size:14px;margin-bottom:16px;">Aucun plan de paiement pour cette facture.</div>' +
+                        '<button class="btn-primary-sm" onclick="showGenerateScheduleForm(' + inv.id + ', ' + inv.total + ', \'' + inv.currency + '\')">Generer un plan automatique</button>' +
+                        '<button class="btn-secondary" onclick="showManualScheduleForm(' + inv.id + ', ' + inv.total + ', \'' + inv.currency + '\')" style="margin-left:8px;">Creer manuellement</button>' +
+                        '</div>';
+
+                    html += '<div id="scheduleFormArea"></div>';
+                } else {
+                    // Plan existant
+                    html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">' +
+                        '<div style="color:#fff;font-weight:700;font-size:14px;">Plan de paiement (' + data.schedule.length + ' echeances)</div>' +
+                        '<button class="btn-secondary" onclick="removeSchedule(' + inv.id + ')" style="font-size:11px;padding:6px 12px;">Supprimer le plan</button>' +
+                        '</div>';
+
+                    html += '<div style="display:flex;flex-direction:column;gap:8px;">';
+                    for (const e of data.schedule) {
+                        const amountDue = e.amount - e.amountPaid;
+                        const isPaid = e.status === 'paid';
+                        const isPartial = e.status === 'partial';
+                        const isOverdue = !isPaid && new Date(e.dueDate) < new Date();
+
+                        let statusColor = '#94a3b8';
+                        let statusLabel = 'En attente';
+                        if (isPaid) { statusColor = '#22c55e'; statusLabel = 'Paye'; }
+                        else if (isPartial) { statusColor = '#eab308'; statusLabel = 'Partiel'; }
+                        else if (isOverdue) { statusColor = '#f87171'; statusLabel = 'En retard'; }
+
+                        html += '<div style="background:#0b1120;border:1px solid #1e2a41;border-left:3px solid ' + statusColor + ';border-radius:10px;padding:14px;">' +
+                            '<div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:8px;">' +
+                            '<div>' +
+                            '<div style="color:#fff;font-weight:600;font-size:14px;">' + escapeHtml(e.label || ('Echeance ' + e.position)) + '</div>' +
+                            '<div style="color:#94a3b8;font-size:12px;margin-top:2px;">Echeance : ' + new Date(e.dueDate).toLocaleDateString('fr-FR') + '</div>' +
+                            '</div>' +
+                            '<div style="text-align:right;">' +
+                            '<div style="color:#f97316;font-weight:700;font-size:16px;">' + e.amount.toFixed(2) + ' ' + inv.currency + '</div>' +
+                            '<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:40px;background:' + statusColor + '22;color:' + statusColor + ';border:1px solid ' + statusColor + '66;">' + statusLabel + '</span>' +
+                            '</div>' +
+                            '</div>' +
+                            (isPartial ? '<div style="color:#eab308;font-size:12px;margin-top:4px;">Deja paye : ' + e.amountPaid.toFixed(2) + ' - Reste : ' + amountDue.toFixed(2) + '</div>' : '') +
+                            (!isPaid ? '<button onclick="payScheduleEntry(' + e.id + ', ' + amountDue.toFixed(2) + ', \'' + inv.currency + '\')" class="btn-primary-sm" style="margin-top:10px;font-size:11px;padding:6px 12px;">Enregistrer un paiement</button>' : '') +
+                            '</div>';
+                    }
+                    html += '</div>';
+                }
+
+                container.innerHTML = html;
+            }
+
+            // ------------------------------------------------------------
+            // Formulaire de generation automatique
+            // ------------------------------------------------------------
+            window.showGenerateScheduleForm = function(invoiceId, total, currency) {
+                const area = document.getElementById('scheduleFormArea');
+                area.innerHTML = `
+                    <div style="background:#0b1120;border:1px solid #f97316;border-radius:12px;padding:20px;margin-top:16px;">
+                        <div style="color:#f97316;font-weight:700;font-size:13px;text-transform:uppercase;margin-bottom:12px;">Generation automatique</div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Nombre d'echeances</label>
+                                <input type="number" id="genInstallments" value="3" min="2" max="24" />
+                            </div>
+                            <div class="form-group">
+                                <label>Premier paiement dans (jours)</label>
+                                <input type="number" id="genFirstDays" value="0" min="0" max="365" />
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Ecart entre echeances (jours)</label>
+                                <input type="number" id="genIntervalDays" value="30" min="1" max="365" />
+                            </div>
+                            <div class="form-group">
+                                <label>Acompte initial (optionnel)</label>
+                                <input type="number" id="genFirstAmount" step="0.01" min="0" placeholder="Ex : ${(total * 0.3).toFixed(2)}" />
+                            </div>
+                        </div>
+                        <div style="display:flex;gap:10px;margin-top:12px;">
+                            <button class="btn-confirm" id="genScheduleConfirmBtn">Generer</button>
+                            <button class="btn-cancel" onclick="document.getElementById('scheduleFormArea').innerHTML=''">Annuler</button>
+                        </div>
+                        <div id="genSchedulePreview" style="margin-top:12px;"></div>
+                    </div>
+                `;
+
+                document.getElementById('genScheduleConfirmBtn').addEventListener('click', async () => {
+                    const installments = parseInt(document.getElementById('genInstallments').value) || 3;
+                    const firstDueDays = parseInt(document.getElementById('genFirstDays').value) || 0;
+                    const intervalDays = parseInt(document.getElementById('genIntervalDays').value) || 30;
+                    const firstAmount = parseFloat(document.getElementById('genFirstAmount').value) || 0;
+
+                    const btn = document.getElementById('genScheduleConfirmBtn');
+                    btn.disabled = true;
+                    btn.textContent = 'Generation...';
+
+                    try {
+                        const res = await apiFetch('/api/payment-schedules/invoice/' + invoiceId + '/generate', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                installments: installments,
+                                firstDueDays: firstDueDays,
+                                intervalDays: intervalDays,
+                                firstAmount: firstAmount
+                            })
+                        });
+                        const data = await res.json();
+                        if (!res.ok) throw new Error(data.error || 'Erreur');
+
+                        showToast('Plan de paiement cree', 'success');
+                        openPaymentScheduleModal(invoiceId);
+                    } catch (err) {
+                        showToast('Erreur : ' + err.message, 'error');
+                        btn.disabled = false;
+                        btn.textContent = 'Generer';
+                    }
+                });
+            };
+
+            // ------------------------------------------------------------
+            // Formulaire de creation manuelle
+            // ------------------------------------------------------------
+            window.showManualScheduleForm = function(invoiceId, total, currency) {
+                const area = document.getElementById('scheduleFormArea');
+                area.innerHTML = `
+                    <div style="background:#0b1120;border:1px solid #f97316;border-radius:12px;padding:20px;margin-top:16px;">
+                        <div style="color:#f97316;font-weight:700;font-size:13px;text-transform:uppercase;margin-bottom:12px;">Creation manuelle</div>
+                        <div id="manualEntriesContainer"></div>
+                        <button class="btn-secondary" id="addManualEntryBtn" style="margin-top:8px;">+ Ajouter une echeance</button>
+                        <div id="manualTotalsDisplay" style="margin-top:12px;font-size:13px;"></div>
+                        <div style="display:flex;gap:10px;margin-top:12px;">
+                            <button class="btn-confirm" id="manualScheduleConfirmBtn">Creer le plan</button>
+                            <button class="btn-cancel" onclick="document.getElementById('scheduleFormArea').innerHTML=''">Annuler</button>
+                        </div>
+                    </div>
+                `;
+
+                function addEntry(label, amount, dueDate) {
+                    const container = document.getElementById('manualEntriesContainer');
+                    const row = document.createElement('div');
+                    row.className = 'edit-item-row';
+                    const defaultDate = new Date();
+                    defaultDate.setDate(defaultDate.getDate() + 30);
+
+                    row.innerHTML =
+                        '<input type="text" placeholder="Libelle (Acompte, Solde...)" class="ms-label" value="' + (label || '') + '" />' +
+                        '<input type="number" placeholder="Montant" class="ms-amount" step="0.01" min="0" value="' + (amount || 0) + '" />' +
+                        '<input type="date" class="ms-due" value="' + (dueDate || defaultDate.toISOString().slice(0, 10)) + '" />' +
+                        '<button type="button" class="remove-btn">X</button>';
+
+                    const amountI = row.querySelector('.ms-amount');
+                    const removeB = row.querySelector('.remove-btn');
+                    amountI.addEventListener('input', recomputeManualTotals);
+                    removeB.addEventListener('click', () => { row.remove(); recomputeManualTotals(); });
+
+                    container.appendChild(row);
+                    recomputeManualTotals();
+                }
+
+                function recomputeManualTotals() {
+                    const rows = document.querySelectorAll('#manualEntriesContainer .edit-item-row');
+                    let sum = 0;
+                    rows.forEach(r => {
+                        sum += parseFloat(r.querySelector('.ms-amount').value) || 0;
+                    });
+                    const diff = total - sum;
+                    const display = document.getElementById('manualTotalsDisplay');
+                    const color = Math.abs(diff) < 0.01 ? '#22c55e' : '#f87171';
+                    display.innerHTML =
+                        '<div style="color:#94a3b8;">Somme : <strong style="color:#fff;">' + sum.toFixed(2) + ' ' + currency + '</strong></div>' +
+                        '<div style="color:#94a3b8;">Total facture : <strong style="color:#fff;">' + total.toFixed(2) + ' ' + currency + '</strong></div>' +
+                        '<div style="color:' + color + ';font-weight:600;">Ecart : ' + diff.toFixed(2) + ' ' + currency + '</div>';
+                }
+
+                document.getElementById('addManualEntryBtn').addEventListener('click', () => addEntry());
+                addEntry('Acompte', Math.round(total * 0.3 * 100) / 100);
+                addEntry('Solde', Math.round(total * 0.7 * 100) / 100);
+
+                document.getElementById('manualScheduleConfirmBtn').addEventListener('click', async () => {
+                    const rows = document.querySelectorAll('#manualEntriesContainer .edit-item-row');
+                    const entries = [];
+                    rows.forEach(r => {
+                        const label = r.querySelector('.ms-label').value.trim();
+                        const amount = parseFloat(r.querySelector('.ms-amount').value) || 0;
+                        const dueDate = r.querySelector('.ms-due').value;
+                        if (amount > 0 && dueDate) {
+                            entries.push({ label: label || 'Echeance', amount: amount, dueDate: dueDate });
+                        }
+                    });
+
+                    if (entries.length === 0) {
+                        showToast('Ajoutez au moins une echeance.', 'error');
+                        return;
+                    }
+
+                    const sum = entries.reduce((s, e) => s + e.amount, 0);
+                    if (Math.abs(sum - total) > 0.01) {
+                        showToast('La somme doit egaler le total de la facture.', 'error');
+                        return;
+                    }
+
+                    const btn = document.getElementById('manualScheduleConfirmBtn');
+                    btn.disabled = true;
+                    btn.textContent = 'Creation...';
+
+                    try {
+                        const res = await apiFetch('/api/payment-schedules/invoice/' + invoiceId, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ entries: entries })
+                        });
+                        const data = await res.json();
+                        if (!res.ok) throw new Error(data.error || 'Erreur');
+
+                        showToast('Plan de paiement cree', 'success');
+                        openPaymentScheduleModal(invoiceId);
+                    } catch (err) {
+                        showToast('Erreur : ' + err.message, 'error');
+                        btn.disabled = false;
+                        btn.textContent = 'Creer le plan';
+                    }
+                });
+            };
+
+            // ------------------------------------------------------------
+            // Enregistrer un paiement sur une echeance
+            // ------------------------------------------------------------
+            window.payScheduleEntry = async function(entryId, amount, currency) {
+                const amountInput = await showPrompt({
+                    title: 'Paiement de l\'echeance',
+                    message: 'Montant restant : ' + amount.toFixed(2) + ' ' + currency,
+                    label: 'Montant recu',
+                    defaultValue: amount.toFixed(2),
+                    inputType: 'number',
+                    placeholder: '0.00'
+                });
+                if (amountInput === null) return;
+
+                const paidAmount = parseFloat(String(amountInput).replace(',', '.'));
+                if (isNaN(paidAmount) || paidAmount <= 0) {
+                    showToast('Montant invalide.', 'error');
+                    return;
+                }
+
+                const method = await showPrompt({
+                    title: 'Mode de paiement',
+                    label: 'Mode de paiement',
+                    type: 'select',
+                    defaultValue: 'virement',
+                    options: [
+                        { value: 'virement', label: 'Virement bancaire' },
+                        { value: 'carte', label: 'Carte bancaire' },
+                        { value: 'especes', label: 'Especes' },
+                        { value: 'cheque', label: 'Cheque' },
+                        { value: 'autre', label: 'Autre' }
+                    ]
+                });
+                if (method === null) return;
+
+                try {
+                    const res = await apiFetch('/api/payment-schedules/entries/' + entryId + '/pay', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ amount: paidAmount, method: method })
+                    });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error || 'Erreur');
+
+                    showToast('Paiement enregistre', 'success');
+
+                    // Recharger la modale (on recupere l'id de la facture depuis le DOM)
+                    const invoiceId = getCurrentScheduleInvoiceId();
+                    if (invoiceId) {
+                        openPaymentScheduleModal(invoiceId);
+                    }
+                } catch (err) {
+                    showToast('Erreur : ' + err.message, 'error');
+                }
+            };
+
+            // ------------------------------------------------------------
+            // Supprimer le plan
+            // ------------------------------------------------------------
+            window.removeSchedule = async function(invoiceId) {
+                const ok = await showConfirm({
+                    title: 'Supprimer le plan',
+                    message: 'Le plan de paiement sera supprime. Les paiements deja enregistres restent sur la facture.',
+                    confirmText: 'Supprimer',
+                    danger: true
+                });
+                if (!ok) return;
+
+                try {
+                    const res = await apiFetch('/api/payment-schedules/invoice/' + invoiceId, { method: 'DELETE' });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error || 'Erreur');
+
+                    showToast('Plan supprime', 'success');
+                    openPaymentScheduleModal(invoiceId);
+                } catch (err) {
+                    showToast('Erreur : ' + err.message, 'error');
+                }
+            };
+
+            // ------------------------------------------------------------
+            // Stocke l'id de la facture courante (pour le rechargement)
+            // ------------------------------------------------------------
+            let currentScheduleInvoiceId = null;
+
+            function getCurrentScheduleInvoiceId() {
+                return currentScheduleInvoiceId;
+            }
+
+            // On wrappe openPaymentScheduleModal pour memoriser l'id
+            const originalOpen = window.openPaymentScheduleModal;
+            window.openPaymentScheduleModal = function(invoiceId) {
+                currentScheduleInvoiceId = invoiceId;
+                return originalOpen(invoiceId);
+            };
+        })();
+        
     </script>
 </body>
 </html>
