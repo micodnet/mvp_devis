@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Espace client</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body {
+            background: #0b1120;
+            color: #e2e8f0;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* LOGIN / INVITE */
+        .auth-screen {
+            display: none;
+            min-height: 100vh;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .auth-screen.active {
+            display: flex;
+        }
+        .auth-card {
+            background: #161f32;
+            border: 1px solid #2a3a55;
+            border-radius: 24px;
+            padding: 40px 32px;
+            max-width: 440px;
+            width: 100%;
+            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.5);
+        }
+        .auth-card h1 {
+            color: #fff;
+            font-size: 26px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+        .auth-card h1 span { color: #f97316; }
+        .auth-card .sub {
+            color: #94a3b8;
+            font-size: 14px;
+            margin-bottom: 28px;
+            line-height: 1.5;
+        }
+        .form-group {
+            margin-bottom: 16px;
+        }
+        .form-group label {
+            display: block;
+            color: #94a3b8;
+            font-size: 13px;
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            background: #0b1120;
+            border: 1px solid #2a3a55;
+            color: #e2e8f0;
+            font-size: 14px;
+            outline: none;
+            transition: 0.2s;
+        }
+        .form-group input:focus {
+            border-color: #f97316;
+        }
+        .btn-primary {
+            width: 100%;
+            padding: 14px;
+            border-radius: 60px;
+            background: #f97316;
+            color: #0b1120;
+            border: none;
+            font-weight: 700;
+            font-size: 15px;
+            cursor: pointer;
+            margin-top: 8px;
+            transition: 0.2s;
+        }
+        .btn-primary:hover { background: #ea580c; }
+        .btn-primary:disabled { background: #334155; color: #94a3b8; cursor: not-allowed; }
+        .error {
+            background: #1f1220;
+            color: #f87171;
+            padding: 10px 14px;
+            border-radius: 10px;
+            border: 1px solid #3f1e24;
+            margin-bottom: 14px;
+            font-size: 13px;
+            display: none;
+        }
+        .error.show { display: block; }
+        .success {
+            background: #132a1e;
+            color: #4ade80;
+            padding: 10px 14px;
+            border-radius: 10px;
+            border: 1px solid #14532d;
+            margin-bottom: 14px;
+            font-size: 13px;
+            display: none;
+        }
+        .success.show { display: block; }
+
+        /* DASHBOARD CLIENT */
+        .portal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+            border-bottom: 1px solid #1e2a41;
+            margin-bottom: 32px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .portal-header .brand {
+            font-size: 20px;
+            font-weight: 800;
+            color: #fff;
+        }
+        .portal-header .brand span { color: #f97316; }
+        .portal-header .user {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .portal-header .user .name {
+            color: #cbd5e1;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .btn-logout {
+            background: #1a253b;
+            border: 1px solid #2a3a55;
+            color: #e2e8f0;
+            padding: 8px 16px;
+            border-radius: 60px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .btn-logout:hover { background: #3f1e24; border-color: #7f1d1d; color: #f87171; }
+
+        .tabs {
+            display: flex;
+            gap: 6px;
+            background: #0b1120;
+            padding: 4px;
+            border-radius: 60px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+        .tab-btn {
+            background: transparent;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 40px;
+            color: #94a3b8;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .tab-btn.active {
+            background: #f97316;
+            color: #0b1120;
+        }
+        .tab-btn:hover:not(.active) {
+            background: #1e2a41;
+            color: #e2e8f0;
+        }
+
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 14px;
+            margin-bottom: 24px;
+        }
+        .stat-card {
+            background: #0b1120;
+            border: 1px solid #1e2a41;
+            border-radius: 14px;
+            padding: 18px 16px;
+            text-align: center;
+        }
+        .stat-card .number {
+            font-size: 26px;
+            font-weight: 800;
+            color: #fff;
+            margin-bottom: 4px;
+        }
+        .stat-card .label {
+            color: #64748b;
+            font-size: 11px;
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .list-item {
+            background: #0b1120;
+            border: 1px solid #1e2a41;
+            border-radius: 12px;
+            padding: 16px 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+        .list-item .info {
+            flex: 1;
+            min-width: 200px;
+        }
+        .list-item .num {
+            color: #f97316;
+            font-weight: 700;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+        .list-item .meta {
+            color: #94a3b8;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+        .list-item .amount {
+            font-size: 18px;
+            font-weight: 800;
+            color: #fff;
+            text-align: right;
+        }
+        .list-item .actions {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .list-item .actions button, .list-item .actions a {
+            background: #1a253b;
+            border: 1px solid #2a3a55;
+            color: #e2e8f0;
+            padding: 8px 14px;
+            border-radius: 60px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            transition: 0.2s;
+        }
+        .list-item .actions button:hover, .list-item .actions a:hover {
+            background: #24324b;
+            border-color: #3b82f6;
+        }
+        .list-item .actions .primary {
+            background: #f97316;
+            border-color: #f97316;
+            color: #0b1120;
+        }
+        .list-item .actions .primary:hover {
+            background: #ea580c;
+        }
+
+        .status-badge {
+            display: inline-block;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 40px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            margin-top: 6px;
+        }
+        .status-badge.draft { background: rgba(148,163,184,0.15); color: #94a3b8; }
+        .status-badge.sent { background: rgba(59,130,246,0.15); color: #3b82f6; }
+        .status-badge.accepted { background: rgba(34,197,94,0.15); color: #22c55e; }
+        .status-badge.refused { background: rgba(248,113,113,0.15); color: #f87171; }
+        .status-badge.paid { background: rgba(34,197,94,0.15); color: #22c55e; }
+        .status-badge.overdue { background: rgba(249,115,22,0.15); color: #f97316; }
+        .status-badge.partial { background: rgba(234,179,8,0.15); color: #eab308; }
+
+        .empty {
+            text-align: center;
+            padding: 60px 20px;
+            color: #64748b;
+        }
+        .empty .icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+            opacity: 0.4;
+        }
+
+        @media (max-width: 600px) {
+            .portal-header { flex-direction: column; align-items: flex-start; }
+            .list-item { flex-direction: column; align-items: stretch; }
+            .list-item .amount { text-align: left; }
+            .list-item .actions { width: 100%; }
+            .list-item .actions button, .list-item .actions a { flex: 1; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ECRAN INVITATION -->
+<div class="auth-screen" id="inviteScreen">
+    <div class="auth-card">
+        <h1>Bienvenue chez <span id="inviteCompanyName">...</span></h1>
+        <div class="sub">Vous avez ete invite a creer votre espace client personnel. Choisissez un mot de passe pour acceder a vos devis et factures.</div>
+
+        <div class="error" id="inviteError"></div>
+
+        <div class="form-group">
+            <label>Email</label>
+            <input type="email" id="inviteEmail" disabled />
+        </div>
+        <div class="form-group">
+            <label>Mot de passe (6 caracteres minimum)</label>
+            <input type="password" id="invitePassword" minlength="6" />
+        </div>
+        <div class="form-group">
+            <label>Confirmer le mot de passe</label>
+            <input type="password" id="invitePasswordConfirm" minlength="6" />
+        </div>
+
+        <button class="btn-primary" id="inviteSubmitBtn">Creer mon compte</button>
+    </div>
+</div>
+
+<!-- ECRAN LOGIN -->
+<div class="auth-screen" id="loginScreen">
+    <div class="auth-card">
+        <h1>Espace <span>client</span></h1>
+        <div class="sub">Connectez-vous pour acceder a vos devis, factures et chantiers.</div>
+
+        <div class="error" id="loginError"></div>
+
+        <div class="form-group">
+            <label>Email</label>
+            <input type="email" id="loginEmail" />
+        </div>
+        <div class="form-group">
+            <label>Mot de passe</label>
+            <input type="password" id="loginPassword" />
+        </div>
+
+        <button class="btn-primary" id="loginSubmitBtn">Se connecter</button>
+    </div>
+</div>
+
+<!-- ESPACE CLIENT -->
+<div id="portalScreen" style="display:none;">
+    <div class="container">
+        <div class="portal-header">
+            <div class="brand">Espace <span>client</span></div>
+            <div class="user">
+                <span class="name" id="portalClientName"></span>
+                <button class="btn-logout" id="logoutBtn">Deconnexion</button>
+            </div>
+        </div>
+
+        <div class="stats-grid" id="portalStats">
+            <div class="stat-card">
+                <div class="number" id="statQuotes">0</div>
+                <div class="label">Devis</div>
+            </div>
+            <div class="stat-card">
+                <div class="number" id="statInvoices">0</div>
+                <div class="label">Factures</div>
+            </div>
+            <div class="stat-card">
+                <div class="number" id="statChantiers">0</div>
+                <div class="label">Chantiers</div>
+            </div>
+            <div class="stat-card">
+                <div class="number" id="statDue">0,00 €</div>
+                <div class="label">Montant du</div>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="quotes">Devis</button>
+            <button class="tab-btn" data-tab="invoices">Factures</button>
+            <button class="tab-btn" data-tab="chantiers">Chantiers</button>
+            <button class="tab-btn" data-tab="profile">Mes coordonnees</button>
+        </div>
+
+        <div class="tab-panel active" id="panel-quotes">
+            <div class="list" id="quotesList"></div>
+        </div>
+
+        <div class="tab-panel" id="panel-invoices">
+            <div class="list" id="invoicesList"></div>
+        </div>
+
+        <div class="tab-panel" id="panel-chantiers">
+            <div class="list" id="chantiersList"></div>
+        </div>
+
+        <div class="tab-panel" id="panel-profile">
+            <div style="background:#0b1120;border:1px solid #1e2a41;border-radius:14px;padding:24px;">
+                <h3 style="color:#fff;font-size:16px;margin-bottom:16px;">Mes coordonnees</h3>
+                <div class="form-group">
+                    <label>Nom / Raison sociale</label>
+                    <input type="text" id="profileName" disabled />
+                </div>
+                <div class="form-group">
+                    <label>Personne de contact</label>
+                    <input type="text" id="profileContact" />
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="profileEmail" />
+                </div>
+                <div class="form-group">
+                    <label>Telephone</label>
+                    <input type="text" id="profilePhone" />
+                </div>
+                <div class="form-group">
+                    <label>Adresse</label>
+                    <input type="text" id="profileAddress" />
+                </div>
+                <div class="form-group">
+                    <label>Numero de TVA</label>
+                    <input type="text" id="profileVat" />
+                </div>
+                <button class="btn-primary" id="saveProfileBtn" style="margin-top:12px;">Enregistrer mes coordonnees</button>
+                <div class="success" id="profileSuccess" style="margin-top:12px;">Vos coordonnees ont ete mises a jour.</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const API_BASE = '/api/client-portal';
+
+function getToken() { return localStorage.getItem('client_portal_token'); }
+function setToken(t) { localStorage.setItem('client_portal_token', t); }
+function clearToken() { localStorage.removeItem('client_portal_token'); localStorage.removeItem('client_portal_user'); }
+function getUser() { try { return JSON.parse(localStorage.getItem('client_portal_user')); } catch(e) { return null; } }
+function setUser(u) { localStorage.setItem('client_portal_user', JSON.stringify(u)); }
+
+function escapeHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+function formatMoney(n) {
+    const num = parseFloat(n) || 0;
+    return num.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+}
+
+function formatDate(d) {
+    if (!d) return '-';
+    return new Date(d).toLocaleDateString('fr-FR');
+}
+
+async function apiFetch(url, options = {}) {
+    const token = getToken();
+    const headers = { ...(options.headers || {}) };
+    if (token) headers['Authorization'] = 'Bearer ' + token;
+    const response = await fetch(API_BASE + url, { ...options, headers });
+    if (response.status === 401) {
+        clearToken();
+        showLogin();
+        throw new Error('Session expiree.');
+    }
+    return response;
+}
+
+function showInvite() {
+    document.querySelectorAll('.auth-screen').forEach(el => el.classList.remove('active'));
+    document.getElementById('inviteScreen').classList.add('active');
+    document.getElementById('portalScreen').style.display = 'none';
+}
+
+function showLogin() {
+    document.querySelectorAll('.auth-screen').forEach(el => el.classList.remove('active'));
+    document.getElementById('loginScreen').classList.add('active');
+    document.getElementById('portalScreen').style.display = 'none';
+}
+
+function showPortal() {
+    document.querySelectorAll('.auth-screen').forEach(el => el.classList.remove('active'));
+    document.getElementById('portalScreen').style.display = 'block';
+}
+
+// ================================================================
+// DEMARRAGE
+// ================================================================
+(async function init() {
+    const params = new URLSearchParams(window.location.search);
+
+    // Cas 1 : invitation
+    if (params.get('invite')) {
+        const token = params.get('invite');
+        try {
+            const res = await fetch(API_BASE + '/invitation/' + token);
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Invitation invalide');
+            document.getElementById('inviteCompanyName').textContent = data.companyName || 'notre entreprise';
+            document.getElementById('inviteEmail').value = data.email || '';
+            showInvite();
+
+            // Bouton submit
+            document.getElementById('inviteSubmitBtn').addEventListener('click', async () => {
+                const pw = document.getElementById('invitePassword').value;
+                const pwc = document.getElementById('invitePasswordConfirm').value;
+                const err = document.getElementById('inviteError');
+                err.classList.remove('show');
+
+                if (pw !== pwc) {
+                    err.textContent = 'Les mots de passe ne correspondent pas.';
+                    err.classList.add('show');
+                    return;
+                }
+                if (pw.length < 6) {
+                    err.textContent = 'Le mot de passe doit faire au moins 6 caracteres.';
+                    err.classList.add('show');
+                    return;
+                }
+
+                const btn = document.getElementById('inviteSubmitBtn');
+                btn.disabled = true;
+                btn.textContent = 'Creation...';
+
+                try {
+                    const r = await fetch(API_BASE + '/invitation/' + token + '/accept', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ password: pw })
+                    });
+                    const d = await r.json();
+                    if (!r.ok) throw new Error(d.error || 'Erreur');
+
+                    setToken(d.token);
+                    setUser(d.user);
+                    window.history.replaceState({}, '', '/client.html');
+                    showPortal();
+                    loadPortal();
+                } catch (e) {
+                    err.textContent = e.message;
+                    err.classList.add('show');
+                    btn.disabled = false;
+                    btn.textContent = 'Creer mon compte';
+                }
+            });
+            return;
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    // Cas 2 : connecte ?
+    const token = getToken();
+    if (token) {
+        try {
+            const res = await apiFetch('/me');
+            if (res.ok) {
+                showPortal();
+                loadPortal();
+                return;
+            }
+        } catch (e) {}
+    }
+
+    // Cas 3 : login
+    showLogin();
+})();
+
+// ================================================================
+// LOGIN
+// ================================================================
+document.getElementById('loginSubmitBtn')?.addEventListener('click', async () => {
+    const email = document.getElementById('loginEmail').value.trim();
+    const password = document.getElementById('loginPassword').value;
+    const err = document.getElementById('loginError');
+    err.classList.remove('show');
+
+    if (!email || !password) {
+        err.textContent = 'Email et mot de passe requis.';
+        err.classList.add('show');
+        return;
+    }
+
+    const btn = document.getElementById('loginSubmitBtn');
+    btn.disabled = true;
+    btn.textContent = 'Connexion...';
+
+    try {
+        const res = await fetch(API_BASE + '/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Erreur');
+
+        setToken(data.token);
+        setUser(data.user);
+        showPortal();
+        loadPortal();
+    } catch (e) {
+        err.textContent = e.message;
+        err.classList.add('show');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = 'Se connecter';
+    }
+});
+
+// ================================================================
+// LOGOUT
+// ================================================================
+document.getElementById('logoutBtn')?.addEventListener('click', () => {
+    clearToken();
+    showLogin();
+});
+
+// ================================================================
+// TABS
+// ================================================================
+document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+        document.getElementById('panel-' + btn.dataset.tab).classList.add('active');
+    });
+});
+
+// ================================================================
+// CHARGEMENT DU PORTAIL
+// ================================================================
+let portalData = null;
+
+async function loadPortal() {
+    try {
+        const user = getUser();
+        if (user) {
+            document.getElementById('portalClientName').textContent = user.clientName || user.email;
+        }
+
+        const res = await apiFetch('/documents');
+        const data = await res.json();
+
+        portalData = data;
+
+        // Stats
+        document.getElementById('statQuotes').textContent = data.quotes.length;
+        document.getElementById('statInvoices').textContent = data.invoices.length;
+        document.getElementById('statChantiers').textContent = data.chantiers.length;
+
+        const totalDue = data.invoices.reduce((sum, inv) => sum + (inv.amountDue || 0), 0);
+        document.getElementById('statDue').textContent = formatMoney(totalDue);
+
+        renderQuotes(data.quotes);
+        renderInvoices(data.invoices);
+        renderChantiers(data.chantiers);
+        await loadProfile();
+    } catch (err) {
+        console.error('Erreur load portal:', err);
+    }
+}
+
+// ================================================================
+// RENDU DES DEVIS
+// ================================================================
+function renderQuotes(quotes) {
+    const container = document.getElementById('quotesList');
+    if (quotes.length === 0) {
+        container.innerHTML = '<div class="empty"><div class="icon">-</div><p>Aucun devis pour le moment.</p></div>';
+        return;
+    }
+
+    const STATUS_LABELS = { draft: 'Brouillon', sent: 'En attente', accepted: 'Accepte', refused: 'Refuse' };
+
+    container.innerHTML = quotes.map(q => {
+        const statusLabel = STATUS_LABELS[q.status] || q.status;
+        const isSigned = q.signedAt;
+        const canSign = q.publicToken && !isSigned && q.status !== 'refused';
+
+        return '<div class="list-item">' +
+            '<div class="info">' +
+            '<div class="num">' + escapeHtml(q.number) + '</div>' +
+            '<div class="meta">Emis le ' + formatDate(q.issueDate) + ' - Valable jusqu\'au ' + formatDate(q.validDate) + '</div>' +
+            '<span class="status-badge ' + q.status + '">' + statusLabel + '</span>' +
+            '</div>' +
+            '<div class="amount">' + formatMoney(q.total) + '</div>' +
+            '<div class="actions">' +
+            '<a href="' + API_BASE + '/documents/quotes/' + q.id + '/pdf?token=' + getToken() + '" onclick="downloadPdf(event, \'quotes\', ' + q.id + ')">Telecharger</a>' +
+            (canSign ? '<a href="/sign.html?token=' + q.publicToken + '" class="primary" target="_blank">Signer</a>' : '') +
+            '</div>' +
+            '</div>';
+    }).join('');
+}
+
+// ================================================================
+// RENDU DES FACTURES
+// ================================================================
+function renderInvoices(invoices) {
+    const container = document.getElementById('invoicesList');
+    if (invoices.length === 0) {
+        container.innerHTML = '<div class="empty"><div class="icon">-</div><p>Aucune facture pour le moment.</p></div>';
+        return;
+    }
+
+    const STATUS_LABELS = { draft: 'Brouillon', sent: 'A payer', paid: 'Payee', partial: 'Partiel', overdue: 'En retard' };
+
+    container.innerHTML = invoices.map(inv => {
+        const statusLabel = STATUS_LABELS[inv.status] || inv.status;
+        const amountDue = inv.amountDue || 0;
+
+        return '<div class="list-item">' +
+            '<div class="info">' +
+            '<div class="num">' + escapeHtml(inv.number) + '</div>' +
+            '<div class="meta">Emise le ' + formatDate(inv.issueDate) + ' - Echeance : ' + formatDate(inv.dueDate) + '</div>' +
+            '<span class="status-badge ' + inv.status + '">' + statusLabel + '</span>' +
+            '</div>' +
+            '<div class="amount">' + formatMoney(inv.total) + (amountDue > 0 && amountDue < inv.total ? '<div style="color:#f97316;font-size:12px;font-weight:600;">Reste du : ' + formatMoney(amountDue) + '</div>' : '') + '</div>' +
+            '<div class="actions">' +
+            '<a href="#" onclick="downloadInvoicePdf(event, ' + inv.id + ')">Telecharger</a>' +
+            '</div>' +
+            '</div>';
+    }).join('');
+}
+
+// ================================================================
+// RENDU DES CHANTIERS
+// ================================================================
+function renderChantiers(chantiers) {
+    const container = document.getElementById('chantiersList');
+    if (chantiers.length === 0) {
+        container.innerHTML = '<div class="empty"><div class="icon">-</div><p>Aucun chantier pour le moment.</p></div>';
+        return;
+    }
+
+    const STATUS_LABELS = {
+        planned: 'Planifie',
+        in_progress: 'En cours',
+        paused: 'En pause',
+        completed: 'Termine',
+        cancelled: 'Annule'
+    };
+
+    container.innerHTML = chantiers.map(c => {
+        const statusLabel = STATUS_LABELS[c.status] || c.status;
+        const startDate = c.startDate ? formatDate(c.startDate) : '-';
+        const endDate = c.endDate ? formatDate(c.endDate) : '-';
+
+        return '<div class="list-item">' +
+            '<div class="info">' +
+            '<div class="num">' + escapeHtml(c.name) + '</div>' +
+            (c.reference ? '<div class="meta" style="font-family:monospace;">' + escapeHtml(c.reference) + '</div>' : '') +
+            '<div class="meta">Du ' + startDate + ' au ' + endDate + '</div>' +
+            '<span class="status-badge ' + (c.status === 'completed' ? 'accepted' : 'sent') + '">' + statusLabel + '</span>' +
+            '</div>' +
+            (c.budgetEstimate ? '<div class="amount">' + formatMoney(c.budgetEstimate) + '</div>' : '') +
+            '</div>';
+    }).join('');
+}
+
+// ================================================================
+// PROFIL CLIENT
+// ================================================================
+async function loadProfile() {
+    try {
+        const res = await apiFetch('/me');
+        const data = await res.json();
+
+        const c = data.client || {};
+        document.getElementById('profileName').value = c.name || '';
+        document.getElementById('profileContact').value = c.contactName || '';
+        document.getElementById('profileEmail').value = c.email || '';
+        document.getElementById('profilePhone').value = c.phone || '';
+        document.getElementById('profileAddress').value = c.address || '';
+        document.getElementById('profileVat').value = c.vatNumber || '';
+    } catch (err) {
+        console.warn('Erreur load profile:', err.message);
+    }
+}
+
+document.getElementById('saveProfileBtn')?.addEventListener('click', async () => {
+    const btn = document.getElementById('saveProfileBtn');
+    const success = document.getElementById('profileSuccess');
+    success.classList.remove('show');
+
+    const payload = {
+        contactName: document.getElementById('profileContact').value.trim(),
+        email: document.getElementById('profileEmail').value.trim(),
+        phone: document.getElementById('profilePhone').value.trim(),
+        address: document.getElementById('profileAddress').value.trim(),
+        vatNumber: document.getElementById('profileVat').value.trim()
+    };
+
+    btn.disabled = true;
+    btn.textContent = 'Enregistrement...';
+
+    try {
+        const res = await apiFetch('/update-info', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        if (!res.ok) throw new Error('Erreur');
+
+        success.classList.add('show');
+        setTimeout(() => success.classList.remove('show'), 3000);
+    } catch (err) {
+        alert('Erreur : ' + err.message);
+    } finally {
+        btn.disabled = false;
+        btn.textContent = 'Enregistrer mes coordonnees';
+    }
+});
+
+// ================================================================
+// TELECHARGEMENT DE PDF
+// ================================================================
+async function downloadPdf(event, type, id) {
+    event.preventDefault();
+    try {
+        const res = await apiFetch('/documents/' + type + '/' + id + '/pdf');
+        if (!res.ok) throw new Error('Erreur');
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'devis_' + id + '.pdf';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+    } catch (err) {
+        alert('Erreur : ' + err.message);
+    }
+}
+
+function downloadInvoicePdf(event, id) {
+    event.preventDefault();
+    alert('Le telechargement des factures sera bientot disponible.');
+}
+</script>
+</body>
+</html>

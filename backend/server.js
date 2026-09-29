@@ -49,7 +49,9 @@ const demoRoutes = require('./routes/demo');
 const reportsRoutes = require('./routes/reports');
 const emailImportRoutes = require('./routes/email-import');
 const recurringRoutes = require('./routes/recurring');
+const purchaseOrdersRoutes = require('./routes/purchase-orders');
 const smsRoutes = require('./routes/sms');
+const clientPortalRoutes = require('./routes/client-portal');
 
 // ⚙️ INTERRUPTEUR DE QUOTA — Mets à `false` pour désactiver les limites pendant les tests
 const ENABLE_QUOTA_LIMITS = false;
@@ -101,7 +103,9 @@ app.use('/api/demo', demoRoutes);
 app.use('/api/reports', reportsRoutes);
 app.use('/api/email-import', emailImportRoutes);
 app.use('/api/recurring', recurringRoutes);
+app.use('/api/purchase-orders', purchaseOrdersRoutes);
 app.use('/api/sms', smsRoutes);
+app.use('/api/client-portal', clientPortalRoutes);
 
 // Multer
 const storage = multer.diskStorage({
@@ -950,6 +954,24 @@ app.post('/api/public/quotes/:token/sign', async (req, res) => {
             ip,
             token
         ]);
+
+        // Preparer les bons de commande pour les produits en stock insuffisant
+        try {
+            const { prepareFromQuote } = require('./utils/purchase-orders/helpers');
+            const quoteRow = await pool.query(
+                'SELECT id, user_id FROM quotes WHERE public_token = $1',
+                [token]
+            );
+            if (quoteRow.rows.length > 0) {
+                const poResult = await prepareFromQuote(
+                    quoteRow.rows[0].user_id,
+                    quoteRow.rows[0].id
+                );
+                console.log('BC prepares apres signature: ' + poResult.created);
+            }
+        } catch (poErr) {
+            console.warn('Erreur preparation BC apres signature:', poErr.message);
+        }
 
         // Notification push + webhook au proprietaire
         // try {
