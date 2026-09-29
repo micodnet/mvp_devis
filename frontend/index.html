@@ -1056,8 +1056,143 @@
             padding-top: 54px;
         }
 
+
         /* ============================================================ */
-        /* REFONTE MOBILE                                                */
+        /* MODALES GENERIQUES (remplacement prompt/confirm)             */
+        /* ============================================================ */
+        .generic-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(11, 17, 32, 0.85);
+            -webkit-backdrop-filter: blur(6px);
+            backdrop-filter: blur(6px);
+            z-index: 9500;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .generic-modal-overlay.show {
+            display: flex;
+        }
+        .generic-modal {
+            background: #161f32;
+            border: 1px solid #2a3a55;
+            border-radius: 20px;
+            padding: 28px 26px;
+            max-width: 460px;
+            width: 100%;
+            box-shadow: 0 40px 100px rgba(0, 0, 0, 0.7);
+            animation: modalSlide 0.2s ease;
+        }
+        @keyframes modalSlide {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .generic-modal .gm-title {
+            color: #fff;
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        .generic-modal .gm-message {
+            color: #cbd5e1;
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            white-space: pre-wrap;
+        }
+        .generic-modal .gm-input,
+        .generic-modal .gm-textarea,
+        .generic-modal .gm-select {
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: 12px;
+            background: #0b1120;
+            border: 1px solid #2a3a55;
+            color: #e2e8f0;
+            font-size: 14px;
+            font-family: inherit;
+            outline: none;
+            transition: 0.2s;
+            margin-bottom: 16px;
+        }
+        .generic-modal .gm-input:focus,
+        .generic-modal .gm-textarea:focus,
+        .generic-modal .gm-select:focus {
+            border-color: #f97316;
+        }
+        .generic-modal .gm-label {
+            display: block;
+            color: #94a3b8;
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 6px;
+        }
+        .generic-modal .gm-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+        .generic-modal .gm-actions button {
+            padding: 12px 22px;
+            border-radius: 60px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            border: none;
+            transition: 0.2s;
+            min-width: 100px;
+        }
+        .generic-modal .gm-btn-cancel {
+            background: #1a253b;
+            border: 1px solid #2a3a55;
+            color: #e2e8f0;
+        }
+        .generic-modal .gm-btn-cancel:hover {
+            background: #24324b;
+        }
+        .generic-modal .gm-btn-confirm {
+            background: #f97316;
+            color: #0b1120;
+        }
+        .generic-modal .gm-btn-confirm:hover {
+            background: #ea580c;
+        }
+        .generic-modal .gm-btn-danger {
+            background: #dc2626;
+            color: #fff;
+        }
+        .generic-modal .gm-btn-danger:hover {
+            background: #b91c1c;
+        }
+        .generic-modal .gm-choice {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        .generic-modal .gm-choice button {
+            padding: 14px 18px;
+            border-radius: 12px;
+            background: #0b1120;
+            border: 1px solid #2a3a55;
+            color: #e2e8f0;
+            text-align: left;
+            font-size: 14px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .generic-modal .gm-choice button:hover {
+            background: #24324b;
+            border-color: #3b82f6;
+        }
+
+
+        /* ============================================================ */
+        /* REFONTE MOBILE                                               */
         /* ============================================================ */
 
         /* Navigation mobile en bas */
@@ -1885,11 +2020,12 @@
 
             /* --- Regroupement des onglets (sans toucher au HTML) --- */
             .tab-btn[data-tab="tab-devis"]           { order: 10; }
-            .tab-btn[data-tab="tab-clients"]         { order: 11; }
-            .tab-btn[data-tab="tab-history"]         { order: 12; }
-            .tab-btn[data-tab="tab-invoices"]        { order: 13; }
-            .tab-btn[data-tab="tab-recurring"]       { order: 14; }
-            .tab-btn[data-tab="tab-email-import"]    { order: 15; }
+            .tab-btn[data-tab="tab-templates"]       { order: 11; }
+            .tab-btn[data-tab="tab-clients"]         { order: 12; }
+            .tab-btn[data-tab="tab-history"]         { order: 13; }
+            .tab-btn[data-tab="tab-invoices"]        { order: 14; }
+            .tab-btn[data-tab="tab-recurring"]       { order: 15; }
+            .tab-btn[data-tab="tab-email-import"]    { order: 16; }
             .tab-btn[data-tab="tab-catalogue"]       { order: 20; }
             .tab-btn[data-tab="tab-services"]        { order: 21; }
             .tab-btn[data-tab="tab-suppliers"]       { order: 22; }
@@ -2258,6 +2394,7 @@
 
         <div class="tabs">
             <button class="tab-btn active" data-tab="tab-devis" data-i18n="app.tab.quotes">📄 Devis</button>
+            <button class="tab-btn" data-tab="tab-templates">Modèles</button>
             <button class="tab-btn" data-tab="tab-clients" data-i18n="app.tab.clients">👥 Clients</button>
             <button class="tab-btn" data-tab="tab-catalogue" data-i18n="app.tab.products">📦 Catalogue</button>
             <button class="tab-btn" data-tab="tab-services" data-i18n="app.tab.services">🔧 Services</button>
@@ -2330,6 +2467,7 @@
                     <input type="file" id="fileInput" style="display:none;" accept=".pdf,.doc,.docx,.txt,.csv,.xlsx,.xls" />
                     <div id="file-name"></div>
                 </div>
+                <button type="button" class="btn-secondary" id="newQuoteFromTemplateBtn" style="width:100%;margin-bottom:12px;">Creer un devis depuis un modele</button>
                 <button class="btn-orange" id="generateBtn" disabled data-i18n="quotes.generate">🚀 Générer le devis</button>
                 <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap;">
                     <button type="button" class="btn-secondary" id="addVariantsBtn" style="display:none;">
@@ -2886,6 +3024,142 @@
                     </div>
                 </div>
                 <div id="paymentsList"><p style="color:#64748b;text-align:center;padding:40px;">Chargement...</p></div>
+            </div>
+        </div>
+
+        <!-- MODELES DE DEVIS -->
+        <div id="tab-templates" class="tab-content">
+            <div class="card">
+                <div class="catalog-header">
+                    <h2>Bibliotheque de modeles</h2>
+                    <div class="catalog-actions">
+                        <button class="btn-secondary" id="templateCategoriesBtn">Categories</button>
+                        <button class="btn-primary-sm" id="newTemplateBtn">+ Nouveau modele</button>
+                    </div>
+                </div>
+                <p style="color:#94a3b8;font-size:13px;margin-bottom:20px;line-height:1.6;">
+                    Enregistrez vos devis recurrents comme modeles (peinture appartement, cloison placo, carrelage salle de bain...). Ensuite, creez un nouveau devis en 3 clics.
+                </p>
+
+                <input type="text" id="templateSearch" class="catalog-search" placeholder="Rechercher un modele..." />
+                <div class="history-filters" id="templateCategoryFilters" style="margin-bottom:20px;"></div>
+
+                <div id="templatesList"><p style="color:#64748b;text-align:center;padding:40px;">Chargement...</p></div>
+            </div>
+        </div>
+
+        <!-- MODAL MODELE (creation/edition) -->
+        <div class="modal-overlay" id="templateModal">
+            <div class="modal modal-wide">
+                <h3 id="templateModalTitle">Nouveau modele</h3>
+                <input type="hidden" id="templateIdField" />
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Nom du modele *</label>
+                        <input type="text" id="templateName" placeholder="Peinture appartement T3" required />
+                    </div>
+                    <div class="form-group">
+                        <label>Categorie</label>
+                        <input type="text" id="templateCategory" placeholder="Peinture, Placo, Carrelage..." />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Description</label>
+                    <input type="text" id="templateDescription" placeholder="Peinture 2 couches sur murs et plafonds, 60 m2" />
+                </div>
+
+                <div class="card-title" style="margin-top:16px;font-size:15px;">Client (optionnel)</div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Selectionner un client</label>
+                        <select id="templateClientSelector"><option value="">- Aucun -</option></select>
+                    </div>
+                    <div class="form-group">
+                        <label class="checkbox-accept" style="margin:0;">
+                            <input type="checkbox" id="templatePrepopulateClient" />
+                            <div class="text">Pre-remplir le client lors de l'utilisation du modele</div>
+                        </label>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label>Nom (si non selectionne)</label><input type="text" id="templateClientName" /></div>
+                    <div class="form-group"><label>Email</label><input type="email" id="templateClientEmail" /></div>
+                </div>
+
+                <div class="card-title" style="margin-top:16px;font-size:15px;">Articles</div>
+                <div id="templateItemsContainer"></div>
+                <button type="button" class="btn-secondary" id="addTemplateItemBtn" style="margin-top:8px;">+ Ajouter une ligne</button>
+
+                <div class="form-row" style="margin-top:16px;">
+                    <div class="form-group">
+                        <label>Regime TVA</label>
+                        <select id="templateVatRegime">
+                            <option value="franchise">Franchise (pas de TVA)</option>
+                            <option value="assujetti">Assujetti (TVA applicable)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Taux TVA (%)</label>
+                        <input type="number" id="templateVatRate" step="0.01" min="0" max="30" value="21" />
+                    </div>
+                </div>
+
+                <div id="templateTotalsBox" class="totaux-box" style="margin-top:16px;"></div>
+
+                <div class="modal-actions">
+                    <button class="btn-cancel" id="cancelTemplateBtn">Annuler</button>
+                    <button class="btn-confirm" id="saveTemplateBtn">Enregistrer</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL CHOIX MODELE -->
+        <div class="modal-overlay" id="chooseTemplateModal">
+            <div class="modal modal-wide">
+                <h3>Creer un devis depuis un modele</h3>
+                <input type="text" id="chooseTemplateSearch" class="catalog-search" placeholder="Rechercher..." style="margin:16px 0;" />
+                <div id="chooseTemplateList" style="max-height:60vh;overflow-y:auto;"></div>
+                <div class="modal-actions">
+                    <button class="btn-cancel" onclick="document.getElementById('chooseTemplateModal').classList.remove('show')">Annuler</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL NOUVEAU MODELE DEPUIS UN DEVIS -->
+        <div class="modal-overlay" id="saveAsTemplateModal">
+            <div class="modal modal-wide">
+                <h3>Sauvegarder comme modele</h3>
+                <input type="hidden" id="saveAsTemplateQuoteId" />
+
+                <div class="form-row" style="margin-top:16px;">
+                    <div class="form-group">
+                        <label>Nom du modele *</label>
+                        <input type="text" id="saveAsTemplateName" placeholder="Peinture appartement T3" />
+                    </div>
+                    <div class="form-group">
+                        <label>Categorie</label>
+                        <input type="text" id="saveAsTemplateCategory" placeholder="Peinture" />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Description</label>
+                    <input type="text" id="saveAsTemplateDescription" />
+                </div>
+
+                <div class="form-group">
+                    <label class="checkbox-accept" style="margin:0;">
+                        <input type="checkbox" id="saveAsTemplatePrepopulate" />
+                        <div class="text">Pre-remplir le client de ce devis lors de la prochaine utilisation</div>
+                    </label>
+                </div>
+
+                <div class="modal-actions">
+                    <button class="btn-cancel" onclick="document.getElementById('saveAsTemplateModal').classList.remove('show')">Annuler</button>
+                    <button class="btn-confirm" id="confirmSaveAsTemplateBtn">Sauvegarder</button>
+                </div>
             </div>
         </div>
 
@@ -4702,6 +4976,46 @@
             <div class="actions">
                 <button class="primary" id="demoRestartBtn">Reessayer la demo</button>
                 <button class="secondary" id="demoSignupBtn">Creer un compte</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODALE CONFIRMATION GENERIQUE -->
+    <div class="generic-modal-overlay" id="gmConfirmOverlay">
+        <div class="generic-modal">
+            <div class="gm-title" id="gmConfirmTitle">Confirmation</div>
+            <div class="gm-message" id="gmConfirmMessage"></div>
+            <div class="gm-actions">
+                <button class="gm-btn-cancel" id="gmConfirmCancel">Annuler</button>
+                <button class="gm-btn-confirm" id="gmConfirmOk">Confirmer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODALE SAISIE GENERIQUE -->
+    <div class="generic-modal-overlay" id="gmPromptOverlay">
+        <div class="generic-modal">
+            <div class="gm-title" id="gmPromptTitle">Saisie</div>
+            <div class="gm-message" id="gmPromptMessage"></div>
+            <label class="gm-label" id="gmPromptLabel">Valeur</label>
+            <input type="text" class="gm-input" id="gmPromptInput" />
+            <textarea class="gm-textarea" id="gmPromptTextarea" rows="4" style="display:none;"></textarea>
+            <select class="gm-select" id="gmPromptSelect" style="display:none;"></select>
+            <div class="gm-actions">
+                <button class="gm-btn-cancel" id="gmPromptCancel">Annuler</button>
+                <button class="gm-btn-confirm" id="gmPromptOk">Valider</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODALE CHOIX GENERIQUE -->
+    <div class="generic-modal-overlay" id="gmChoiceOverlay">
+        <div class="generic-modal">
+            <div class="gm-title" id="gmChoiceTitle">Choisir</div>
+            <div class="gm-message" id="gmChoiceMessage"></div>
+            <div class="gm-choice" id="gmChoiceList"></div>
+            <div class="gm-actions">
+                <button class="gm-btn-cancel" id="gmChoiceCancel">Annuler</button>
             </div>
         </div>
     </div>
@@ -6585,6 +6899,7 @@
                     menuItems += `<button onclick="closeAllMenus(); convertQuoteToInvoice(${q.id})"><span class="icon">🧾</span> Transformer en facture</button>`;
                 }
                 menuItems += `<button onclick="closeAllMenus(); downloadQuotePdf(${q.id})"><span class="icon">⬇</span> Télécharger PDF</button>`;
+                menuItems += `<button onclick="closeAllMenus(); saveQuoteAsTemplate(${q.id})"><span class="icon">📋</span> Sauvegarder comme modele</button>`;
                 menuItems += `<button class="danger" onclick="closeAllMenus(); deleteQuote(${q.id})"><span class="icon">🗑</span> Supprimer</button>`;
 
                 // Bouton "Certificat de signature" si signé
@@ -15613,6 +15928,729 @@
                 showToast('Erreur : ' + err.message, 'error');
             }
         };
+
+        // ================================================================
+        // 43. MODALES GENERIQUES (remplacement prompt/confirm)
+        // ================================================================
+        (function initGenericModals() {
+            // ------------------------------------------------------------
+            // Confirmation : renvoie une Promise<boolean>
+            // ------------------------------------------------------------
+            window.showConfirm = function(options) {
+                return new Promise((resolve) => {
+                    const opts = typeof options === 'string'
+                        ? { message: options }
+                        : (options || {});
+
+                    const overlay = document.getElementById('gmConfirmOverlay');
+                    const titleEl = document.getElementById('gmConfirmTitle');
+                    const messageEl = document.getElementById('gmConfirmMessage');
+                    const okBtn = document.getElementById('gmConfirmOk');
+                    const cancelBtn = document.getElementById('gmConfirmCancel');
+
+                    titleEl.textContent = opts.title || 'Confirmation';
+                    messageEl.textContent = opts.message || 'Etes-vous sur ?';
+                    okBtn.textContent = opts.confirmText || 'Confirmer';
+                    cancelBtn.textContent = opts.cancelText || 'Annuler';
+
+                    // Style danger si demande
+                    if (opts.danger) {
+                        okBtn.className = 'gm-btn-danger';
+                    } else {
+                        okBtn.className = 'gm-btn-confirm';
+                    }
+
+                    const cleanup = (result) => {
+                        overlay.classList.remove('show');
+                        okBtn.removeEventListener('click', onOk);
+                        cancelBtn.removeEventListener('click', onCancel);
+                        overlay.removeEventListener('click', onOverlay);
+                        resolve(result);
+                    };
+
+                    const onOk = () => cleanup(true);
+                    const onCancel = () => cleanup(false);
+                    const onOverlay = (e) => { if (e.target === overlay) cleanup(false); };
+
+                    okBtn.addEventListener('click', onOk);
+                    cancelBtn.addEventListener('click', onCancel);
+                    overlay.addEventListener('click', onOverlay);
+
+                    overlay.classList.add('show');
+                    setTimeout(() => okBtn.focus(), 100);
+                });
+            };
+
+            // ------------------------------------------------------------
+            // Saisie : renvoie une Promise<string|null>
+            // ------------------------------------------------------------
+            window.showPrompt = function(options) {
+                return new Promise((resolve) => {
+                    const opts = typeof options === 'string'
+                        ? { message: options }
+                        : (options || {});
+
+                    const overlay = document.getElementById('gmPromptOverlay');
+                    const titleEl = document.getElementById('gmPromptTitle');
+                    const messageEl = document.getElementById('gmPromptMessage');
+                    const labelEl = document.getElementById('gmPromptLabel');
+                    const inputEl = document.getElementById('gmPromptInput');
+                    const textareaEl = document.getElementById('gmPromptTextarea');
+                    const selectEl = document.getElementById('gmPromptSelect');
+                    const okBtn = document.getElementById('gmPromptOk');
+                    const cancelBtn = document.getElementById('gmPromptCancel');
+
+                    titleEl.textContent = opts.title || 'Saisie';
+                    messageEl.textContent = opts.message || '';
+                    messageEl.style.display = opts.message ? 'block' : 'none';
+
+                    // Type : input / textarea / select
+                    inputEl.style.display = 'none';
+                    textareaEl.style.display = 'none';
+                    selectEl.style.display = 'none';
+                    labelEl.textContent = opts.label || 'Valeur';
+
+                    let currentField;
+                    if (opts.type === 'textarea') {
+                        currentField = textareaEl;
+                        textareaEl.value = opts.defaultValue || '';
+                        textareaEl.placeholder = opts.placeholder || '';
+                        textareaEl.style.display = 'block';
+                    } else if (opts.type === 'select' && Array.isArray(opts.options)) {
+                        currentField = selectEl;
+                        selectEl.innerHTML = opts.options.map(o =>
+                            '<option value="' + escapeHtml(o.value) + '"' + (o.value === opts.defaultValue ? ' selected' : '') + '>' + escapeHtml(o.label) + '</option>'
+                        ).join('');
+                        selectEl.style.display = 'block';
+                    } else {
+                        currentField = inputEl;
+                        inputEl.type = opts.inputType || 'text';
+                        inputEl.value = opts.defaultValue || '';
+                        inputEl.placeholder = opts.placeholder || '';
+                        inputEl.style.display = 'block';
+                    }
+
+                    const cleanup = (result) => {
+                        overlay.classList.remove('show');
+                        okBtn.removeEventListener('click', onOk);
+                        cancelBtn.removeEventListener('click', onCancel);
+                        overlay.removeEventListener('click', onOverlay);
+                        currentField.removeEventListener('keydown', onKey);
+                        resolve(result);
+                    };
+
+                    const onOk = () => cleanup(currentField.value);
+                    const onCancel = () => cleanup(null);
+                    const onOverlay = (e) => { if (e.target === overlay) cleanup(null); };
+                    const onKey = (e) => {
+                        if (e.key === 'Enter' && opts.type !== 'textarea') {
+                            e.preventDefault();
+                            onOk();
+                        }
+                    };
+
+                    okBtn.addEventListener('click', onOk);
+                    cancelBtn.addEventListener('click', onCancel);
+                    overlay.addEventListener('click', onOverlay);
+                    currentField.addEventListener('keydown', onKey);
+
+                    overlay.classList.add('show');
+                    setTimeout(() => currentField.focus(), 100);
+                });
+            };
+
+            // ------------------------------------------------------------
+            // Choix : renvoie une Promise<value|null>
+            // ------------------------------------------------------------
+            window.showChoice = function(options) {
+                return new Promise((resolve) => {
+                    const opts = options || {};
+                    const overlay = document.getElementById('gmChoiceOverlay');
+                    const titleEl = document.getElementById('gmChoiceTitle');
+                    const messageEl = document.getElementById('gmChoiceMessage');
+                    const listEl = document.getElementById('gmChoiceList');
+                    const cancelBtn = document.getElementById('gmChoiceCancel');
+
+                    titleEl.textContent = opts.title || 'Choisir';
+                    messageEl.textContent = opts.message || '';
+                    messageEl.style.display = opts.message ? 'block' : 'none';
+
+                    const choices = Array.isArray(opts.choices) ? opts.choices : [];
+
+                    listEl.innerHTML = choices.map((c, i) =>
+                        '<button data-choice-index="' + i + '">' + escapeHtml(c.label) + '</button>'
+                    ).join('');
+
+                    const cleanup = (result) => {
+                        overlay.classList.remove('show');
+                        cancelBtn.removeEventListener('click', onCancel);
+                        overlay.removeEventListener('click', onOverlay);
+                        resolve(result);
+                    };
+
+                    const onCancel = () => cleanup(null);
+                    const onOverlay = (e) => { if (e.target === overlay) cleanup(null); };
+
+                    listEl.querySelectorAll('button').forEach(btn => {
+                        btn.addEventListener('click', () => {
+                            const idx = parseInt(btn.dataset.choiceIndex);
+                            cleanup(choices[idx].value);
+                        });
+                    });
+
+                    cancelBtn.addEventListener('click', onCancel);
+                    overlay.addEventListener('click', onOverlay);
+                    overlay.classList.add('show');
+                });
+            };
+        })();
+
+        // ================================================================
+        // 44. MODELES DE DEVIS
+        // ================================================================
+        (function initQuoteTemplates() {
+            let allTemplates = [];
+            let allCategories = [];
+            let currentCategory = 'all';
+            let currentSearch = '';
+
+            // ----- Charger les categories -----
+            async function loadCategories() {
+                try {
+                    const res = await apiFetch('/api/quote-templates/categories');
+                    allCategories = await res.json();
+                    renderCategoryFilters();
+                } catch (err) {
+                    console.warn('Erreur load categories:', err.message);
+                }
+            }
+
+            function renderCategoryFilters() {
+                const container = document.getElementById('templateCategoryFilters');
+                if (!container) return;
+
+                if (allCategories.length === 0) {
+                    container.innerHTML = '';
+                    return;
+                }
+
+                let html = '<button class="history-filter ' + (currentCategory === 'all' ? 'active' : '') + '" data-cat="all">Toutes</button>';
+                for (const cat of allCategories) {
+                    html += '<button class="history-filter ' + (currentCategory === cat ? 'active' : '') + '" data-cat="' + escapeHtml(cat) + '">' + escapeHtml(cat) + '</button>';
+                }
+                container.innerHTML = html;
+
+                container.querySelectorAll('.history-filter').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        currentCategory = btn.dataset.cat;
+                        renderCategoryFilters();
+                        loadTemplates();
+                    });
+                });
+            }
+
+            // ----- Charger les modeles -----
+            async function loadTemplates() {
+                const container = document.getElementById('templatesList');
+                if (!container) return;
+                container.innerHTML = '<p style="color:#64748b;text-align:center;padding:40px;">Chargement...</p>';
+
+                try {
+                    const params = new URLSearchParams();
+                    if (currentCategory !== 'all') params.set('category', currentCategory);
+                    if (currentSearch) params.set('search', currentSearch);
+
+                    const res = await apiFetch('/api/quote-templates?' + params.toString());
+                    allTemplates = await res.json();
+                    renderTemplates();
+                } catch (err) {
+                    console.error('Erreur load templates:', err);
+                    container.innerHTML = '<p style="color:#f87171;text-align:center;padding:40px;">Erreur.</p>';
+                }
+            }
+
+            function renderTemplates() {
+                const container = document.getElementById('templatesList');
+                if (!container) return;
+
+                if (allTemplates.length === 0) {
+                    container.innerHTML = '<div class="catalog-empty"><div class="big-icon">-</div><h3>Aucun modele</h3><p>Creez votre premier modele pour gagner du temps sur vos devis recurrents.</p><div style="margin-top:20px;"><button class="btn-primary-sm" onclick="document.getElementById(\'newTemplateBtn\').click()">+ Creer un modele</button></div></div>';
+                    return;
+                }
+
+                let html = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;">';
+
+                for (const t of allTemplates) {
+                    const itemsCount = (t.items || []).length;
+                    const lastUsed = t.lastUsedAt
+                        ? new Date(t.lastUsedAt).toLocaleDateString('fr-FR')
+                        : 'Jamais utilise';
+
+                    html += '<div style="background:#0b1120;border:1px solid #1e2a41;border-left:4px solid ' + (t.color || '#f97316') + ';border-radius:14px;padding:18px;">' +
+                        '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:12px;">' +
+                        '<div style="flex:1;min-width:0;">' +
+                        '<div style="color:#fff;font-weight:700;font-size:15px;margin-bottom:4px;">' + escapeHtml(t.name) + '</div>' +
+                        (t.category ? '<div style="display:inline-block;font-size:10px;font-weight:600;padding:2px 8px;border-radius:40px;background:#1a253b;color:#94a3b8;border:1px solid #2a3a55;">' + escapeHtml(t.category) + '</div>' : '') +
+                        (t.description ? '<div style="color:#94a3b8;font-size:12px;margin-top:6px;">' + escapeHtml(t.description) + '</div>' : '') +
+                        '</div>' +
+                        '</div>' +
+
+                        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:12px 0;border-top:1px solid #1e2a41;border-bottom:1px solid #1e2a41;font-size:12px;">' +
+                        '<div>' +
+                        '<div style="color:#64748b;font-size:10px;text-transform:uppercase;font-weight:600;">Articles</div>' +
+                        '<div style="color:#e2e8f0;font-weight:600;">' + itemsCount + '</div>' +
+                        '</div>' +
+                        '<div>' +
+                        '<div style="color:#64748b;font-size:10px;text-transform:uppercase;font-weight:600;">Total HT</div>' +
+                        '<div style="color:#f97316;font-weight:700;">' + t.total.toFixed(2) + ' EUR</div>' +
+                        '</div>' +
+                        '<div>' +
+                        '<div style="color:#64748b;font-size:10px;text-transform:uppercase;font-weight:600;">Utilisations</div>' +
+                        '<div style="color:#e2e8f0;font-weight:600;">' + t.usageCount + '</div>' +
+                        '</div>' +
+                        '<div>' +
+                        '<div style="color:#64748b;font-size:10px;text-transform:uppercase;font-weight:600;">Derniere</div>' +
+                        '<div style="color:#94a3b8;font-size:11px;">' + lastUsed + '</div>' +
+                        '</div>' +
+                        '</div>' +
+
+                        '<div style="display:flex;gap:6px;margin-top:14px;flex-wrap:wrap;">' +
+                        '<button onclick="useTemplate(' + t.id + ')" style="background:#f97316;border:none;color:#0b1120;padding:6px 14px;border-radius:40px;font-size:12px;font-weight:700;cursor:pointer;flex:1;">Utiliser</button>' +
+                        '<button onclick="editTemplate(' + t.id + ')" style="background:#1a253b;border:1px solid #2a3a55;color:#e2e8f0;padding:6px 12px;border-radius:40px;font-size:11px;cursor:pointer;">Editer</button>' +
+                        '<button onclick="duplicateTemplate(' + t.id + ')" style="background:#1a253b;border:1px solid #2a3a55;color:#e2e8f0;padding:6px 12px;border-radius:40px;font-size:11px;cursor:pointer;">Dupliquer</button>' +
+                        '<button onclick="deleteTemplate(' + t.id + ')" style="background:#3f1e24;border:1px solid #7f1d1d;color:#f87171;padding:6px 12px;border-radius:40px;font-size:11px;cursor:pointer;">Suppr.</button>' +
+                        '</div>' +
+                        '</div>';
+                }
+
+                html += '</div>';
+                container.innerHTML = html;
+            }
+
+            // ----- Gestion des items dans la modale -----
+            function addTemplateItemRow(item) {
+                const container = document.getElementById('templateItemsContainer');
+                if (!container) return;
+
+                const row = document.createElement('div');
+                row.className = 'edit-item-row';
+                row.innerHTML =
+                    '<input type="text" placeholder="Designation" class="tpl-name" value="' + (item ? escapeHtml(item.name || '') : '') + '" />' +
+                    '<input type="number" placeholder="Qte" class="tpl-qty" min="0.01" step="0.01" value="' + (item ? item.qty : 1) + '" />' +
+                    '<input type="number" placeholder="Prix unit." class="tpl-price" min="0" step="0.01" value="' + (item ? item.unitPrice : 0) + '" />' +
+                    '<input type="text" placeholder="Total" class="tpl-total" disabled />' +
+                    '<button type="button" class="remove-btn">X</button>';
+
+                const nameI = row.querySelector('.tpl-name');
+                const qtyI = row.querySelector('.tpl-qty');
+                const priceI = row.querySelector('.tpl-price');
+                const totalI = row.querySelector('.tpl-total');
+                const removeB = row.querySelector('.remove-btn');
+
+                function update() {
+                    const qty = parseFloat(qtyI.value) || 0;
+                    const price = parseFloat(priceI.value) || 0;
+                    totalI.value = (qty * price).toFixed(2) + ' EUR';
+                    recomputeTemplateTotals();
+                }
+
+                nameI.addEventListener('input', update);
+                qtyI.addEventListener('input', update);
+                priceI.addEventListener('input', update);
+                removeB.addEventListener('click', () => { row.remove(); recomputeTemplateTotals(); });
+
+                if (item && item.ref) nameI.dataset.ref = item.ref;
+
+                update();
+                container.appendChild(row);
+            }
+
+            function recomputeTemplateTotals() {
+                const rows = document.querySelectorAll('#templateItemsContainer .edit-item-row');
+                let subtotal = 0;
+
+                rows.forEach(row => {
+                    const qty = parseFloat(row.querySelector('.tpl-qty').value) || 0;
+                    const price = parseFloat(row.querySelector('.tpl-price').value) || 0;
+                    subtotal += qty * price;
+                });
+
+                const regime = document.getElementById('templateVatRegime')?.value || 'franchise';
+                const rate = parseFloat(document.getElementById('templateVatRate')?.value) || 21;
+                const vatAmount = regime === 'assujetti' ? subtotal * (rate / 100) : 0;
+                const total = subtotal + vatAmount;
+
+                const box = document.getElementById('templateTotalsBox');
+                if (!box) return;
+
+                let html = '';
+                if (regime === 'assujetti') {
+                    html += '<div class="totaux-line"><span>Sous-total HT</span><span>' + subtotal.toFixed(2) + ' EUR</span></div>';
+                    html += '<div class="totaux-line"><span>TVA (' + rate + '%)</span><span>' + vatAmount.toFixed(2) + ' EUR</span></div>';
+                }
+                html += '<div class="totaux-line total"><span>TOTAL</span><span class="amount">' + total.toFixed(2) + ' EUR</span></div>';
+                box.innerHTML = html;
+            }
+
+            // ----- Modale creation/edition -----
+            const templateModal = document.getElementById('templateModal');
+
+            async function openTemplateModal(mode, template) {
+                document.getElementById('templateModalTitle').textContent = mode === 'add'
+                    ? 'Nouveau modele'
+                    : 'Modifier le modele';
+                document.getElementById('templateIdField').value = template ? template.id : '';
+                document.getElementById('templateName').value = template ? template.name : '';
+                document.getElementById('templateDescription').value = template ? (template.description || '') : '';
+                document.getElementById('templateCategory').value = template ? (template.category || '') : '';
+                document.getElementById('templateClientName').value = template ? (template.clientName || '') : '';
+                document.getElementById('templateClientEmail').value = template ? (template.clientEmail || '') : '';
+                document.getElementById('templatePrepopulateClient').checked = template ? template.prepopulateClient : false;
+                document.getElementById('templateVatRegime').value = template ? (template.vatRegime || 'franchise') : 'franchise';
+                document.getElementById('templateVatRate').value = template ? (template.vatRate || 21) : 21;
+
+                // Remplir le select client
+                try {
+                    const res = await apiFetch('/api/clients');
+                    const clients = await res.json();
+                    const sel = document.getElementById('templateClientSelector');
+                    sel.innerHTML = '<option value="">- Aucun -</option>';
+                    for (const c of clients) {
+                        const opt = document.createElement('option');
+                        opt.value = c.id;
+                        opt.textContent = c.name + (c.email ? ' (' + c.email + ')' : '');
+                        if (template && template.clientId === c.id) opt.selected = true;
+                        sel.appendChild(opt);
+                    }
+                } catch (e) {
+                    console.warn('Erreur chargement clients:', e.message);
+                }
+
+                // Remplir les items
+                const container = document.getElementById('templateItemsContainer');
+                container.innerHTML = '';
+                const items = template && template.items ? template.items : [];
+                if (items.length === 0) {
+                    addTemplateItemRow();
+                } else {
+                    for (const it of items) addTemplateItemRow(it);
+                }
+
+                recomputeTemplateTotals();
+                templateModal.classList.add('show');
+            }
+
+            document.getElementById('newTemplateBtn')?.addEventListener('click', () => openTemplateModal('add', null));
+            document.getElementById('cancelTemplateBtn')?.addEventListener('click', () => templateModal.classList.remove('show'));
+            templateModal?.addEventListener('click', (e) => {
+                if (e.target === templateModal) templateModal.classList.remove('show');
+            });
+
+            document.getElementById('addTemplateItemBtn')?.addEventListener('click', () => addTemplateItemRow());
+            document.getElementById('templateVatRegime')?.addEventListener('change', recomputeTemplateTotals);
+            document.getElementById('templateVatRate')?.addEventListener('input', recomputeTemplateTotals);
+
+            // Auto-remplir le nom du client si selectionne
+            document.getElementById('templateClientSelector')?.addEventListener('change', async (e) => {
+                const id = parseInt(e.target.value);
+                if (!id) return;
+                try {
+                    const res = await apiFetch('/api/clients');
+                    const clients = await res.json();
+                    const c = clients.find(x => x.id === id);
+                    if (c) {
+                        document.getElementById('templateClientName').value = c.name || '';
+                        document.getElementById('templateClientEmail').value = c.email || '';
+                    }
+                } catch (err) { /* ignore */ }
+            });
+
+            // ----- Sauvegarder le modele -----
+            document.getElementById('saveTemplateBtn')?.addEventListener('click', async () => {
+                const id = document.getElementById('templateIdField').value;
+                const name = document.getElementById('templateName').value.trim();
+
+                if (!name) {
+                    showToast('Nom du modele requis.', 'error');
+                    return;
+                }
+
+                const items = [];
+                document.querySelectorAll('#templateItemsContainer .edit-item-row').forEach(row => {
+                    const iName = row.querySelector('.tpl-name').value.trim();
+                    const qty = parseFloat(row.querySelector('.tpl-qty').value) || 0;
+                    const price = parseFloat(row.querySelector('.tpl-price').value) || 0;
+                    if (iName && qty > 0) {
+                        items.push({
+                            ref: row.querySelector('.tpl-name').dataset.ref || null,
+                            name: iName,
+                            qty: qty,
+                            unitPrice: price
+                        });
+                    }
+                });
+
+                if (items.length === 0) {
+                    showToast('Ajoutez au moins un article.', 'error');
+                    return;
+                }
+
+                const payload = {
+                    name: name,
+                    description: document.getElementById('templateDescription').value.trim(),
+                    category: document.getElementById('templateCategory').value.trim(),
+                    clientId: document.getElementById('templateClientSelector').value || null,
+                    clientName: document.getElementById('templateClientName').value.trim(),
+                    clientEmail: document.getElementById('templateClientEmail').value.trim(),
+                    items: items,
+                    vatRegime: document.getElementById('templateVatRegime').value,
+                    vatRate: parseFloat(document.getElementById('templateVatRate').value) || 21,
+                    prepopulateClient: document.getElementById('templatePrepopulateClient').checked
+                };
+
+                const btn = document.getElementById('saveTemplateBtn');
+                btn.disabled = true;
+                btn.textContent = 'Enregistrement...';
+
+                try {
+                    const url = id ? '/api/quote-templates/' + id : '/api/quote-templates';
+                    const method = id ? 'PUT' : 'POST';
+
+                    const res = await apiFetch(url, {
+                        method: method,
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error || 'Erreur');
+
+                    showToast(id ? 'Modele modifie' : 'Modele cree', 'success');
+                    templateModal.classList.remove('show');
+                    loadCategories();
+                    loadTemplates();
+                } catch (err) {
+                    showToast('Erreur : ' + err.message, 'error');
+                } finally {
+                    btn.disabled = false;
+                    btn.textContent = 'Enregistrer';
+                }
+            });
+
+            // ----- Utiliser un modele -----
+            window.useTemplate = async function(id) {
+                const ok = await showConfirm({
+                    title: 'Creer un devis',
+                    message: 'Creer un nouveau devis a partir de ce modele ?',
+                    confirmText: 'Creer'
+                });
+                if (!ok) return;
+
+                try {
+                    const res = await apiFetch('/api/quote-templates/' + id + '/use', {
+                        method: 'POST'
+                    });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error || 'Erreur');
+
+                    showToast('Devis ' + data.quoteNumber + ' cree', 'success');
+
+                    // Basculer sur l'historique
+                    const histTab = document.querySelector('.tab-btn[data-tab="tab-history"]');
+                    if (histTab) histTab.click();
+
+                    // Recharger les modeles (pour mettre a jour usage_count)
+                    loadTemplates();
+                } catch (err) {
+                    showToast('Erreur : ' + err.message, 'error');
+                }
+            };
+
+            // ----- Editer un modele -----
+            window.editTemplate = async function(id) {
+                try {
+                    const res = await apiFetch('/api/quote-templates/' + id);
+                    const template = await res.json();
+                    openTemplateModal('edit', template);
+                } catch (err) {
+                    showToast('Erreur : ' + err.message, 'error');
+                }
+            };
+
+            // ----- Dupliquer -----
+            window.duplicateTemplate = async function(id) {
+                const ok = await showConfirm({
+                    title: 'Dupliquer le modele',
+                    message: 'Une copie du modele sera creee.',
+                    confirmText: 'Dupliquer'
+                });
+                if (!ok) return;
+
+                try {
+                    const res = await apiFetch('/api/quote-templates/' + id + '/duplicate', { method: 'POST' });
+                    if (!res.ok) throw new Error('Erreur');
+                    showToast('Modele duplique', 'success');
+                    loadTemplates();
+                } catch (err) {
+                    showToast('Erreur : ' + err.message, 'error');
+                }
+            };
+
+            // ----- Supprimer -----
+            window.deleteTemplate = async function(id) {
+                const ok = await showConfirm({
+                    title: 'Supprimer le modele',
+                    message: 'Cette action est irreversible.',
+                    confirmText: 'Supprimer',
+                    danger: true
+                });
+                if (!ok) return;
+
+                try {
+                    const res = await apiFetch('/api/quote-templates/' + id, { method: 'DELETE' });
+                    if (!res.ok) throw new Error('Erreur');
+                    showToast('Modele supprime', 'success');
+                    loadCategories();
+                    loadTemplates();
+                } catch (err) {
+                    showToast('Erreur : ' + err.message, 'error');
+                }
+            };
+
+            // ----- Sauvegarder un devis comme modele -----
+            window.saveQuoteAsTemplate = async function(quoteId) {
+                document.getElementById('saveAsTemplateQuoteId').value = quoteId;
+                document.getElementById('saveAsTemplateName').value = '';
+                document.getElementById('saveAsTemplateCategory').value = '';
+                document.getElementById('saveAsTemplateDescription').value = '';
+                document.getElementById('saveAsTemplatePrepopulate').checked = false;
+                document.getElementById('saveAsTemplateModal').classList.add('show');
+            };
+
+            document.getElementById('confirmSaveAsTemplateBtn')?.addEventListener('click', async () => {
+                const quoteId = document.getElementById('saveAsTemplateQuoteId').value;
+                const name = document.getElementById('saveAsTemplateName').value.trim();
+
+                if (!name) {
+                    showToast('Nom du modele requis.', 'error');
+                    return;
+                }
+
+                const btn = document.getElementById('confirmSaveAsTemplateBtn');
+                btn.disabled = true;
+                btn.textContent = 'Enregistrement...';
+
+                try {
+                    const res = await apiFetch('/api/quote-templates/from-quote/' + quoteId, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            name: name,
+                            description: document.getElementById('saveAsTemplateDescription').value.trim(),
+                            category: document.getElementById('saveAsTemplateCategory').value.trim(),
+                            prepopulateClient: document.getElementById('saveAsTemplatePrepopulate').checked
+                        })
+                    });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error || 'Erreur');
+
+                    showToast('Modele cree', 'success');
+                    document.getElementById('saveAsTemplateModal').classList.remove('show');
+                    loadCategories();
+                    loadTemplates();
+                } catch (err) {
+                    showToast('Erreur : ' + err.message, 'error');
+                } finally {
+                    btn.disabled = false;
+                    btn.textContent = 'Sauvegarder';
+                }
+            });
+
+            // ----- Nouveau devis depuis un modele (bouton dans l'onglet Devis) -----
+            document.getElementById('newQuoteFromTemplateBtn')?.addEventListener('click', async () => {
+                try {
+                    const res = await apiFetch('/api/quote-templates');
+                    const templates = await res.json();
+
+                    if (templates.length === 0) {
+                        const go = await showConfirm({
+                            title: 'Aucun modele',
+                            message: 'Vous n\'avez pas encore de modele. Voulez-vous en creer un ?',
+                            confirmText: 'Creer un modele'
+                        });
+                        if (go) {
+                            document.querySelector('.tab-btn[data-tab="tab-templates"]').click();
+                        }
+                        return;
+                    }
+
+                    renderChooseTemplateList(templates);
+                    document.getElementById('chooseTemplateModal').classList.add('show');
+                } catch (err) {
+                    showToast('Erreur : ' + err.message, 'error');
+                }
+            });
+
+            function renderChooseTemplateList(templates) {
+                const container = document.getElementById('chooseTemplateList');
+                if (!container) return;
+
+                if (templates.length === 0) {
+                    container.innerHTML = '<p style="color:#64748b;text-align:center;padding:20px;">Aucun modele trouve.</p>';
+                    return;
+                }
+
+                let html = '<div style="display:flex;flex-direction:column;gap:8px;">';
+                for (const t of templates) {
+                    html += '<button onclick="useTemplateFromChoose(' + t.id + ')" style="background:#0b1120;border:1px solid #1e2a41;border-radius:10px;padding:12px 16px;text-align:left;cursor:pointer;transition:0.2s;width:100%;" onmouseover="this.style.background=\'#141e33\'" onmouseout="this.style.background=\'#0b1120\'">' +
+                        '<div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;">' +
+                        '<div>' +
+                        '<div style="color:#fff;font-weight:600;font-size:14px;">' + escapeHtml(t.name) + '</div>' +
+                        (t.category ? '<div style="color:#94a3b8;font-size:11px;margin-top:2px;">' + escapeHtml(t.category) + '</div>' : '') +
+                        '</div>' +
+                        '<div style="text-align:right;">' +
+                        '<div style="color:#f97316;font-weight:700;">' + t.total.toFixed(2) + ' EUR</div>' +
+                        '<div style="color:#64748b;font-size:11px;">' + (t.items || []).length + ' articles</div>' +
+                        '</div>' +
+                        '</div>' +
+                        '</button>';
+                }
+                html += '</div>';
+                container.innerHTML = html;
+            }
+
+            window.useTemplateFromChoose = async function(id) {
+                document.getElementById('chooseTemplateModal').classList.remove('show');
+                await window.useTemplate(id);
+            };
+
+            document.getElementById('chooseTemplateSearch')?.addEventListener('input', async (e) => {
+                const search = e.target.value.toLowerCase();
+                const filtered = allTemplates.filter(t =>
+                    (t.name || '').toLowerCase().includes(search) ||
+                    (t.category || '').toLowerCase().includes(search)
+                );
+                renderChooseTemplateList(filtered);
+            });
+
+            // ----- Recherche dans l'onglet -----
+            document.getElementById('templateSearch')?.addEventListener('input', (e) => {
+                currentSearch = e.target.value;
+                loadTemplates();
+            });
+
+            // ----- Charger au clic sur l'onglet -----
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    if (btn.dataset.tab === 'tab-templates') {
+                        setTimeout(() => {
+                            loadCategories();
+                            loadTemplates();
+                        }, 100);
+                    }
+                });
+            });
+        })();
+
     </script>
 </body>
 </html>

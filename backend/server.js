@@ -55,6 +55,7 @@ const emailImportRoutes = require('./routes/email-import');
 const recurringRoutes = require('./routes/recurring');
 const purchaseOrdersRoutes = require('./routes/purchase-orders');
 const smsRoutes = require('./routes/sms');
+const quoteTemplatesRoutes = require('./routes/quote-templates');
 
 // ⚙️ INTERRUPTEUR DE QUOTA — Mets à `false` pour désactiver les limites pendant les tests
 const ENABLE_QUOTA_LIMITS = false;
@@ -115,6 +116,7 @@ app.use('/api/client-portal', clientPortalRoutes);
 app.use('/api/online-payments', onlinePaymentsRoutes);
 app.use('/api/stripe-webhook', stripeWebhookRoutes);
 app.use('/api/public-payments', publicPaymentsRoutes);
+app.use('/api/quote-templates', quoteTemplatesRoutes);
 
 // Multer
 const storage = multer.diskStorage({
