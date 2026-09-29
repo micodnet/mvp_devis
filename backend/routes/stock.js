@@ -680,7 +680,7 @@ router.put('/purchase-orders/:id/status', authenticateToken, async (req, res) =>
         const result = await pool.query(`
             UPDATE purchase_orders
             SET status = $1,
-                received_date = CASE WHEN $1 = 'received' THEN NOW() ELSE received_date END,
+                received_date = CASE WHEN $1::text = 'received' THEN NOW() ELSE received_date END,
                 updated_at = NOW()
             WHERE id = $2 AND user_id = $3
             RETURNING id, status

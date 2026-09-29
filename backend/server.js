@@ -79,10 +79,6 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // Routes publiques
 app.use('/api/auth', authRoutes);
 app.use('/api/stripe', stripeRoutes);
-app.use('/api/client-portal', clientPortalRoutes);
-app.use('/api/online-payments', onlinePaymentsRoutes);
-app.use('/api/stripe-webhook', stripeWebhookRoutes);
-app.use('/api/public-payments', publicPaymentsRoutes);
 app.use('/api/products', productsRoutes);
 app.use('/api/clients', clientsRoutes);
 app.use('/api/quotes', quotesRoutes);
@@ -115,6 +111,10 @@ app.use('/api/email-import', emailImportRoutes);
 app.use('/api/recurring', recurringRoutes);
 app.use('/api/purchase-orders', purchaseOrdersRoutes);
 app.use('/api/sms', smsRoutes);
+app.use('/api/client-portal', clientPortalRoutes);
+app.use('/api/online-payments', onlinePaymentsRoutes);
+app.use('/api/stripe-webhook', stripeWebhookRoutes);
+app.use('/api/public-payments', publicPaymentsRoutes);
 
 // Multer
 const storage = multer.diskStorage({
