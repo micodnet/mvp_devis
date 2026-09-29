@@ -1057,6 +1057,139 @@
         }
 
         /* ============================================================ */
+        /* MODALES GENERIQUES (remplacement prompt/confirm)             */
+        /* ============================================================ */
+        .generic-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(11, 17, 32, 0.85);
+            -webkit-backdrop-filter: blur(6px);
+            backdrop-filter: blur(6px);
+            z-index: 9500;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .generic-modal-overlay.show {
+            display: flex;
+        }
+        .generic-modal {
+            background: #161f32;
+            border: 1px solid #2a3a55;
+            border-radius: 20px;
+            padding: 28px 26px;
+            max-width: 460px;
+            width: 100%;
+            box-shadow: 0 40px 100px rgba(0, 0, 0, 0.7);
+            animation: modalSlide 0.2s ease;
+        }
+        @keyframes modalSlide {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .generic-modal .gm-title {
+            color: #fff;
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        .generic-modal .gm-message {
+            color: #cbd5e1;
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            white-space: pre-wrap;
+        }
+        .generic-modal .gm-input,
+        .generic-modal .gm-textarea,
+        .generic-modal .gm-select {
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: 12px;
+            background: #0b1120;
+            border: 1px solid #2a3a55;
+            color: #e2e8f0;
+            font-size: 14px;
+            font-family: inherit;
+            outline: none;
+            transition: 0.2s;
+            margin-bottom: 16px;
+        }
+        .generic-modal .gm-input:focus,
+        .generic-modal .gm-textarea:focus,
+        .generic-modal .gm-select:focus {
+            border-color: #f97316;
+        }
+        .generic-modal .gm-label {
+            display: block;
+            color: #94a3b8;
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 6px;
+        }
+        .generic-modal .gm-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+        .generic-modal .gm-actions button {
+            padding: 12px 22px;
+            border-radius: 60px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            border: none;
+            transition: 0.2s;
+            min-width: 100px;
+        }
+        .generic-modal .gm-btn-cancel {
+            background: #1a253b;
+            border: 1px solid #2a3a55;
+            color: #e2e8f0;
+        }
+        .generic-modal .gm-btn-cancel:hover {
+            background: #24324b;
+        }
+        .generic-modal .gm-btn-confirm {
+            background: #f97316;
+            color: #0b1120;
+        }
+        .generic-modal .gm-btn-confirm:hover {
+            background: #ea580c;
+        }
+        .generic-modal .gm-btn-danger {
+            background: #dc2626;
+            color: #fff;
+        }
+        .generic-modal .gm-btn-danger:hover {
+            background: #b91c1c;
+        }
+        .generic-modal .gm-choice {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        .generic-modal .gm-choice button {
+            padding: 14px 18px;
+            border-radius: 12px;
+            background: #0b1120;
+            border: 1px solid #2a3a55;
+            color: #e2e8f0;
+            text-align: left;
+            font-size: 14px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .generic-modal .gm-choice button:hover {
+            background: #24324b;
+            border-color: #3b82f6;
+        }
+
+        /* ============================================================ */
         /* REFONTE MOBILE                                                */
         /* ============================================================ */
 
@@ -4706,6 +4839,46 @@
         </div>
     </div>
 
+    <!-- MODALE CONFIRMATION GENERIQUE -->
+    <div class="generic-modal-overlay" id="gmConfirmOverlay">
+        <div class="generic-modal">
+            <div class="gm-title" id="gmConfirmTitle">Confirmation</div>
+            <div class="gm-message" id="gmConfirmMessage"></div>
+            <div class="gm-actions">
+                <button class="gm-btn-cancel" id="gmConfirmCancel">Annuler</button>
+                <button class="gm-btn-confirm" id="gmConfirmOk">Confirmer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODALE SAISIE GENERIQUE -->
+    <div class="generic-modal-overlay" id="gmPromptOverlay">
+        <div class="generic-modal">
+            <div class="gm-title" id="gmPromptTitle">Saisie</div>
+            <div class="gm-message" id="gmPromptMessage"></div>
+            <label class="gm-label" id="gmPromptLabel">Valeur</label>
+            <input type="text" class="gm-input" id="gmPromptInput" />
+            <textarea class="gm-textarea" id="gmPromptTextarea" rows="4" style="display:none;"></textarea>
+            <select class="gm-select" id="gmPromptSelect" style="display:none;"></select>
+            <div class="gm-actions">
+                <button class="gm-btn-cancel" id="gmPromptCancel">Annuler</button>
+                <button class="gm-btn-confirm" id="gmPromptOk">Valider</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODALE CHOIX GENERIQUE -->
+    <div class="generic-modal-overlay" id="gmChoiceOverlay">
+        <div class="generic-modal">
+            <div class="gm-title" id="gmChoiceTitle">Choisir</div>
+            <div class="gm-message" id="gmChoiceMessage"></div>
+            <div class="gm-choice" id="gmChoiceList"></div>
+            <div class="gm-actions">
+                <button class="gm-btn-cancel" id="gmChoiceCancel">Annuler</button>
+            </div>
+        </div>
+    </div>
+
     <div id="toast"></div>
 
     <!-- NAVIGATION MOBILE EN BAS -->
@@ -4952,8 +5125,8 @@
             finally { authSubmitBtn.disabled = false; updateAuthUI(); }
         });
 
-        document.getElementById('logoutBtn').addEventListener('click', () => {
-            if (confirm('Se déconnecter ?')) {
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+                if (await showConfirm({ title: 'Deconnexion', message: 'Voulez-vous vraiment vous deconnecter ?', confirmText: 'Se deconnecter', danger: true })) {
                 // Vider l'historique visuel du chat AVANT de changer d'écran
                 const messages = document.getElementById('assistantMessages');
                 const tabMessages = document.getElementById('assistantTabMessages');
@@ -5440,7 +5613,13 @@
         window.editClient = function(id) { const c = clientsList.find(x => x.id === id); if (c) openClientModal('edit', c); };
 
         window.deleteClient = async function(id) {
-            if (!confirm('Supprimer ce client ?')) return;
+            const ok = await showConfirm({
+                title: 'Supprimer le client',
+                message: 'Le client sera retire de votre carnet. Ses devis et factures seront conserves.',
+                confirmText: 'Supprimer',
+                danger: true
+            });
+            if (!ok) return;
             try {
                 const res = await apiFetch(`/api/clients/${id}`, { method: 'DELETE' });
                 if (!res.ok) throw new Error('Erreur');
@@ -5597,7 +5776,13 @@
             if (s) openServiceModal('edit', s);
         };
         window.deleteService = async function(id) {
-            if (!confirm('Supprimer ce service ?')) return;
+            const ok = await showConfirm({
+                title: 'Supprimer le service',
+                message: 'Le service sera retire de votre liste.',
+                confirmText: 'Supprimer',
+                danger: true
+            });
+            if (!ok) return;
             try {
                 const res = await apiFetch(`/api/services/${id}`, { method: 'DELETE' });
                 if (!res.ok) throw new Error('Erreur');
@@ -5794,7 +5979,13 @@
             if (s) openSupplierModal('edit', s);
         };
         window.deleteSupplier = async function(id) {
-            if (!confirm('Supprimer ce fournisseur ?')) return;
+            const ok = await showConfirm({
+                title: 'Supprimer le fournisseur',
+                message: 'Le fournisseur sera retire de votre carnet.',
+                confirmText: 'Supprimer',
+                danger: true
+            });
+            if (!ok) return;
             try {
                 const res = await apiFetch(`/api/suppliers/${id}`, { method: 'DELETE' });
                 if (!res.ok) throw new Error('Erreur');
@@ -6010,7 +6201,8 @@
         });
 
         document.getElementById('generatePOBtn')?.addEventListener('click', async () => {
-            if (!confirm('Générer automatiquement les commandes fournisseurs à partir des alertes de stock ?')) return;
+            const _ok = await showConfirm({ title: 'Generer les commandes', message: 'Creer des bons de commande a partir des alertes de stock ?', confirmText: 'Generer' });
+            if (!_ok) return;
             showToast('Génération en cours...', 'info');
             try {
                 const res = await apiFetch('/api/stock/generate-po', { method: 'POST' });
@@ -6039,7 +6231,12 @@
         };
 
         window.receivePO = async function(id) {
-            if (!confirm('Réceptionner cette commande ? Le stock sera mis à jour automatiquement.')) return;
+            const ok = await showConfirm({
+                title: 'Receptionner le bon de commande',
+                message: 'Le stock des produits sera mis a jour automatiquement.',
+                confirmText: 'Receptionner'
+            });
+            if (!ok) return;
             try {
                 const res = await apiFetch(`/api/stock/purchase-orders/${id}/receive`, { method: 'POST' });
                 const data = await res.json();
@@ -6050,7 +6247,13 @@
         };
 
         window.deletePO = async function(id) {
-            if (!confirm('Supprimer ce brouillon de commande ?')) return;
+            const ok = await showConfirm({
+                title: 'Supprimer le bon de commande',
+                message: 'Cette action est irreversible.',
+                confirmText: 'Supprimer',
+                danger: true
+            });
+            if (!ok) return;
             try {
                 const res = await apiFetch(`/api/stock/purchase-orders/${id}`, { method: 'DELETE' });
                 if (!res.ok) throw new Error('Erreur');
@@ -6251,7 +6454,13 @@
 
         window.editProduct = function(id) { const p = catalogProducts.find(x => x.id === id); if (p) openProductModal('edit', p); };
         window.deleteProduct = async function(id) {
-            if (!confirm('Supprimer ce produit ?')) return;
+            const ok = await showConfirm({
+                title: 'Supprimer le produit',
+                message: 'Le produit sera retire de votre catalogue.',
+                confirmText: 'Supprimer',
+                danger: true
+            });
+            if (!ok) return;
             try {
                 const res = await apiFetch(`/api/products/${id}`, { method: 'DELETE' });
                 if (!res.ok) throw new Error('Erreur');
@@ -6650,7 +6859,8 @@
             const order = ['draft', 'sent', 'accepted', 'refused'];
             const next = order[(order.indexOf(currentStatus) + 1) % order.length];
             const labels = { draft: 'Brouillon', sent: 'Envoyé', accepted: 'Accepté', refused: 'Refusé' };
-            if (!confirm(`Changer le statut vers "${labels[next]}" ?`)) return;
+            const _ok = await showConfirm({ title: 'Changer le statut', message: 'Passer au statut "' + labels[next] + '" ?', confirmText: 'Changer' });
+            if (!_ok) return;
             try {
                 const res = await apiFetch(`/api/quotes/${id}/status`, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ status: next }) });
                 if (!res.ok) throw new Error('Erreur');
@@ -6660,7 +6870,8 @@
         };
 
         window.duplicateQuote = async function(id) {
-            if (!confirm('Dupliquer ce devis ? Un nouveau brouillon sera créé.')) return;
+            const _ok = await showConfirm({ title: 'Dupliquer le devis', message: 'Un nouveau brouillon sera cree.', confirmText: 'Dupliquer' });
+            if (!_ok) return;
             try {
                 const res = await apiFetch(`/api/quotes/${id}/duplicate`, { method: 'POST' });
                 const data = await res.json();
@@ -6671,7 +6882,13 @@
         };
 
         window.deleteQuote = async function(id) {
-            if (!confirm('Supprimer ce devis définitivement ?')) return;
+            const ok = await showConfirm({
+                title: 'Supprimer le devis',
+                message: 'Cette action est irreversible. Le devis sera supprime definitivement.',
+                confirmText: 'Supprimer',
+                danger: true
+            });
+            if (!ok) return;
             try {
                 const res = await apiFetch(`/api/quotes/${id}`, { method: 'DELETE' });
                 if (!res.ok) throw new Error('Erreur');
@@ -6715,7 +6932,7 @@
         };
 
         window.createInvoiceFromQuote = async function(quoteId) {
-            const depositInput = prompt('Créer un acompte ? (entrez un pourcentage 30/50, ou laissez vide pour facture complète)');
+            const depositInput = await showPrompt({ title: 'Creer un acompte', message: 'Entrez un pourcentage (30, 50...) ou laissez vide pour une facture complete.', label: 'Pourcentage', inputType: 'number', placeholder: '30' });
             const depositPercent = depositInput ? parseFloat(depositInput) : 0;
             
             if (depositPercent > 0 && (isNaN(depositPercent) || depositPercent >= 100)) {
@@ -7041,14 +7258,25 @@
 
                 let email = quote.clientEmail || '';
                 if (!email) {
-                    email = prompt('Aucun email dans ce devis. Saisissez l\'email du client :', '');
+                    email = await showPrompt({
+                        title: 'Email du client',
+                        message: 'Aucun email dans ce devis. Saisissez l\'email du client pour lui envoyer le lien de signature.',
+                        label: 'Email',
+                        inputType: 'email',
+                        placeholder: 'client@exemple.com'
+                    });
                     if (!email) return;
                     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
                         showToast('Email invalide.', 'error');
                         return;
                     }
                 } else {
-                    if (!confirm(`Envoyer ce devis à ${email} ?`)) return;
+                    const ok = await showConfirm({
+                        title: 'Envoyer au client',
+                        message: 'Envoyer ce devis a ' + email + ' ?',
+                        confirmText: 'Envoyer'
+                    });
+                    if (!ok) return;
                 }
 
                 showToast('Envoi en cours...', 'info');
@@ -7062,7 +7290,7 @@
 
                 showToast('✅ Devis envoyé au client !', 'success');
                 const publicUrl = data.publicUrl;
-                if (confirm(`Devis envoyé à ${email}.\n\nVoulez-vous copier le lien public pour le partager manuellement ?\n\n${publicUrl}`)) {
+                if (await showConfirm({ title: 'Devis envoye', message: 'Devis envoye a ' + email + '.\n\nVoulez-vous copier le lien public pour le partager manuellement ?', confirmText: 'Copier le lien' })) {
                     copyToClipboard(publicUrl);
                 }
                 loadHistory();
@@ -7494,7 +7722,8 @@
 
         // -------- ACTIONS MEMBRE --------
         window.changeTeamRole = async function(memberId, newRole) {
-            if (!confirm(`Changer le rôle de ce membre en "${newRole}" ?`)) {
+            const _ok = await showConfirm({ title: 'Changer le role', message: 'Passer ce membre au role "' + newRole + '" ?', confirmText: 'Changer' });
+            if (!_ok) {
                 loadTeam();
                 return;
             }
@@ -7515,7 +7744,8 @@
         };
 
         window.removeTeamMember = async function(memberId, email) {
-            if (!confirm(`Retirer ${email} de votre équipe ?\n\nCette personne n'aura plus accès à vos devis.`)) return;
+            const _ok = await showConfirm({ title: 'Retirer le membre', message: 'Retirer ' + email + ' de votre equipe ?\n\nCette personne n\'aura plus acces a vos devis.', confirmText: 'Retirer', danger: true });
+            if (!_ok) return;
             try {
                 const res = await apiFetch(`/api/team/members/${memberId}`, { method: 'DELETE' });
                 const data = await res.json();
@@ -7528,7 +7758,8 @@
         };
 
         window.cancelInvitation = async function(id) {
-            if (!confirm('Annuler cette invitation ?')) return;
+            const _ok = await showConfirm({ title: 'Annuler l\'invitation', message: 'L\'invitation sera annulee.', confirmText: 'Annuler l\'invitation', danger: true });
+            if (!_ok) return;
             try {
                 const res = await apiFetch(`/api/team/invitations/${id}`, { method: 'DELETE' });
                 if (!res.ok) throw new Error('Erreur');
@@ -7827,7 +8058,19 @@
         };
 
         window.markInvoicePaid = async function(id) {
-            const method = prompt('Mode de paiement (virement, carte, espèces, autre) :', 'virement');
+            const method = await showPrompt({
+                title: 'Enregistrer le paiement',
+                label: 'Mode de paiement',
+                type: 'select',
+                defaultValue: 'virement',
+                options: [
+                    { value: 'virement', label: 'Virement bancaire' },
+                    { value: 'carte', label: 'Carte bancaire' },
+                    { value: 'especes', label: 'Especes' },
+                    { value: 'cheque', label: 'Cheque' },
+                    { value: 'autre', label: 'Autre' }
+                ]
+            });
             if (method === null) return;
             try {
                 const res = await apiFetch(`/api/invoices/${id}/status`, {
@@ -7842,7 +8085,12 @@
         };
 
         window.markInvoiceUnpaid = async function(id) {
-            if (!confirm('Marquer cette facture comme non payée ?')) return;
+            const ok = await showConfirm({
+                title: 'Marquer non payee',
+                message: 'Confirmer le passage de cette facture en "Non payee" ?',
+                confirmText: 'Marquer'
+            });
+            if (!ok) return;
             try {
                 const res = await apiFetch(`/api/invoices/${id}/status`, {
                     method: 'PUT',
@@ -7859,7 +8107,8 @@
             const order = ['draft', 'sent', 'paid', 'overdue'];
             const next = order[(order.indexOf(currentStatus) + 1) % order.length];
             const labels = { draft: 'Brouillon', sent: 'Envoyée', paid: 'Payée', overdue: 'En retard' };
-            if (!confirm(`Changer le statut vers "${labels[next]}" ?`)) return;
+            const _ok = await showConfirm({ title: 'Changer le statut', message: 'Passer au statut "' + labels[next] + '" ?', confirmText: 'Changer' });
+            if (!_ok) return;
             try {
                 const res = await apiFetch(`/api/invoices/${id}/status`, {
                     method: 'PUT',
@@ -7873,7 +8122,8 @@
         };
 
         window.sendInvoicePeppol = async function(id) {
-            if (!confirm('Envoyer cette facture via Peppol ?\n\nLa facture sera envoyée au client via le réseau Peppol.')) return;
+            const _ok = await showConfirm({ title: 'Envoyer via Peppol', message: 'La facture sera transmise au client via le reseau Peppol.', confirmText: 'Envoyer' });
+            if (!_ok) return;
 
             showToast('Envoi via Peppol en cours...', 'info');
             try {
@@ -7909,7 +8159,13 @@
         };
 
         window.deleteInvoice = async function(id) {
-            if (!confirm('Supprimer cette facture définitivement ?')) return;
+            const ok = await showConfirm({
+                title: 'Supprimer la facture',
+                message: 'Cette action est irreversible. La facture sera supprimee definitivement.',
+                confirmText: 'Supprimer',
+                danger: true
+            });
+            if (!ok) return;
             try {
                 const res = await apiFetch(`/api/invoices/${id}`, { method: 'DELETE' });
                 if (!res.ok) throw new Error('Erreur');
@@ -7919,16 +8175,35 @@
         };
 
         window.recordPayment = async function(invoiceId, total) {
-            const amountInput = prompt(`Montant du paiement reçu (€) :\nMontant total : ${total.toFixed(2)} €`, total.toFixed(2));
-            if (!amountInput) return;
-            
-            const amount = parseFloat(amountInput.replace(',', '.'));
+            const amountInput = await showPrompt({
+                title: 'Enregistrer un paiement',
+                message: 'Montant total de la facture : ' + total.toFixed(2) + ' EUR',
+                label: 'Montant recu (EUR)',
+                defaultValue: total.toFixed(2),
+                inputType: 'number',
+                placeholder: '0.00'
+            });
+            if (amountInput === null) return;
+
+            const amount = parseFloat(String(amountInput).replace(',', '.'));
             if (isNaN(amount) || amount <= 0) {
                 showToast('Montant invalide.', 'error');
                 return;
             }
-            
-            const method = prompt('Mode de paiement (virement, carte, espèces, chèque) :', 'virement');
+
+            const method = await showPrompt({
+                title: 'Mode de paiement',
+                label: 'Mode de paiement',
+                type: 'select',
+                defaultValue: 'virement',
+                options: [
+                    { value: 'virement', label: 'Virement bancaire' },
+                    { value: 'carte', label: 'Carte bancaire' },
+                    { value: 'especes', label: 'Especes' },
+                    { value: 'cheque', label: 'Cheque' },
+                    { value: 'autre', label: 'Autre' }
+                ]
+            });
             if (method === null) return;
             
             try {
@@ -7953,14 +8228,33 @@
         };
 
         window.createCreditNote = async function(invoiceId) {
-            const reason = prompt('Raison de l\'avoir :', 'Annulation');
+            const reason = await showPrompt({
+                title: 'Creer un avoir',
+                label: 'Raison de l\'avoir',
+                defaultValue: 'Annulation',
+                placeholder: 'Erreur de facturation, retour marchandise...'
+            });
             if (!reason) return;
             
-            const partial = confirm('Créer un avoir total ?\n\nOK = avoir total\nAnnuler = avoir partiel');
+            const creditType = await showChoice({
+                title: 'Type d\'avoir',
+                message: 'Voulez-vous un avoir total ou partiel ?',
+                choices: [
+                    { value: 'full', label: 'Avoir total (montant complet de la facture)' },
+                    { value: 'partial', label: 'Avoir partiel (montant personnalise)' }
+                ]
+            });
+            if (!creditType) return;
+            const partial = creditType === 'full';
             let amount = null;
             
             if (!partial) {
-                const amountInput = prompt('Montant de l\'avoir (€) :');
+                const amountInput = await showPrompt({
+                    title: 'Montant de l\'avoir',
+                    label: 'Montant (EUR)',
+                    inputType: 'number',
+                    placeholder: '0.00'
+                });
                 if (!amountInput) return;
                 amount = parseFloat(amountInput.replace(',', '.'));
                 if (isNaN(amount) || amount <= 0) {
@@ -7987,7 +8281,8 @@
         };
 
         window.sendReminder = async function(invoiceId) {
-            if (!confirm('Envoyer une relance par email au client ?')) return;
+            const _ok = await showConfirm({ title: 'Envoyer une relance', message: 'Un email de relance sera envoye au client.', confirmText: 'Envoyer' });
+            if (!_ok) return;
             
             try {
                 showToast('Envoi...', 'info');
@@ -8002,7 +8297,8 @@
         };
 
         window.duplicateInvoice = async function(invoiceId) {
-            if (!confirm('Dupliquer cette facture ?')) return;
+            const _ok = await showConfirm({ title: 'Dupliquer la facture', message: 'Une nouvelle facture sera creee.', confirmText: 'Dupliquer' });
+            if (!_ok) return;
             
             try {
                 showToast('Duplication...', 'info');
@@ -8245,7 +8541,8 @@
                 const quote = await res.json();
                 if (!res.ok) throw new Error(quote.error || 'Erreur');
 
-                if (!confirm(`Créer une facture à partir du devis ${quote.quoteNumber} ?`)) return;
+                const _ok = await showConfirm({ title: 'Creer une facture', message: 'A partir du devis ' + quote.quoteNumber + ' ?', confirmText: 'Creer' });
+                if (!_ok) return;
 
                 // Créer la facture directement
                 const payload = {
@@ -8994,11 +9291,11 @@
             });
 
             clearBtn.addEventListener('click', () => {
-                if (confirm('Effacer la conversation ?')) clearHistory();
+                if (await showConfirm({ title: 'Effacer la conversation', message: 'Tout l'historique du chat sera supprime.', confirmText: 'Effacer', danger: true })) clearHistory();
             });
 
             tabClearBtn && tabClearBtn.addEventListener('click', () => {
-                if (confirm('Effacer la conversation ?')) clearHistory();
+                if (await showConfirm({ title: 'Effacer la conversation', message: 'Tout l'historique du chat sera supprime.', confirmText: 'Effacer', danger: true })) clearHistory();
             });
 
             sendBtn.addEventListener('click', () => sendMessage(input.value));
@@ -10544,7 +10841,8 @@
             };
 
             window.detachQuote = async function(chantierId, quoteId) {
-                if (!confirm('Détacher ce devis du chantier ? Le devis ne sera pas supprimé.')) return;
+                const _ok = await showConfirm({ title: 'Detacher le devis', message: 'Le devis ne sera pas supprime, juste retire du chantier.', confirmText: 'Detacher' });
+                if (!_ok) return;
                 try {
                     const res = await apiFetch(`/api/chantiers/${chantierId}/detach-quote/${quoteId}`, { method: 'POST' });
                     if (!res.ok) throw new Error('Erreur');
@@ -10612,7 +10910,8 @@
             };
 
             window.facturerTout = async function(chantierId) {
-                if (!confirm('Facturer tous les devis acceptés du chantier ?\n\nUne seule facture sera créée avec tous les devis.')) return;
+                const _ok = await showConfirm({ title: 'Facturer le chantier', message: 'Une seule facture sera creee avec tous les devis acceptes.', confirmText: 'Facturer' });
+                if (!_ok) return;
                 try {
                     showToast('Création de la facture...', 'info');
                     const res = await apiFetch(`/api/chantiers/${chantierId}/facturer-tout`, { method: 'POST' });
@@ -10650,7 +10949,8 @@
             };
 
             window.deleteChantierPhoto = async function(chantierId, photoId) {
-                if (!confirm('Supprimer cette photo ?')) return;
+                const _ok = await showConfirm({ title: 'Supprimer la photo', message: 'La photo sera supprimee definitivement.', confirmText: 'Supprimer', danger: true });
+                if (!_ok) return;
                 try {
                     const res = await apiFetch(`/api/chantiers/${chantierId}/photos/${photoId}`, { method: 'DELETE' });
                     if (!res.ok) throw new Error('Erreur');
@@ -10954,7 +11254,8 @@
             });
 
             window.removePushDevice = async function(id) {
-                if (!confirm('Retirer cet appareil des notifications ?')) return;
+                const _ok = await showConfirm({ title: 'Retirer l'appareil', message: 'Cet appareil ne recevra plus de notifications.', confirmText: 'Retirer', danger: true });
+                if (!_ok) return;
                 try {
                     // Récupérer l'endpoint puis unsubscribe
                     showToast('Retrait en cours...', 'info');
@@ -11562,7 +11863,8 @@
             };
 
             window.deleteAssignment = async function(id) {
-                if (!confirm('Supprimer cette mission ?')) return;
+                const _ok = await showConfirm({ title: 'Supprimer la mission', message: 'La mission sera supprimee definitivement.', confirmText: 'Supprimer', danger: true });
+                if (!_ok) return;
                 try {
                     const res = await apiFetch('/api/subcontractors/assignments/' + id, { method: 'DELETE' });
                     if (!res.ok) throw new Error('Erreur');
@@ -11575,7 +11877,7 @@
             };
 
             window.completeAssignment = async function(id) {
-                const hours = prompt('Heures reelles passees (optionnel) :', '');
+                const hours = await showPrompt({ title: 'Heures passees', message: 'Optionnel.', label: 'Nombre d\'heures', inputType: 'number', placeholder: '0' });
                 try {
                     const res = await apiFetch('/api/subcontractors/assignments/' + id + '/complete', {
                         method: 'POST',
@@ -11591,10 +11893,10 @@
             };
 
             window.invoiceAssignment = async function(id) {
-                const num = prompt('Numero de facture recue :', '');
+                const num = await showPrompt({ title: 'Numero de facture recue', label: 'Numero', placeholder: 'FAC-2026-001' });
                 if (!num) return;
-                const date = prompt('Date de la facture (YYYY-MM-DD) :', new Date().toISOString().slice(0, 10));
-                const amount = prompt('Montant (EUR) :', '');
+                const date = await showPrompt({ title: 'Date de la facture', label: 'Date (AAAA-MM-JJ)', defaultValue: new Date().toISOString().slice(0, 10) });
+                const amount = await showPrompt({ title: 'Montant', label: 'Montant (EUR)', inputType: 'number', placeholder: '0.00' });
                 try {
                     const res = await apiFetch('/api/subcontractors/assignments/' + id + '/invoice', {
                         method: 'POST',
@@ -11610,7 +11912,7 @@
             };
 
             window.payAssignment = async function(id) {
-                const method = prompt('Mode de paiement (virement, cheque, especes) :', 'virement');
+                const method = await showPrompt({ title: 'Mode de paiement', label: 'Mode de paiement', type: 'select', defaultValue: 'virement', options: [{value:'virement',label:'Virement'},{value:'cheque',label:'Cheque'},{value:'especes',label:'Especes'}] });
                 if (!method) return;
                 try {
                     const res = await apiFetch('/api/subcontractors/assignments/' + id + '/pay', {
@@ -11840,7 +12142,8 @@
             });
 
             window.revokeApiKey = async function(id) {
-                if (!confirm('Revoquer cette cle ? Les applications qui l\'utilisent cesseront de fonctionner.')) return;
+                const _ok = await showConfirm({ title: 'Revoquer la cle', message: 'Les applications qui l\'utilisent cesseront de fonctionner.', confirmText: 'Revoquer', danger: true });
+                if (!_ok) return;
                 try {
                     const res = await apiFetch('/api/api-keys/' + id + '/revoke', { method: 'POST' });
                     if (!res.ok) throw new Error('Erreur');
@@ -11852,7 +12155,8 @@
             };
 
             window.deleteApiKey = async function(id) {
-                if (!confirm('Supprimer definitivement cette cle ?')) return;
+                const _ok = await showConfirm({ title: 'Supprimer la cle', message: 'Action irreversible.', confirmText: 'Supprimer', danger: true });
+                if (!_ok) return;
                 try {
                     const res = await apiFetch('/api/api-keys/' + id, { method: 'DELETE' });
                     if (!res.ok) throw new Error('Erreur');
@@ -12042,7 +12346,8 @@
             };
 
             window.deleteWebhook = async function(id) {
-                if (!confirm('Supprimer ce webhook ?')) return;
+                const _ok = await showConfirm({ title: 'Supprimer le webhook', message: 'Les evenements ne seront plus envoyes.', confirmText: 'Supprimer', danger: true });
+                if (!_ok) return;
                 try {
                     const res = await apiFetch('/api/webhooks/' + id, { method: 'DELETE' });
                     if (!res.ok) throw new Error('Erreur');
@@ -12313,7 +12618,8 @@
             });
 
             window.deleteOauthClient = async function(id) {
-                if (!confirm('Supprimer cette application ? Tous les jetons associes seront revoques.')) return;
+                const _ok = await showConfirm({ title: 'Supprimer l\'application', message: 'Tous les jetons associes seront revoques.', confirmText: 'Supprimer', danger: true });
+                if (!_ok) return;
                 try {
                     const res = await apiFetch('/api/oauth/clients/' + id, { method: 'DELETE' });
                     if (!res.ok) throw new Error('Erreur');
@@ -12325,7 +12631,8 @@
             };
 
             window.revokeOauthToken = async function(id) {
-                if (!confirm('Revoquer ce jeton ?')) return;
+                const _ok = await showConfirm({ title: 'Revoquer le jeton', message: 'L\'acces sera immediatement revoque.', confirmText: 'Revoquer', danger: true });
+                if (!_ok) return;
                 try {
                     const res = await apiFetch('/api/oauth/tokens/' + id + '/revoke', { method: 'POST' });
                     if (!res.ok) throw new Error('Erreur');
@@ -12672,7 +12979,8 @@
 
 
             document.getElementById('restartOnboardingBtn')?.addEventListener('click', async () => {
-            if (!confirm('Reinitialiser l\'onboarding et relancer la visite ?')) return;
+            const _ok = await showConfirm({ title: 'Reinitialiser la visite', message: 'La visite guidee sera relancee au prochain chargement.', confirmText: 'Reinitialiser' });
+            if (!_ok) return;
                 try {
                     await apiFetch('/api/onboarding/reset', { method: 'POST' });
                     location.reload();
@@ -12812,7 +13120,8 @@
 
             // ----- Bouton "Quitter la demo" -----
             document.getElementById('demoExitBtn')?.addEventListener('click', () => {
-                if (!confirm('Quitter la demo ? Toutes les donnees seront perdues.')) return;
+                const _ok = await showConfirm({ title: 'Quitter la demo', message: 'Toutes les donnees seront perdues.', confirmText: 'Quitter', danger: true });
+                if (!_ok) return;
                 exitDemo();
             });
 
@@ -13856,7 +14165,8 @@
             };
 
             window.pauseRecurringRule = async function(id) {
-                if (!confirm('Mettre cette regle en pause ? Les factures ne seront plus emises automatiquement.')) return;
+                const _ok = await showConfirm({ title: 'Mettre en pause', message: 'Les factures ne seront plus emises automatiquement.', confirmText: 'Pause' });
+                if (!_ok) return;
                 try {
                     const res = await apiFetch('/api/recurring/' + id + '/pause', { method: 'POST' });
                     if (!res.ok) throw new Error('Erreur');
@@ -13868,7 +14178,8 @@
             };
 
             window.resumeRecurringRule = async function(id) {
-                if (!confirm('Reprendre cette regle ?')) return;
+                const _ok = await showConfirm({ title: 'Reprendre la regle', message: 'Les factures seront a nouveau emises.', confirmText: 'Reprendre' });
+                if (!_ok) return;
                 try {
                     const res = await apiFetch('/api/recurring/' + id + '/resume', { method: 'POST' });
                     if (!res.ok) throw new Error('Erreur');
@@ -13880,7 +14191,8 @@
             };
 
             window.deleteRecurringRule = async function(id) {
-                if (!confirm('Supprimer cette regle ? Les factures deja emises seront conservees.')) return;
+                const _ok = await showConfirm({ title: 'Supprimer la regle', message: 'Les factures deja emises seront conservees.', confirmText: 'Supprimer', danger: true });
+                if (!_ok) return;
                 try {
                     const res = await apiFetch('/api/recurring/' + id, { method: 'DELETE' });
                     if (!res.ok) throw new Error('Erreur');
@@ -13893,7 +14205,12 @@
 
             // ----- Forcer l'emission -----
             document.getElementById('processRecurringBtn')?.addEventListener('click', async () => {
-                if (!confirm('Forcer l\'emission des factures dues maintenant ?')) return;
+                const ok = await showConfirm({
+                    title: 'Forcer l\'emission',
+                    message: 'Emmettre immediatement les factures recurrentes dont la date est due ?',
+                    confirmText: 'Emmettre'
+                });
+                if (!ok) return;
 
                 const btn = document.getElementById('processRecurringBtn');
                 const orig = btn.textContent;
@@ -14038,7 +14355,8 @@
                     showToast('Minimum 2 variantes pour un devis multi-options.', 'error');
                     return;
                 }
-                if (!confirm('Supprimer cette variante ?')) return;
+                const _ok = await showConfirm({ title: 'Supprimer la variante', message: 'La variante sera supprimee.', confirmText: 'Supprimer', danger: true });
+                if (!_ok) return;
                 currentVariants.splice(index, 1);
                 renderVariantsPanel();
             };
@@ -14470,7 +14788,8 @@
             };
 
             window.validatePurchaseOrder = async function(id) {
-                if (!confirm('Valider ce bon de commande ?')) return;
+                const _ok = await showConfirm({ title: 'Valider le BC', message: 'Le BC passera en statut "Envoye".', confirmText: 'Valider' });
+                if (!_ok) return;
                 try {
                     const res = await apiFetch('/api/stock/purchase-orders/' + id + '/status', {
                         method: 'PUT',
@@ -14493,11 +14812,12 @@
 
                 let email = po.sentToEmail || '';
                 if (!email) {
-                    email = prompt('Email du fournisseur :', '');
+                    email = await showPrompt({ title: 'Email du fournisseur', label: 'Email', inputType: 'email', placeholder: 'fournisseur@exemple.com' });
                     if (!email) return;
                 }
 
-                if (!confirm('Envoyer le bon de commande a ' + email + ' ?')) return;
+                const _ok = await showConfirm({ title: 'Envoyer le BC', message: 'Envoyer a ' + email + ' ?', confirmText: 'Envoyer' });
+                if (!_ok) return;
 
                 try {
                     showToast('Envoi en cours...', 'info');
@@ -14886,7 +15206,12 @@
         //     };
 
         //     window.validatePO = async function(id) {
-        //         if (!confirm('Valider ce bon de commande ? Il passera en statut Envoye.')) return;
+        //         const ok = await showConfirm({
+                    //     title: 'Valider le bon de commande',
+                    //     message: 'Le BC passera en statut "Envoye".',
+                    //     confirmText: 'Valider'
+                    // });
+                    // if (!ok) return;
         //         try {
         //             const res = await apiFetch('/api/purchase-orders/' + id + '/validate', { method: 'POST' });
         //             if (!res.ok) throw new Error('Erreur');
@@ -14898,7 +15223,13 @@
         //     };
 
         //     window.deletePO = async function(id) {
-        //         if (!confirm('Supprimer ce brouillon de bon de commande ?')) return;
+        //         const ok = await showConfirm({
+                    //     title: 'Supprimer le bon de commande',
+                    //     message: 'Cette action est irreversible.',
+                    //     confirmText: 'Supprimer',
+                    //     danger: true
+                    // });
+                    // if (!ok) return;
         //         try {
         //             const res = await apiFetch('/api/purchase-orders/' + id, { method: 'DELETE' });
         //             if (!res.ok) throw new Error('Erreur');
@@ -14910,7 +15241,13 @@
         //     };
 
         //     window.cancelPO = async function(id) {
-        //         if (!confirm('Annuler ce bon de commande ?')) return;
+        //         const ok = await showConfirm({
+                    //     title: 'Annuler le bon de commande',
+                    //     message: 'Le BC sera marque comme annule.',
+                    //     confirmText: 'Annuler le BC',
+                    //     danger: true
+                    // });
+                    // if (!ok) return;
         //         try {
         //             const res = await apiFetch('/api/purchase-orders/' + id + '/cancel', { method: 'POST' });
         //             if (!res.ok) throw new Error('Erreur');
@@ -14940,11 +15277,22 @@
 
         //         let email = po.supplierEmail || '';
         //         if (!email) {
-        //             email = prompt('Email du fournisseur :', '');
+        //              email = await showPrompt({
+                        //     title: 'Email du fournisseur',
+                        //     message: 'Aucun email enregistre pour ce fournisseur.',
+                        //     label: 'Email',
+                        //     inputType: 'email',
+                        //     placeholder: 'fournisseur@exemple.com'
+                        // });
         //             if (!email) return;
         //         }
 
-        //         if (!confirm('Envoyer le bon de commande a ' + email + ' ?')) return;
+        //         const ok = await showConfirm({
+                    //     title: 'Envoyer le bon de commande',
+                    //     message: 'Envoyer a ' + email + ' ?',
+                    //     confirmText: 'Envoyer'
+                    // });
+                    // if (!ok) return;
 
         //         try {
         //             showToast('Envoi en cours...', 'info');
@@ -14984,8 +15332,12 @@
 
         //     // ----- Scanner les stocks -----
         //     document.getElementById('scanStockBtn')?.addEventListener('click', async () => {
-        //         if (!confirm('Scanner les stocks et preparer les bons de commande pour les produits sous le seuil d\'alerte ?')) return;
-
+        //         const ok = await showConfirm({
+                    //     title: 'Scanner les stocks',
+                    //     message: 'Rechercher les produits sous le seuil d\'alerte et preparer les bons de commande correspondants ?',
+                    //     confirmText: 'Scanner'
+                    // });
+                    // if (!ok) return;
         //         try {
         //             showToast('Scan en cours...', 'info');
         //             const res = await apiFetch('/api/purchase-orders/scan-stock', { method: 'POST' });
@@ -15319,7 +15671,7 @@
 
             // ----- Inviter un client -----
             window.inviteClientToPortal = async function(clientId) {
-                const email = prompt('Email du client (laisser vide pour utiliser l\'email du client) :', '');
+                const email = await showPrompt({ title: 'Email du client', message: 'Laisser vide pour utiliser l\'email du compte client.', label: 'Email', inputType: 'email', placeholder: 'client@exemple.com' });
                 if (email === null) return;
 
                 try {
@@ -15341,13 +15693,15 @@
 
             // ----- Renvoyer une invitation -----
             window.resendInvitation = async function(clientId, email) {
-                if (!confirm('Renvoyer l\'invitation a ' + email + ' ?')) return;
+                const _ok = await showConfirm({ title: 'Renvoyer l\'invitation', message: 'Une nouvelle invitation sera envoyee a ' + email + '.', confirmText: 'Envoyer' });
+                if (!_ok) return;
                 await window.inviteClientToPortal(clientId);
             };
 
             // ----- Desactiver l'acces -----
             window.revokeClientAccess = async function(clientId) {
-                if (!confirm('Desactiver l\'acces de ce client a son portail ?')) return;
+                const _ok = await showConfirm({ title: 'Desactiver l\'acces', message: 'Le client ne pourra plus acceder a son portail.', confirmText: 'Desactiver', danger: true });
+                if (!_ok) return;
                 try {
                     const res = await apiFetch('/api/client-portal/accounts/' + clientId + '/revoke', { method: 'POST' });
                     if (!res.ok) throw new Error('Erreur');
@@ -15600,12 +15954,23 @@
                     await navigator.clipboard.writeText(data.url);
                     showToast('Lien copie dans le presse-papier', 'success');
                 } else {
-                    // Fallback : prompt
-                    prompt('Lien de paiement (copiez-le) :', data.url);
+                    // Fallback : modale avec le lien
+                    await showPrompt({
+                        title: 'Lien de paiement',
+                        message: 'Copiez ce lien et envoyez-le a votre client.',
+                        label: 'Lien',
+                        defaultValue: data.url,
+                        inputType: 'text'
+                    });
                 }
 
                 // Proposer d'ouvrir le lien
-                if (confirm('Lien de paiement genere et copie.\n\nVoulez-vous l\'ouvrir dans un nouvel onglet pour tester ?')) {
+                const openIt = await showConfirm({
+                    title: 'Tester le lien',
+                    message: 'Voulez-vous ouvrir le lien dans un nouvel onglet pour verifier qu\'il fonctionne ?',
+                    confirmText: 'Ouvrir'
+                });
+                if (openIt) {
                     window.open(data.url, '_blank');
                 }
             } catch (err) {
@@ -15613,6 +15978,183 @@
                 showToast('Erreur : ' + err.message, 'error');
             }
         };
+
+        // ================================================================
+        // 43. MODALES GENERIQUES (remplacement prompt/confirm)
+        // ================================================================
+        (function initGenericModals() {
+            // ------------------------------------------------------------
+            // Confirmation : renvoie une Promise<boolean>
+            // ------------------------------------------------------------
+            window.showConfirm = function(options) {
+                return new Promise((resolve) => {
+                    const opts = typeof options === 'string'
+                        ? { message: options }
+                        : (options || {});
+
+                    const overlay = document.getElementById('gmConfirmOverlay');
+                    const titleEl = document.getElementById('gmConfirmTitle');
+                    const messageEl = document.getElementById('gmConfirmMessage');
+                    const okBtn = document.getElementById('gmConfirmOk');
+                    const cancelBtn = document.getElementById('gmConfirmCancel');
+
+                    titleEl.textContent = opts.title || 'Confirmation';
+                    messageEl.textContent = opts.message || 'Etes-vous sur ?';
+                    okBtn.textContent = opts.confirmText || 'Confirmer';
+                    cancelBtn.textContent = opts.cancelText || 'Annuler';
+
+                    // Style danger si demande
+                    if (opts.danger) {
+                        okBtn.className = 'gm-btn-danger';
+                    } else {
+                        okBtn.className = 'gm-btn-confirm';
+                    }
+
+                    const cleanup = (result) => {
+                        overlay.classList.remove('show');
+                        okBtn.removeEventListener('click', onOk);
+                        cancelBtn.removeEventListener('click', onCancel);
+                        overlay.removeEventListener('click', onOverlay);
+                        resolve(result);
+                    };
+
+                    const onOk = () => cleanup(true);
+                    const onCancel = () => cleanup(false);
+                    const onOverlay = (e) => { if (e.target === overlay) cleanup(false); };
+
+                    okBtn.addEventListener('click', onOk);
+                    cancelBtn.addEventListener('click', onCancel);
+                    overlay.addEventListener('click', onOverlay);
+
+                    overlay.classList.add('show');
+                    setTimeout(() => okBtn.focus(), 100);
+                });
+            };
+
+            // ------------------------------------------------------------
+            // Saisie : renvoie une Promise<string|null>
+            // ------------------------------------------------------------
+            window.showPrompt = function(options) {
+                return new Promise((resolve) => {
+                    const opts = typeof options === 'string'
+                        ? { message: options }
+                        : (options || {});
+
+                    const overlay = document.getElementById('gmPromptOverlay');
+                    const titleEl = document.getElementById('gmPromptTitle');
+                    const messageEl = document.getElementById('gmPromptMessage');
+                    const labelEl = document.getElementById('gmPromptLabel');
+                    const inputEl = document.getElementById('gmPromptInput');
+                    const textareaEl = document.getElementById('gmPromptTextarea');
+                    const selectEl = document.getElementById('gmPromptSelect');
+                    const okBtn = document.getElementById('gmPromptOk');
+                    const cancelBtn = document.getElementById('gmPromptCancel');
+
+                    titleEl.textContent = opts.title || 'Saisie';
+                    messageEl.textContent = opts.message || '';
+                    messageEl.style.display = opts.message ? 'block' : 'none';
+
+                    // Type : input / textarea / select
+                    inputEl.style.display = 'none';
+                    textareaEl.style.display = 'none';
+                    selectEl.style.display = 'none';
+                    labelEl.textContent = opts.label || 'Valeur';
+
+                    let currentField;
+                    if (opts.type === 'textarea') {
+                        currentField = textareaEl;
+                        textareaEl.value = opts.defaultValue || '';
+                        textareaEl.placeholder = opts.placeholder || '';
+                        textareaEl.style.display = 'block';
+                    } else if (opts.type === 'select' && Array.isArray(opts.options)) {
+                        currentField = selectEl;
+                        selectEl.innerHTML = opts.options.map(o =>
+                            '<option value="' + escapeHtml(o.value) + '"' + (o.value === opts.defaultValue ? ' selected' : '') + '>' + escapeHtml(o.label) + '</option>'
+                        ).join('');
+                        selectEl.style.display = 'block';
+                    } else {
+                        currentField = inputEl;
+                        inputEl.type = opts.inputType || 'text';
+                        inputEl.value = opts.defaultValue || '';
+                        inputEl.placeholder = opts.placeholder || '';
+                        inputEl.style.display = 'block';
+                    }
+
+                    const cleanup = (result) => {
+                        overlay.classList.remove('show');
+                        okBtn.removeEventListener('click', onOk);
+                        cancelBtn.removeEventListener('click', onCancel);
+                        overlay.removeEventListener('click', onOverlay);
+                        currentField.removeEventListener('keydown', onKey);
+                        resolve(result);
+                    };
+
+                    const onOk = () => cleanup(currentField.value);
+                    const onCancel = () => cleanup(null);
+                    const onOverlay = (e) => { if (e.target === overlay) cleanup(null); };
+                    const onKey = (e) => {
+                        if (e.key === 'Enter' && opts.type !== 'textarea') {
+                            e.preventDefault();
+                            onOk();
+                        }
+                    };
+
+                    okBtn.addEventListener('click', onOk);
+                    cancelBtn.addEventListener('click', onCancel);
+                    overlay.addEventListener('click', onOverlay);
+                    currentField.addEventListener('keydown', onKey);
+
+                    overlay.classList.add('show');
+                    setTimeout(() => currentField.focus(), 100);
+                });
+            };
+
+            // ------------------------------------------------------------
+            // Choix : renvoie une Promise<value|null>
+            // ------------------------------------------------------------
+            window.showChoice = function(options) {
+                return new Promise((resolve) => {
+                    const opts = options || {};
+                    const overlay = document.getElementById('gmChoiceOverlay');
+                    const titleEl = document.getElementById('gmChoiceTitle');
+                    const messageEl = document.getElementById('gmChoiceMessage');
+                    const listEl = document.getElementById('gmChoiceList');
+                    const cancelBtn = document.getElementById('gmChoiceCancel');
+
+                    titleEl.textContent = opts.title || 'Choisir';
+                    messageEl.textContent = opts.message || '';
+                    messageEl.style.display = opts.message ? 'block' : 'none';
+
+                    const choices = Array.isArray(opts.choices) ? opts.choices : [];
+
+                    listEl.innerHTML = choices.map((c, i) =>
+                        '<button data-choice-index="' + i + '">' + escapeHtml(c.label) + '</button>'
+                    ).join('');
+
+                    const cleanup = (result) => {
+                        overlay.classList.remove('show');
+                        cancelBtn.removeEventListener('click', onCancel);
+                        overlay.removeEventListener('click', onOverlay);
+                        resolve(result);
+                    };
+
+                    const onCancel = () => cleanup(null);
+                    const onOverlay = (e) => { if (e.target === overlay) cleanup(null); };
+
+                    listEl.querySelectorAll('button').forEach(btn => {
+                        btn.addEventListener('click', () => {
+                            const idx = parseInt(btn.dataset.choiceIndex);
+                            cleanup(choices[idx].value);
+                        });
+                    });
+
+                    cancelBtn.addEventListener('click', onCancel);
+                    overlay.addEventListener('click', onOverlay);
+                    overlay.classList.add('show');
+                });
+            };
+        })();
+
     </script>
 </body>
 </html>
