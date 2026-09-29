@@ -267,8 +267,10 @@
         .catalog-table tr:hover td { background:#141e33; }
         .catalog-table .product-ref { font-size:11px; background:#1a253b; padding:2px 10px; border-radius:40px; color:#94a3b8; border:1px solid #2a3a55; display:inline-block; }
         .catalog-table .product-price { font-weight:600; color:#f97316; }
-        .catalog-table .row-actions { display:flex; gap:6px; justify-content:flex-end; }
-        .catalog-table .row-actions button { background:#1a253b; border:1px solid #2a3a55; color:#e2e8f0; padding:6px 12px; border-radius:40px; font-size:12px; cursor:pointer; }
+
+        .catalog-table .row-actions { white-space: nowrap; flex-wrap: nowrap; display:flex; gap:6px; justify-content:flex-end; }
+        .catalog-table .row-actions button { min-width: 70px; flex-shrink: 0; white-space: nowrap; background:#1a253b; border:1px solid #2a3a55; color:#e2e8f0; padding:6px 12px; border-radius:40px; font-size:12px; cursor:pointer; } 
+        
         .catalog-table .row-actions button:hover { background:#24324b; border-color:#3b82f6; }
         .catalog-table .row-actions button.delete:hover { background:#3f1e24; border-color:#7f1d1d; color:#f87171; }
         .catalog-empty { text-align:center; padding:60px 20px; color:#64748b; }
@@ -2025,6 +2027,7 @@
             <button class="tab-btn" data-tab="tab-subcontractors" data-i18n="app.tab.contractors">Sous-traitants</button>
             <button class="tab-btn" data-tab="tab-api" data-i18n="app.tab.api">🗃 API</button>
             <button class="tab-btn" data-tab="tab-webhooks" data-i18n="app.tab.webhooks">Webhooks</button>
+            <button class="tab-btn" data-tab="tab-sms">SMS</button>
             <button class="tab-btn" data-tab="tab-reports">Rapports</button>
             <button class="tab-btn" data-tab="tab-email-import">Import email</button>
             <button class="tab-btn" data-tab="tab-recurring">Factures recurrentes</button>
@@ -2532,6 +2535,104 @@
                         <li>Liste detaillee des devis de la periode</li>
                     </ul>
                 </div>
+            </div>
+        </div>
+
+        <!-- SMS -->
+        <div id="tab-sms" class="tab-content">
+            <div class="card">
+                <div class="catalog-header">
+                    <h2>Notifications SMS</h2>
+                </div>
+                <p style="color:#94a3b8;font-size:13px;margin-bottom:20px;line-height:1.6;">
+                    Envoyez des SMS a vos clients (devis, relances d'impayes, rappels de rendez-vous) et recevez une notification quand un client signe un devis. Configuration via Twilio.
+                </p>
+
+                <div class="card-title" style="margin-top:8px;font-size:15px;">Configuration Twilio</div>
+
+                <div class="form-group">
+                    <label class="checkbox-accept" style="margin:0;">
+                        <input type="checkbox" id="smsEnabled" />
+                        <div class="text">Activer l'envoi de SMS</div>
+                    </label>
+                </div>
+
+                <div id="smsConfigFields" style="display:none;">
+                    <div class="form-group">
+                        <label>Account SID Twilio</label>
+                        <input type="text" id="smsAccountSid" placeholder="ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" />
+                    </div>
+                    <div class="form-group">
+                        <label>Auth Token Twilio</label>
+                        <input type="password" id="smsAuthToken" placeholder="Votre auth token" />
+                        <div id="smsAuthTokenHint" style="color:#64748b;font-size:11px;margin-top:4px;"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>Numero expediteur (format international)</label>
+                        <input type="text" id="smsFromNumber" placeholder="+32470123456" />
+                        <div style="color:#64748b;font-size:11px;margin-top:4px;">Le numero Twilio depuis lequel vos SMS seront envoyes.</div>
+                    </div>
+                </div>
+
+                <div class="card-title" style="margin-top:24px;font-size:15px;">Notifications</div>
+
+                <div class="form-group">
+                    <label class="checkbox-accept" style="margin:0;">
+                        <input type="checkbox" id="smsNotifySignature" checked />
+                        <div class="text">Recevoir un SMS quand un client signe un devis</div>
+                    </label>
+                </div>
+
+                <div class="form-group">
+                    <label>Votre numero de telephone (pour recevoir les notifications)</label>
+                    <input type="text" id="smsOwnerPhone" placeholder="+32470123456" />
+                </div>
+
+                <div class="card-title" style="margin-top:24px;font-size:15px;">Modeles de SMS</div>
+                <p style="color:#64748b;font-size:12px;margin-bottom:12px;">
+                    Variables disponibles : {client}, {quoteNumber}, {invoiceNumber}, {total}, {amount}, {link}, {company}, {date}, {time}
+                </p>
+
+                <div class="form-group">
+                    <label>Modele pour l'envoi d'un devis</label>
+                    <textarea id="smsTemplateQuote" rows="3"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Modele pour une relance d'impaye</label>
+                    <textarea id="smsTemplateReminder" rows="3"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Modele pour un rappel de rendez-vous</label>
+                    <textarea id="smsTemplateAppointment" rows="3"></textarea>
+                </div>
+
+                <div style="display:flex;gap:10px;margin-top:20px;flex-wrap:wrap;">
+                    <button class="btn-save" id="smsSaveConfigBtn">Enregistrer la configuration</button>
+                    <button class="btn-secondary" id="smsTestBtn" style="display:none;">Envoyer un SMS de test</button>
+                </div>
+
+                <div id="smsTestResult" style="margin-top:12px;font-size:13px;"></div>
+            </div>
+
+            <div class="card">
+                <div class="catalog-header">
+                    <h2>Statistiques SMS</h2>
+                </div>
+                <div id="smsStatsBox" class="stats-grid" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr));">
+                    <p style="color:#64748b;">Chargement...</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="catalog-header">
+                    <h2>Historique des SMS</h2>
+                    <div class="catalog-actions">
+                        <button class="btn-secondary" id="smsRefreshLogsBtn">Rafraichir</button>
+                    </div>
+                </div>
+                <div id="smsLogsList"><p style="color:#64748b;text-align:center;padding:40px;">Chargement...</p></div>
             </div>
         </div>
 
@@ -4778,7 +4879,7 @@
         } catch(err) { document.getElementById('clientsContent').innerHTML = '<p style="color:#f87171; text-align:center; padding:40px;">Erreur.</p>'; }
     }
 
-    function renderClients() {
+        function renderClients() {
         const content = document.getElementById('clientsContent');
         const search = (document.getElementById('clientsSearch').value || '').toLowerCase().trim();
         let filtered = clientsList;
@@ -4800,15 +4901,18 @@
         }
         if (filtered.length === 0) { content.innerHTML = `<p style="color:#64748b; text-align:center; padding:40px;">Aucun résultat.</p>`; return; }
         let html = `<table class="catalog-table"><thead><tr>
-            <th>Nom</th><th>Contact</th><th>Email</th><th style="width:120px;">TVA</th>
-            <th style="width:180px;text-align:right;">Actions</th>
+            <th style="width:22%;">Nom</th>
+            <th style="width:22%;">Contact</th>
+            <th style="width:26%;">Email</th>
+            <th style="width:14%;">TVA</th>
+            <th style="width:16%;min-width:180px;text-align:right;">Actions</th>
         </tr></thead><tbody>`;
         filtered.forEach(c => {
             html += `<tr>
                 <td data-label="Nom"><strong>${escapeHtml(c.name)}</strong></td>
-                <td data-label="NomContact>${c.contactName ? escapeHtml(c.contactName) : '<span style="color:#475569;">—</span>'}</td>
+                <td data-label="Contact">${c.contactName ? escapeHtml(c.contactName) : '<span style="color:#475569;">—</span>'}</td>
                 <td data-label="Email">${c.email ? escapeHtml(c.email) : '<span style="color:#475569;">—</span>'}</td>
-                <td data-label="NoTva">${c.vatNumber ? `<span class="product-ref">${escapeHtml(c.vatNumber)}</span>` : '<span style="color:#475569;">—</span>'}</td>
+                <td data-label="TVA">${c.vatNumber ? `<span class="product-ref">${escapeHtml(c.vatNumber)}</span>` : '<span style="color:#475569;">—</span>'}</td>
                 <td><div class="row-actions">
                     <button onclick="editClient(${c.id})">Modifier</button>
                     <button class="delete" onclick="deleteClient(${c.id})">Suppr.</button>
@@ -5590,13 +5694,13 @@
         //     <th style="width:180px;text-align:right;">Actions</th>
         // </tr></thead><tbody>`;
         let html = `<table class="catalog-table"><thead><tr>
-        <th style="width:120px;">Réf.</th><th>Nom</th><th style="width:140px;">Catégorie</th>
-        <th style="width:100px;text-align:right;">Prix vente</th>
-        <th style="width:100px;text-align:right;">Prix achat</th>
-        <th style="width:130px;text-align:right;">Marge</th>
-        <th style="width:80px;text-align:center;">Unité</th>
-        <th style="width:180px;text-align:right;">Actions</th>
-    </tr></thead><tbody>`;
+                <th style="width:120px;">Réf.</th><th>Nom</th><th style="width:140px;">Catégorie</th>
+                <th style="width:100px;text-align:right;">Prix vente</th>
+                <th style="width:100px;text-align:right;">Prix achat</th>
+                <th style="width:130px;text-align:right;">Marge</th>
+                <th style="width:80px;text-align:center;">Unité</th>
+                <th style="width:180px;text-align:right;">Actions</th>
+            </tr></thead><tbody>`;
         filtered.forEach(p => {
             // html += `<tr>
             //     <td data-label="Ref.">${p.ref ? `<span class="product-ref">${escapeHtml(p.ref)}</span>` : '<span style="color:#475569;">—</span>'}</td>
@@ -14062,6 +14166,203 @@
         // Ecouter les changements sur les 2 champs
         document.getElementById('productPrice')?.addEventListener('input', window.updateProductMarginPreview);
         document.getElementById('productCostPrice')?.addEventListener('input', window.updateProductMarginPreview);
+    })();
+
+    // ================================================================
+    // 39. SMS
+    // ================================================================
+    (function initSms() {
+        // ----- Charger la configuration -----
+        async function loadSmsConfig() {
+            try {
+                const res = await apiFetch('/api/sms/config');
+                const data = await res.json();
+
+                document.getElementById('smsEnabled').checked = data.enabled;
+                document.getElementById('smsConfigFields').style.display = data.enabled ? 'block' : 'none';
+
+                document.getElementById('smsAccountSid').value = data.accountSid || '';
+                document.getElementById('smsFromNumber').value = data.fromNumber || '';
+                document.getElementById('smsNotifySignature').checked = data.notifySignature;
+                document.getElementById('smsOwnerPhone').value = data.ownerPhone || '';
+
+                document.getElementById('smsTemplateQuote').value = data.templateQuote || '';
+                document.getElementById('smsTemplateReminder').value = data.templateReminder || '';
+                document.getElementById('smsTemplateAppointment').value = data.templateAppointment || '';
+
+                const authField = document.getElementById('smsAuthToken');
+                const hint = document.getElementById('smsAuthTokenHint');
+                if (data.hasAuthToken) {
+                    authField.placeholder = 'Laisser vide pour conserver le token actuel';
+                    hint.textContent = 'Un token est deja enregistre.';
+                    document.getElementById('smsTestBtn').style.display = 'inline-block';
+                } else {
+                    authField.placeholder = 'Votre auth token';
+                    hint.textContent = '';
+                    document.getElementById('smsTestBtn').style.display = 'none';
+                }
+            } catch (err) {
+                console.warn('Erreur load sms config:', err.message);
+            }
+        }
+
+        // ----- Toggle affichage des champs config -----
+        document.getElementById('smsEnabled')?.addEventListener('change', (e) => {
+            document.getElementById('smsConfigFields').style.display = e.target.checked ? 'block' : 'none';
+        });
+
+        // ----- Sauvegarder -----
+        document.getElementById('smsSaveConfigBtn')?.addEventListener('click', async () => {
+            const btn = document.getElementById('smsSaveConfigBtn');
+            btn.disabled = true;
+            btn.textContent = 'Enregistrement...';
+
+            const payload = {
+                enabled: document.getElementById('smsEnabled').checked,
+                accountSid: document.getElementById('smsAccountSid').value.trim(),
+                authToken: document.getElementById('smsAuthToken').value.trim(),
+                fromNumber: document.getElementById('smsFromNumber').value.trim(),
+                notifySignature: document.getElementById('smsNotifySignature').checked,
+                ownerPhone: document.getElementById('smsOwnerPhone').value.trim(),
+                templateQuote: document.getElementById('smsTemplateQuote').value.trim(),
+                templateReminder: document.getElementById('smsTemplateReminder').value.trim(),
+                templateAppointment: document.getElementById('smsTemplateAppointment').value.trim()
+            };
+
+            try {
+                const res = await apiFetch('/api/sms/config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Erreur');
+
+                showToast('Configuration enregistree', 'success');
+                document.getElementById('smsAuthToken').value = '';
+                loadSmsConfig();
+            } catch (err) {
+                showToast('Erreur : ' + err.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Enregistrer la configuration';
+            }
+        });
+
+        // ----- Test -----
+        document.getElementById('smsTestBtn')?.addEventListener('click', async () => {
+            const to = document.getElementById('smsOwnerPhone').value.trim();
+            if (!to) {
+                showToast('Renseignez votre numero de telephone d\'abord.', 'error');
+                return;
+            }
+
+            const resultBox = document.getElementById('smsTestResult');
+            resultBox.innerHTML = '<span style="color:#94a3b8;">Envoi en cours...</span>';
+
+            try {
+                const res = await apiFetch('/api/sms/test', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ to: to })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Erreur');
+
+                resultBox.innerHTML = '<span style="color:#22c55e;">SMS envoye avec succes (ID : ' + (data.messageId || 'n/a') + ')</span>';
+                loadSmsLogs();
+                loadSmsStats();
+            } catch (err) {
+                resultBox.innerHTML = '<span style="color:#f87171;">Erreur : ' + escapeHtml(err.message) + '</span>';
+            }
+        });
+
+        // ----- Charger les statistiques -----
+        async function loadSmsStats() {
+            const box = document.getElementById('smsStatsBox');
+            if (!box) return;
+
+            try {
+                const res = await apiFetch('/api/sms/stats');
+                const stats = await res.json();
+
+                box.innerHTML =
+                    '<div class="stat-card"><div class="number">' + stats.totalSent + '</div><div class="label">SMS envoyes (total)</div></div>' +
+                    '<div class="stat-card"><div class="number">' + stats.last30Days + '</div><div class="label">30 derniers jours</div></div>' +
+                    '<div class="stat-card"><div class="number" style="color:' + (stats.failed > 0 ? '#f87171' : '#22c55e') + ';">' + stats.failed + '</div><div class="label">Echecs</div></div>' +
+                    '<div class="stat-card"><div class="number">' + stats.totalCost.toFixed(2) + ' €</div><div class="label">Cout total</div></div>';
+            } catch (err) {
+                box.innerHTML = '<p style="color:#f87171;">Erreur.</p>';
+            }
+        }
+
+        // ----- Charger les logs -----
+        async function loadSmsLogs() {
+            const container = document.getElementById('smsLogsList');
+            if (!container) return;
+            container.innerHTML = '<p style="color:#64748b;text-align:center;padding:40px;">Chargement...</p>';
+
+            try {
+                const res = await apiFetch('/api/sms/logs?limit=100');
+                const logs = await res.json();
+
+                if (logs.length === 0) {
+                    container.innerHTML = '<p style="color:#64748b;text-align:center;padding:40px;">Aucun SMS envoye.</p>';
+                    return;
+                }
+
+                const TYPE_LABELS = {
+                    quote: 'Devis',
+                    reminder: 'Relance',
+                    appointment: 'Rendez-vous',
+                    signature_notification: 'Notification signature',
+                    test: 'Test',
+                    generic: 'Autre'
+                };
+
+                let html = '<div style="overflow-x:auto;max-height:500px;"><table class="catalog-table"><thead><tr>' +
+                    '<th>Date</th><th>Type</th><th>Destinataire</th><th>Message</th><th>Statut</th><th>Cout</th>' +
+                    '</tr></thead><tbody>';
+
+                for (const log of logs) {
+                    const date = new Date(log.createdAt).toLocaleString('fr-FR');
+                    const isFailed = log.status === 'failed';
+                    const statusColor = isFailed ? '#f87171' : '#22c55e';
+                    const statusLabel = isFailed ? 'Echec' : 'Envoye';
+
+                    html += '<tr>' +
+                        '<td style="font-size:11px;color:#94a3b8;">' + date + '</td>' +
+                        '<td style="font-size:12px;">' + escapeHtml(TYPE_LABELS[log.smsType] || log.smsType || '-') + '</td>' +
+                        '<td style="font-family:monospace;font-size:12px;">' + escapeHtml(log.toNumber) + '</td>' +
+                        '<td style="font-size:12px;max-width:300px;">' + escapeHtml(log.body.substring(0, 100)) + (log.body.length > 100 ? '...' : '') + '</td>' +
+                        '<td><span style="font-weight:700;color:' + statusColor + ';font-size:12px;">' + statusLabel + '</span>' +
+                        (log.errorMessage ? '<div style="color:#f87171;font-size:10px;margin-top:2px;">' + escapeHtml(log.errorMessage.substring(0, 60)) + '</div>' : '') +
+                        '</td>' +
+                        '<td style="font-size:11px;color:#94a3b8;">' + (log.cost ? log.cost.toFixed(4) + ' €' : '-') + '</td>' +
+                        '</tr>';
+                }
+
+                html += '</tbody></table></div>';
+                container.innerHTML = html;
+            } catch (err) {
+                container.innerHTML = '<p style="color:#f87171;text-align:center;padding:40px;">Erreur.</p>';
+            }
+        }
+
+        document.getElementById('smsRefreshLogsBtn')?.addEventListener('click', loadSmsLogs);
+
+        // ----- Charger au clic sur l'onglet -----
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                if (btn.dataset.tab === 'tab-sms') {
+                    setTimeout(() => {
+                        loadSmsConfig();
+                        loadSmsStats();
+                        loadSmsLogs();
+                    }, 100);
+                }
+            });
+        });
     })();
     </script>
 </body>
