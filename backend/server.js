@@ -60,6 +60,7 @@ const paymentSchedulesRoutes = require('./routes/payment-schedules');
 const appointmentsRoutes = require('./routes/appointments');
 const chatRoutes = require('./routes/chat');
 const visionRoutes = require('./routes/vision');
+const proactiveRoutes = require('./routes/proactive');
 
 // ⚙️ INTERRUPTEUR DE QUOTA — Mets à `false` pour désactiver les limites pendant les tests
 const ENABLE_QUOTA_LIMITS = false;
@@ -125,6 +126,7 @@ app.use('/api/payment-schedules', paymentSchedulesRoutes);
 app.use('/api/appointments', appointmentsRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/vision', visionRoutes);
+app.use('/api/proactive', proactiveRoutes);
 
 // Multer
 const storage = multer.diskStorage({
@@ -1406,6 +1408,10 @@ initDB()
             console.log(`Serveur Pro lancé sur http://localhost:${port}`);
             // Demarre le cron de relances
             startRemindersCron();
+
+            // Cron de detection proactive
+            const { startProactiveCron } = require('./utils/cron/proactive-cron');
+            startProactiveCron();
 
             const { retryFailedDeliveries } = require('./utils/webhooks/dispatcher');
             setInterval(() => {
