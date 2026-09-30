@@ -18197,6 +18197,360 @@
             });
         })();
 
+        // ================================================================
+        // 49. ANALYSE D'IMAGES
+        // ================================================================
+        (function initVision() {
+            let selectedImage = null;
+            let currentAnalysis = null;
+
+            const dropZone = document.getElementById('visionDropZone');
+            const fileInput = document.getElementById('visionFileInput');
+            const previewContainer = document.getElementById('visionPreviewContainer');
+            const preview = document.getElementById('visionPreview');
+            const fileNameEl = document.getElementById('visionFileName');
+            const fileSizeEl = document.getElementById('visionFileSize');
+            const promptField = document.getElementById('visionPrompt');
+            const analyzeBtn = document.getElementById('visionAnalyzeBtn');
+            const cancelBtn = document.getElementById('visionCancelBtn');
+            const loadingEl = document.getElementById('visionLoading');
+            const resultEl = document.getElementById('visionResult');
+
+            // ----- Drag & drop -----
+            dropZone?.addEventListener('click', () => fileInput.click());
+
+            dropZone?.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZone.style.borderColor = '#f97316';
+                dropZone.style.background = 'rgba(249,115,22,0.05)';
+            });
+
+            dropZone?.addEventListener('dragleave', () => {
+                dropZone.style.borderColor = '#2a3a55';
+                dropZone.style.background = '#0b1120';
+            });
+
+            dropZone?.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.style.borderColor = '#2a3a55';
+                dropZone.style.background = '#0b1120';
+                if (e.dataTransfer.files.length > 0) handleFile(e.dataTransfer.files[0]);
+            });
+
+            fileInput?.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) handleFile(e.target.files[0]);
+            });
+
+            function handleFile(file) {
+                const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/heic'];
+                if (!validTypes.includes(file.type)) {
+                    showToast('Format non supporte. Utilisez JPEG, PNG ou WEBP.', 'error');
+                    return;
+                }
+                if (file.size > 10 * 1024 * 1024) {
+                    showToast('Image trop volumineuse (10 Mo max).', 'error');
+                    return;
+                }
+
+                selectedImage = file;
+
+                // Preview
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    preview.src = e.target.result;
+                    fileNameEl.textContent = file.name;
+                    fileSizeEl.textContent = (file.size / 1024).toFixed(0) + ' Ko';
+                    previewContainer.style.display = 'block';
+                    resultEl.style.display = 'none';
+                    dropZone.style.display = 'none';
+                };
+                reader.readAsDataURL(file);
+            }
+
+            // ----- Annuler -----
+            cancelBtn?.addEventListener('click', () => {
+                selectedImage = null;
+                fileInput.value = '';
+                promptField.value = '';
+                previewContainer.style.display = 'none';
+                resultEl.style.display = 'none';
+                dropZone.style.display = 'block';
+            });
+
+            // ----- Analyser -----
+            analyzeBtn?.addEventListener('click', async () => {
+                if (!selectedImage) return;
+
+                analyzeBtn.disabled = true;
+                analyzeBtn.textContent = 'Analyse...';
+                loadingEl.style.display = 'block';
+                resultEl.style.display = 'none';
+
+                const formData = new FormData();
+                formData.append('image', selectedImage);
+                if (promptField.value.trim()) {
+                    formData.append('prompt', promptField.value.trim());
+                }
+
+                try {
+                    const res = await apiFetch('/api/vision/analyze', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error || 'Erreur analyse');
+
+                    currentAnalysis = data;
+                    renderAnalysis(data);
+                    loadVisionHistory();
+                } catch (err) {
+                    showToast('Erreur : ' + err.message, 'error');
+                } finally {
+                    analyzeBtn.disabled = false;
+                    analyzeBtn.textContent = 'Analyser l\'image';
+                    loadingEl.style.display = 'none';
+                }
+            });
+
+            // ----- Rendu de l'analyse -----
+            function renderAnalysis(data) {
+                resultEl.style.display = 'block';
+
+                const r = data.data || {};
+
+                document.getElementById('visionProvider').textContent = (data.provider || '') + ' / ' + (data.model || '') + ' - ' + (data.durationMs / 1000).toFixed(1) + 's';
+                document.getElementById('visionDescription').textContent = r.description || 'Analyse effectuee.';
+
+                // Dimensions
+                if (r.dimensions && r.dimensions.length > 0) {
+                    document.getElementById('visionDimensionsBlock').style.display = 'block';
+                    document.getElementById('visionDimensionsList').innerHTML = r.dimensions.map(d =>
+                        '<div style="background:#161f32;border:1px solid #2a3a55;border-radius:8px;padding:8px 14px;font-size:13px;">' +
+                        '<div style="color:#fff;font-weight:600;">' + escapeHtml(d.label || 'Dimension') + '</div>' +
+                        '<div style="color:#f97316;font-size:12px;margin-top:2px;">' + d.length + ' x ' + d.width + ' ' + (d.unit || 'm') + '</div>' +
+                        '</div>'
+                    ).join('');
+                } else {
+                    document.getElementById('visionDimensionsBlock').style.display = 'none';
+                }
+
+                // Materiaux
+                if (r.materials && r.materials.length > 0) {
+                    document.getElementById('visionMaterialsBlock').style.display = 'block';
+                    let mHtml = '<div style="background:#0b1120;border:1px solid #1e2a41;border-radius:10px;overflow:hidden;">';
+                    mHtml += '<table style="width:100%;border-collapse:collapse;font-size:13px;">';
+                    mHtml += '<thead><tr style="background:#161f32;">' +
+                        '<th style="text-align:left;padding:8px 12px;color:#94a3b8;font-size:11px;text-transform:uppercase;">Article</th>' +
+                        '<th style="text-align:center;padding:8px;color:#94a3b8;font-size:11px;text-transform:uppercase;">Qte</th>' +
+                        '<th style="text-align:right;padding:8px 12px;color:#94a3b8;font-size:11px;text-transform:uppercase;">Prix unit.</th>' +
+                        '</tr></thead><tbody>';
+                    for (const m of r.materials) {
+                        const unitPrice = parseFloat(m.unitPrice) || 0;
+                        mHtml += '<tr>' +
+                            '<td style="padding:8px 12px;border-bottom:1px solid #1e2a41;color:#e2e8f0;">' + escapeHtml(m.name || 'Article') + (m.ref ? ' <span style="color:#64748b;font-size:11px;">(' + escapeHtml(m.ref) + ')</span>' : '') + '</td>' +
+                            '<td style="padding:8px;border-bottom:1px solid #1e2a41;text-align:center;color:#94a3b8;">' + (m.estimatedQty || 1) + ' ' + escapeHtml(m.unit || '') + '</td>' +
+                            '<td style="padding:8px 12px;border-bottom:1px solid #1e2a41;text-align:right;color:#f97316;font-weight:600;">' + unitPrice.toFixed(2) + ' EUR</td>' +
+                            '</tr>';
+                    }
+                    mHtml += '</tbody></table></div>';
+                    document.getElementById('visionMaterialsList').innerHTML = mHtml;
+                } else {
+                    document.getElementById('visionMaterialsBlock').style.display = 'none';
+                }
+
+                // Texte extrait
+                if (r.extractedText && r.extractedText.trim()) {
+                    document.getElementById('visionTextBlock').style.display = 'block';
+                    document.getElementById('visionExtractedText').textContent = r.extractedText;
+                } else {
+                    document.getElementById('visionTextBlock').style.display = 'none';
+                }
+
+                // Notes
+                if (r.notes && r.notes.trim()) {
+                    document.getElementById('visionNotesBlock').style.display = 'block';
+                    document.getElementById('visionNotes').textContent = r.notes;
+                } else {
+                    document.getElementById('visionNotesBlock').style.display = 'none';
+                }
+            }
+
+            // ----- Creer un devis depuis l'analyse -----
+            document.getElementById('visionCreateQuoteBtn')?.addEventListener('click', async () => {
+                if (!currentAnalysis) return;
+
+                const r = currentAnalysis.data || {};
+                const materials = r.materials || [];
+
+                if (materials.length === 0) {
+                    showToast('Aucun article a convertir en devis.', 'error');
+                    return;
+                }
+
+                // Demander un nom de client optionnel
+                const clientName = await showPrompt({
+                    title: 'Creer un devis',
+                    message: 'La conversion utilisera les articles extraits par l\'IA. Vous pourrez modifier le devis ensuite.',
+                    label: 'Nom du client (optionnel)',
+                    placeholder: 'Ex: Vincent Dubois'
+                });
+
+                // Si l'utilisateur annule, on ne fait rien
+                if (clientName === null) return;
+
+                const btn = document.getElementById('visionCreateQuoteBtn');
+                btn.disabled = true;
+                btn.textContent = 'Creation...';
+
+                try {
+                    const res = await apiFetch('/api/vision/' + currentAnalysis.analysisId + '/convert-to-quote', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            clientName: clientName || 'Client image'
+                        })
+                    });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error || 'Erreur');
+
+                    showToast('Devis ' + data.quoteNumber + ' cree (' + data.total.toFixed(2) + ' EUR)', 'success');
+
+                    // Basculer sur l'historique
+                    const histTab = document.querySelector('.tab-btn[data-tab="tab-history"]');
+                    if (histTab) histTab.click();
+
+                    // Reset
+                    selectedImage = null;
+                    fileInput.value = '';
+                    promptField.value = '';
+                    previewContainer.style.display = 'none';
+                    resultEl.style.display = 'none';
+                    dropZone.style.display = 'block';
+                } catch (err) {
+                    showToast('Erreur : ' + err.message, 'error');
+                } finally {
+                    btn.disabled = false;
+                    btn.textContent = 'Creer un devis depuis cette analyse';
+                }
+            });
+
+            // ----- Nouvelle analyse -----
+            document.getElementById('visionNewAnalysisBtn')?.addEventListener('click', () => {
+                selectedImage = null;
+                currentAnalysis = null;
+                fileInput.value = '';
+                promptField.value = '';
+                previewContainer.style.display = 'none';
+                resultEl.style.display = 'none';
+                dropZone.style.display = 'block';
+            });
+
+            // ----- Historique -----
+            async function loadVisionHistory() {
+                const container = document.getElementById('visionHistoryList');
+                if (!container) return;
+                container.innerHTML = '<p style="color:#64748b;text-align:center;padding:40px;">Chargement...</p>';
+
+                try {
+                    const res = await apiFetch('/api/vision/history?limit=50');
+                    const analyses = await res.json();
+
+                    if (analyses.length === 0) {
+                        container.innerHTML = '<p style="color:#64748b;text-align:center;padding:40px;">Aucune analyse pour le moment.</p>';
+                        return;
+                    }
+
+                    let html = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;">';
+
+                    for (const a of analyses) {
+                        const date = new Date(a.createdAt).toLocaleString('fr-FR');
+                        const isFailed = !a.result;
+                        const description = a.result?.description || 'Analyse echouee';
+                        const itemsCount = a.result?.materials?.length || 0;
+                        const isConverted = !!a.convertedQuoteId;
+
+                        html += '<div style="background:#0b1120;border:1px solid ' + (isConverted ? '#22c55e' : '#1e2a41') + ';border-radius:12px;overflow:hidden;">' +
+                            '<div style="height:140px;background:#000;overflow:hidden;position:relative;">' +
+                            '<img src="' + a.imageUrl + '" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display=\'none\'" />' +
+                            (isConverted ? '<div style="position:absolute;top:8px;right:8px;background:#22c55e;color:#0b1120;font-size:10px;font-weight:800;padding:3px 10px;border-radius:40px;">DEVIS CREE</div>' : '') +
+                            '</div>' +
+                            '<div style="padding:14px;">' +
+                            '<div style="color:#fff;font-weight:600;font-size:13px;margin-bottom:4px;line-height:1.4;">' + escapeHtml(description.slice(0, 100)) + (description.length > 100 ? '...' : '') + '</div>' +
+                            '<div style="color:#64748b;font-size:11px;margin-bottom:8px;">' + date + '</div>' +
+                            (itemsCount > 0 ? '<div style="color:#f97316;font-size:12px;margin-bottom:8px;">' + itemsCount + ' article' + (itemsCount > 1 ? 's' : '') + ' extrait' + (itemsCount > 1 ? 's' : '') + '</div>' : '') +
+                            '<div style="display:flex;gap:6px;flex-wrap:wrap;">' +
+                            '<button onclick="viewVisionAnalysis(' + a.id + ')" style="background:#1a253b;border:1px solid #2a3a55;color:#e2e8f0;padding:4px 10px;border-radius:40px;font-size:11px;cursor:pointer;">Revoir</button>' +
+                            '<button onclick="deleteVisionAnalysis(' + a.id + ')" style="background:#3f1e24;border:1px solid #7f1d1d;color:#f87171;padding:4px 10px;border-radius:40px;font-size:11px;cursor:pointer;">Suppr.</button>' +
+                            '</div>' +
+                            '</div>' +
+                            '</div>';
+                    }
+
+                    html += '</div>';
+                    container.innerHTML = html;
+                } catch (err) {
+                    console.error('Erreur load vision history:', err);
+                    container.innerHTML = '<p style="color:#f87171;text-align:center;padding:40px;">Erreur.</p>';
+                }
+            }
+
+            window.viewVisionAnalysis = async function(id) {
+                try {
+                    const res = await apiFetch('/api/vision/' + id);
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error || 'Erreur');
+
+                    currentAnalysis = {
+                        analysisId: data.id,
+                        imageUrl: data.imageUrl,
+                        provider: data.provider,
+                        model: data.model,
+                        durationMs: data.durationMs,
+                        data: data.result
+                    };
+
+                    // Charger l'image dans la preview
+                    preview.src = data.imageUrl;
+                    fileNameEl.textContent = data.originalName || 'analyse.png';
+                    fileSizeEl.textContent = 'Analyse du ' + new Date(data.createdAt).toLocaleString('fr-FR');
+                    previewContainer.style.display = 'block';
+                    dropZone.style.display = 'none';
+
+                    renderAnalysis(currentAnalysis);
+                } catch (err) {
+                    showToast('Erreur : ' + err.message, 'error');
+                }
+            };
+
+            window.deleteVisionAnalysis = async function(id) {
+                const ok = await showConfirm({
+                    title: 'Supprimer l\'analyse',
+                    message: 'L\'image et son analyse seront supprimees definitivement.',
+                    confirmText: 'Supprimer',
+                    danger: true
+                });
+                if (!ok) return;
+
+                try {
+                    const res = await apiFetch('/api/vision/' + id, { method: 'DELETE' });
+                    if (!res.ok) throw new Error('Erreur');
+                    showToast('Analyse supprimee', 'success');
+                    loadVisionHistory();
+                } catch (err) {
+                    showToast('Erreur : ' + err.message, 'error');
+                }
+            };
+
+            // ----- Charger au clic sur l'onglet -----
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    if (btn.dataset.tab === 'tab-vision') {
+                        setTimeout(loadVisionHistory, 100);
+                    }
+                });
+            });
+        })();
+        
     </script>
 </body>
 </html>

@@ -77,8 +77,7 @@ async function analyzeWithGroq(imagePath, mimeType, prompt) {
 
     // Modeles vision disponibles chez Groq
     const models = [
-        'llama-3.2-90b-vision-preview',
-        'llama-3.2-11b-vision-preview'
+        'qwen/qwen3.8-27b'
     ];
 
     let lastError = null;
@@ -123,7 +122,7 @@ async function analyzeWithGemini(imagePath, mimeType, prompt) {
     const buffer = fs.readFileSync(imagePath);
     const base64 = buffer.toString('base64');
 
-    const model = 'gemini-1.5-flash';
+    const model = 'gemini-2.5-flash'; // -lite
     const url = 'https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent?key=' + apiKey;
 
     const body = {
