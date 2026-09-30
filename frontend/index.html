@@ -65,6 +65,13 @@
         }
     </script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- Transformers.js pour Whisper WASM (mode hors ligne) -->
+    <script type="module">
+        window.__TRANSFORMERS_PROMISE__ = import('https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2').catch(err => {
+            console.warn('Transformers.js non chargé:', err.message);
+            return null;
+        });
+    </script>
     <script src="/i18n.js"></script>
     <style>
         * { margin:0; padding:0; box-sizing:border-box; font-family:'Inter',sans-serif; }
@@ -3896,15 +3903,19 @@
                         <div class="assistant-toggles">
                             <button class="assistant-toggle active" id="toggleVocalContinueTab" title="Mode vocal continu (Ctrl+M pour parler)">
                                 <span class="led"></span>
-                                <span class="label">🎤 Continu</span>
+                                <span class="label">🎤</span>
                             </button>
                             <button class="assistant-toggle" id="toggleEnvoiDirectTab" title="Envoyer automatiquement après dictée">
                                 <span class="led"></span>
-                                <span class="label">⚡ Auto</span>
+                                <span class="label">⚡</span>
                             </button>
-                            <button class="assistant-toggle" id="toggleAudioResponse" title="Réponse vocale activée/désactivée">
+                            <button class="assistant-toggle" id="toggleOfflineTab" title="Utiliser Whisper hors ligne (plus lent)">
                                 <span class="led"></span>
-                                <span class="label">🔊 Audio</span>
+                                <span class="label">🌐</span>
+                            </button>
+                            <button class="assistant-toggle" id="toggleAudioResponseTab" title="Réponse vocale activée/désactivée">
+                                <span class="led"></span>
+                                <span class="label">🔊</span>
                             </button>
                         </div>
                         <button id="assistantTabClear" title="Effacer la conversation">🗑</button>
@@ -5235,15 +5246,19 @@
                 <div class="assistant-toggles">
                     <button class="assistant-toggle active" id="toggleVocalContinue" title="Mode vocal continu (Ctrl+M pour parler)">
                         <span class="led"></span>
-                        <span class="label">🎤 Continu</span>
+                        <span class="label">🎤</span>
                     </button>
                     <button class="assistant-toggle" id="toggleEnvoiDirect" title="Envoyer automatiquement après dictée">
                         <span class="led"></span>
-                        <span class="label">⚡ Auto</span>
+                        <span class="label">⚡</span>
+                    </button>
+                    <button class="assistant-toggle" id="toggleOffline" title="Utiliser Whisper hors ligne (plus lent)">
+                        <span class="led"></span>
+                        <span class="label">🌐</span>
                     </button>
                     <button class="assistant-toggle" id="toggleAudioResponse" title="Réponse vocale activée/désactivée">
                         <span class="led"></span>
-                        <span class="label">🔊 Audio</span>
+                        <span class="label">🔊</span>
                     </button>
                 </div>
                 <button id="assistantClear" title="Effacer la conversation">🗑</button>
@@ -18550,7 +18565,323 @@
                 });
             });
         })();
-        
+
+        // ================================================================
+        // 50. WHISPER WASM (RECONNAISSANCE VOCALE HORS LIGNE)
+        // ================================================================
+        (function initWhisperOffline() {
+            let whisperPipeline = null;
+            let whisperLoading = false;
+            let whisperReady = false;
+            let whisperError = null;
+
+            // Etat du mode hors ligne (persistant)
+            const OFFLINE_PREF_KEY = 'devis_assistant_offline_voice';
+            let offlineMode = localStorage.getItem(OFFLINE_PREF_KEY) === 'true';
+
+            // References aux toggles
+            const toggleOffline = document.getElementById('toggleOffline');
+            const toggleOfflineTab = document.getElementById('toggleOfflineTab');
+
+            // Toggle UI
+            function renderOfflineToggle() {
+                [toggleOffline, toggleOfflineTab].forEach(btn => {
+                    if (!btn) return;
+                    if (offlineMode) btn.classList.add('active');
+                    else btn.classList.remove('active');
+                });
+            }
+
+            // Afficher un message de statut dans le voice hint
+            function setStatus(text, color) {
+                const hint = document.getElementById('voiceHint');
+                if (!hint) return;
+                hint.textContent = text;
+                if (color) hint.style.borderColor = color;
+                hint.classList.add('show');
+            }
+
+            function clearStatus() {
+                const hint = document.getElementById('voiceHint');
+                if (hint) {
+                    hint.classList.remove('show');
+                    hint.style.borderColor = '';
+                }
+            }
+
+            // Charger le modele Whisper (une seule fois)
+            async function loadWhisperModel() {
+                if (whisperReady) return true;
+                if (whisperLoading) {
+                    // Attendre que le chargement termine
+                    while (whisperLoading) {
+                        await new Promise(r => setTimeout(r, 500));
+                    }
+                    return whisperReady;
+                }
+
+                whisperLoading = true;
+                setStatus('🌐 Chargement du modele Whisper (75 Mo - peut prendre 2-5 min)...', '#eab308');
+
+                try {
+                    // Attendre que Transformers.js soit charge
+                    const transformers = await window.__TRANSFORMERS_PROMISE__;
+
+                    if (!transformers) {
+                        throw new Error('Transformers.js non disponible');
+                    }
+
+                    const { pipeline, env } = transformers;
+
+                    // Configuration : ne pas utiliser de modeles locaux, telecharger depuis Hugging Face
+                    env.allowLocalModels = false;
+
+                    // Charger le pipeline de reconnaissance vocale
+                    // Modele : Xenova/whisper-tiny (multilingue, ~40 Mo quantifie)
+                    whisperPipeline = await pipeline(
+                        'automatic-speech-recognition',
+                        'Xenova/whisper-tiny',
+                        {
+                            progress_callback: (progress) => {
+                                if (progress.status === 'progress' && progress.progress) {
+                                    const pct = Math.round(progress.progress);
+                                    setStatus('🌐 Telechargement du modele : ' + pct + '%', '#eab308');
+                                } else if (progress.status === 'done') {
+                                    setStatus('🌐 Modele telecharge', '#22c55e');
+                                }
+                            }
+                        }
+                    );
+
+                    whisperReady = true;
+                    whisperLoading = false;
+                    setStatus('🌐 Modele pret', '#22c55e');
+                    setTimeout(clearStatus, 3000);
+
+                    console.log('Whisper WASM pret');
+                    return true;
+                } catch (err) {
+                    whisperLoading = false;
+                    whisperError = err.message;
+                    console.error('Erreur chargement Whisper:', err);
+                    setStatus('❌ Erreur chargement Whisper : ' + err.message, '#f87171');
+                    setTimeout(clearStatus, 5000);
+                    return false;
+                }
+            }
+
+            // Enregistrer l'audio via MediaRecorder
+            async function recordAudio() {
+                return new Promise(async (resolve, reject) => {
+                    try {
+                        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                        const chunks = [];
+                        const recorder = new MediaRecorder(stream);
+
+                        recorder.ondataavailable = (e) => {
+                            if (e.data.size > 0) chunks.push(e.data);
+                        };
+
+                        recorder.onstop = () => {
+                            stream.getTracks().forEach(t => t.stop());
+                            const blob = new Blob(chunks, { type: 'audio/webm' });
+                            resolve(blob);
+                        };
+
+                        recorder.onerror = (e) => {
+                            stream.getTracks().forEach(t => t.stop());
+                            reject(new Error('Erreur enregistrement audio'));
+                        };
+
+                        recorder.start();
+
+                        // Signal a l'utilisateur : demarrer la dictee
+                        setStatus('🌐 Parlez maintenant...', '#f97316');
+
+                        // Exposer un moyen d'arreter : on utilise une variable globale
+                        window.__STOP_WHISPER_RECORDING__ = () => {
+                            if (recorder.state !== 'inactive') {
+                                recorder.stop();
+                            }
+                        };
+
+                        // Auto-stop apres 30 secondes
+                        setTimeout(() => {
+                            if (recorder.state !== 'inactive') {
+                                recorder.stop();
+                            }
+                        }, 30000);
+
+                    } catch (err) {
+                        reject(err);
+                    }
+                });
+            }
+
+            // Convertir le blob audio en Float32Array (format attendu par Whisper)
+            async function decodeAudio(blob) {
+                const arrayBuffer = await blob.arrayBuffer();
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)({
+                    sampleRate: 16000 // Whisper attend 16 kHz
+                });
+
+                const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+
+                // Mixer en mono
+                const channelData = audioBuffer.getChannelData(0);
+                return channelData;
+            }
+
+            // Transcrire avec Whisper
+            async function transcribeWithWhisper(blob) {
+                if (!whisperReady) {
+                    const ok = await loadWhisperModel();
+                    if (!ok) throw new Error('Modele Whisper non disponible');
+                }
+
+                setStatus('🌐 Transcription en cours (peut prendre 10-30 s)...', '#f97316');
+
+                try {
+                    const audioData = await decodeAudio(blob);
+
+                    const result = await whisperPipeline(audioData, {
+                        language: 'french',
+                        task: 'transcribe',
+                        chunk_length_s: 30,
+                        stride_length_s: 5
+                    });
+
+                    return result.text || '';
+                } catch (err) {
+                    console.error('Erreur transcription Whisper:', err);
+                    throw new Error('Erreur de transcription : ' + err.message);
+                }
+            }
+
+            // ------------------------------------------------------------------
+            // Intercepter les boutons micro quand le mode hors ligne est actif
+            // ------------------------------------------------------------------
+            function setupOfflineMicButton(btn, targetInput) {
+                if (!btn) return;
+
+                btn.addEventListener('click', async (e) => {
+                    if (!offlineMode) return; // mode normal, on laisse faire
+
+                    e.stopImmediatePropagation();
+                    e.preventDefault();
+
+                    // Verifier qu'un enregistrement n'est pas deja en cours
+                    if (window.__STOP_WHISPER_RECORDING__) {
+                        // Arreter l'enregistrement
+                        window.__STOP_WHISPER_RECORDING__();
+                        window.__STOP_WHISPER_RECORDING__ = null;
+                        return;
+                    }
+
+                    // Verifier le support MediaRecorder
+                    if (!navigator.mediaDevices || !window.MediaRecorder) {
+                        alert('Enregistrement audio non supporte par ce navigateur.');
+                        return;
+                    }
+
+                    // Charger le modele en arriere-plan pendant l'enregistrement
+                    loadWhisperModel();
+
+                    try {
+                        btn.classList.add('recording');
+                        const blob = await recordAudio();
+                        btn.classList.remove('recording');
+
+                        const text = await transcribeWithWhisper(blob);
+
+                        if (text && text.trim()) {
+                            // Inserer le texte dans l'input cible
+                            const currentValue = targetInput.value || '';
+                            targetInput.value = (currentValue + ' ' + text.trim()).trim();
+                            if (typeof autoResize === 'function') autoResize();
+
+                            // Envoyer automatiquement si le mode auto est actif
+                            const voicePrefs = JSON.parse(localStorage.getItem('devis_assistant_voice_prefs') || '{}');
+                            if (voicePrefs.envoiDirect && typeof sendMessage === 'function') {
+                                setTimeout(() => sendMessage(targetInput.value), 300);
+                            } else {
+                                setStatus('✅ Texte pret', '#22c55e');
+                                setTimeout(clearStatus, 2000);
+                            }
+                        } else {
+                            setStatus('❌ Aucun texte reconnu', '#f87171');
+                            setTimeout(clearStatus, 3000);
+                        }
+                    } catch (err) {
+                        btn.classList.remove('recording');
+                        setStatus('❌ ' + err.message, '#f87171');
+                        setTimeout(clearStatus, 5000);
+                    } finally {
+                        window.__STOP_WHISPER_RECORDING__ = null;
+                    }
+                }, true); // useCapture = true pour passer avant les autres listeners
+            }
+
+            // Brancher sur les 2 boutons micro existants
+            const micBtn = document.getElementById('assistantMic');
+            const micBtnTab = document.getElementById('assistantTabMic');
+            const input = document.getElementById('assistantInput');
+            const inputTab = document.getElementById('assistantTabInput');
+
+            if (micBtn && input) setupOfflineMicButton(micBtn, input);
+            if (micBtnTab && inputTab) setupOfflineMicButton(micBtnTab, inputTab);
+
+            // ------------------------------------------------------------------
+            // Gerer les toggles
+            // ------------------------------------------------------------------
+            function setupToggle(btn) {
+                if (!btn) return;
+                btn.addEventListener('click', async () => {
+                    offlineMode = !offlineMode;
+                    localStorage.setItem(OFFLINE_PREF_KEY, offlineMode ? 'true' : 'false');
+                    renderOfflineToggle();
+
+                    if (offlineMode) {
+                        // Activer le mode hors ligne : charger le modele
+                        if (typeof showToast === 'function') {
+                            showToast('Mode hors ligne active. Modele Whisper en cours de preparation...', 'info');
+                        }
+                        await loadWhisperModel();
+                    } else {
+                        // Desactiver : revenir a la Web Speech API
+                        if (typeof showToast === 'function') {
+                            showToast('Mode Web Speech active (rapide, en ligne)', 'success');
+                        }
+                        // Si un enregistrement Whisper est en cours, l'arreter
+                        if (window.__STOP_WHISPER_RECORDING__) {
+                            window.__STOP_WHISPER_RECORDING__();
+                            window.__STOP_WHISPER_RECORDING__ = null;
+                        }
+                    }
+                });
+            }
+
+            setupToggle(toggleOffline);
+            setupToggle(toggleOfflineTab);
+
+            // Etat initial
+            renderOfflineToggle();
+
+            // Si le mode hors ligne est deja active au chargement, preparer le modele
+            if (offlineMode) {
+                // Attendre un peu que la page soit stable
+                setTimeout(loadWhisperModel, 2000);
+            }
+
+            // Exposer pour debug
+            window.__WHISPER_STATE__ = () => ({
+                ready: whisperReady,
+                loading: whisperLoading,
+                error: whisperError,
+                offlineMode: offlineMode
+            });
+        })();
+
     </script>
 </body>
 </html>
