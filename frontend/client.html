@@ -536,6 +536,22 @@
             return response;
         }
 
+        async function apiChat(url, options = {}) {
+            const token = getToken();
+            const headers = { ...(options.headers || {}) };
+            if (token) headers['Authorization'] = 'Bearer ' + token;
+            const response = await fetch('/api/chat' + url, { ...options, headers });
+            if (response.status === 401) {
+                clearToken();
+                showLogin();
+                throw new Error('Session expiree.');
+            }
+            return response;
+        }
+        // remplace les appels :
+        // apiFetch('/my-conversations') → apiChat('/my-conversations')
+        // apiFetch('/my-conversations/' + id) → apiChat('/my-conversations/' + id)
+
         function showInvite() {
             document.querySelectorAll('.auth-screen').forEach(el => el.classList.remove('active'));
             document.getElementById('inviteScreen').classList.add('active');
@@ -922,7 +938,11 @@
             container.innerHTML = '<p style="color:#64748b;text-align:center;padding:40px;">Chargement...</p>';
 
             try {
-                const res = await apiFetch('/my-conversations');
+                const token = getToken();
+                const res = await fetch('/api/chat/my-conversations', {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                if (res.status === 401) { clearToken(); showLogin(); return; }
                 clientConversations = await res.json();
 
                 if (clientConversations.length === 0) {
@@ -996,11 +1016,10 @@
             sel.innerHTML = '<option value="">-- Aucun sujet specifique --</option>';
 
             try {
-                const [qRes, iRes, chRes] = await Promise.all([
-                    apiFetch('/documents').then(r => r.json()),
-                    Promise.resolve(null),
-                    Promise.resolve(null)
-                ]);
+                const token = getToken();
+                const qRes = await fetch('/api/client-portal/documents', {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                }).then(r => r.json());
 
                 // Devis
                 if (qRes.quotes && qRes.quotes.length > 0) {
@@ -1080,9 +1099,13 @@
 
             try {
                 // Creer la conversation
-                const convRes = await apiFetch('/my-conversations', {
+                const token = getToken();
+                const convRes = await fetch('/api/chat/my-conversations', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token
+                    },
                     body: JSON.stringify({
                         subject: title,
                         relatedQuoteId: relatedQuoteId,
@@ -1090,16 +1113,22 @@
                         relatedChantierId: relatedChantierId
                     })
                 });
+                if (convRes.status === 401) { clearToken(); showLogin(); return; }
 
                 const convData = await convRes.json();
                 if (!convRes.ok) throw new Error(convData.error || 'Erreur');
 
                 // Envoyer le premier message
-                const msgRes = await apiFetch('/my-conversations/' + convData.conversationId + '/messages', {
+                const token2 = getToken();
+                const msgRes = await fetch('/api/chat/my-conversations/' + convData.conversationId + '/messages', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token2
+                    },
                     body: JSON.stringify({ body: message })
                 });
+                if (msgRes.status === 401) { clearToken(); showLogin(); return; }
 
                 if (!msgRes.ok) throw new Error('Erreur envoi message');
 
@@ -1119,7 +1148,11 @@
             document.getElementById('clientConvMessages').innerHTML = '<p style="color:#64748b;text-align:center;">Chargement...</p>';
 
             try {
-                const res = await apiFetch('/my-conversations/' + id);
+                const token = getToken();
+                const res = await fetch('/api/chat/my-conversations/' + id, {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                if (res.status === 401) { clearToken(); showLogin(); return; }
                 const data = await res.json();
                 if (!res.ok) throw new Error(data.error || 'Erreur');
 
@@ -1176,11 +1209,16 @@
             btn.disabled = true;
 
             try {
-                const res = await apiFetch('/my-conversations/' + currentClientConversationId + '/messages', {
+                const token = getToken();
+                const res = await fetch('/api/chat/my-conversations/' + currentClientConversationId + '/messages', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token
+                    },
                     body: JSON.stringify({ body: body })
                 });
+                if (res.status === 401) { clearToken(); showLogin(); return; }
 
                 if (!res.ok) throw new Error('Erreur');
 
