@@ -2051,6 +2051,7 @@
             .tab-btn[data-tab="tab-chat"]                { order: 52; }
             .tab-btn[data-tab="tab-vision"]              { order: 53; }
             .tab-btn[data-tab="tab-proactive"]           { order: 54; }
+            .tab-btn[data-tab="tab-bank"]                { order: 55; }
             .tab-btn[data-tab="tab-api"]                 { order: 60; }
             .tab-btn[data-tab="tab-webhooks"]            { order: 61; }
             .tab-btn[data-tab="tab-oauth"]               { order: 62; }
@@ -2423,6 +2424,7 @@
             <button class="tab-btn" data-tab="tab-chat">Chat client</button>
             <button class="tab-btn" data-tab="tab-vision">Analyse image</button>
             <button class="tab-btn" data-tab="tab-proactive">Assistant proactif <span id="proactiveBadge" style="display:none;background:#f97316;color:#0b1120;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;margin-left:6px;">0</span></button>
+            <button class="tab-btn" data-tab="tab-bank">Banque <span id="bankBadge" style="display:none;background:#3b82f6;color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;margin-left:6px;">0</span></button>
             <button class="tab-btn" data-tab="tab-client-portal">Portail client</button>
             <button class="tab-btn" data-tab="tab-online-payments">Paiements</button>
             <button class="tab-btn" data-tab="tab-appointments">Rendez-vous</button>
@@ -3039,6 +3041,90 @@
                     </div>
                 </div>
                 <div id="paymentsList"><p style="color:#64748b;text-align:center;padding:40px;">Chargement...</p></div>
+            </div>
+        </div>
+
+        <!-- BANQUE -->
+        <div id="tab-bank" class="tab-content">
+            <div class="card">
+                <div class="catalog-header">
+                    <h2>Rapprochement bancaire</h2>
+                    <div class="catalog-actions">
+                        <button class="btn-secondary" id="bankRematchBtn">Relancer le rapprochement</button>
+                        <button class="btn-primary-sm" id="bankImportBtn">+ Importer un releve</button>
+                    </div>
+                </div>
+                <p style="color:#94a3b8;font-size:13px;margin-bottom:20px;line-height:1.6;">
+                    Importez un releve bancaire (CSV, OFX, XLSX) exporte de votre banque. L'outil detecte les virements entrants et vous propose automatiquement de les rapprocher avec vos factures en attente.
+                </p>
+
+                <div class="stats-grid" id="bankStats" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr));margin-bottom:20px;">
+                    <p style="color:#64748b;">Chargement...</p>
+                </div>
+
+                <div class="history-filters" id="bankFilters">
+                    <button class="history-filter active" data-bfilter="all">Toutes</button>
+                    <button class="history-filter" data-bfilter="suggested">A valider</button>
+                    <button class="history-filter" data-bfilter="pending">Sans correspondance</button>
+                    <button class="history-filter" data-bfilter="validated">Rapprochees</button>
+                    <button class="history-filter" data-bfilter="ignored">Ignorees</button>
+                </div>
+
+                <div id="bankTransactionsList"><p style="color:#64748b;text-align:center;padding:40px;">Chargement...</p></div>
+            </div>
+
+            <div class="card">
+                <div class="catalog-header">
+                    <h2>Historique des imports</h2>
+                </div>
+                <div id="bankImportsList"><p style="color:#64748b;text-align:center;padding:40px;">Chargement...</p></div>
+            </div>
+        </div>
+
+        <!-- MODAL IMPORT BANQUE -->
+        <div class="modal-overlay" id="bankImportModal">
+            <div class="modal modal-wide">
+                <h3>Importer un releve bancaire</h3>
+                <p style="color:#94a3b8;font-size:13px;margin:12px 0 20px;line-height:1.6;">
+                    Formats acceptes : CSV (Belfius, ING, BNP, KBC...), OFX, QFX, XML (CAMT.053), XLSX.
+                    Le fichier doit contenir au minimum une colonne <strong>date</strong> et une colonne <strong>montant</strong> (ou credit/debit).
+                </p>
+
+                <div id="bankDropZone" style="border:2px dashed #2a3a55;border-radius:16px;padding:40px 24px;text-align:center;background:#0b1120;cursor:pointer;transition:0.2s;">
+                    <div style="font-size:48px;margin-bottom:12px;">🏦</div>
+                    <div style="color:#e2e8f0;font-weight:600;margin-bottom:6px;">Deposez votre releve ici</div>
+                    <div style="color:#64748b;font-size:13px;">ou cliquez pour parcourir</div>
+                    <div style="color:#64748b;font-size:11px;margin-top:8px;">CSV, OFX, QFX, XML, XLSX - 10 Mo max</div>
+                    <input type="file" id="bankFileInput" accept=".csv,.ofx,.qfx,.xml,.xlsx,.xls" style="display:none;" />
+                </div>
+
+                <div id="bankImportPreview" style="display:none;margin-top:20px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;padding:16px;background:#0b1120;border:1px solid #1e2a41;border-radius:12px;">
+                        <div>
+                            <div id="bankFileName" style="color:#fff;font-weight:600;font-size:14px;"></div>
+                            <div id="bankFileSize" style="color:#64748b;font-size:12px;margin-top:2px;"></div>
+                        </div>
+                        <button class="btn-secondary" id="bankCancelFileBtn" style="font-size:12px;padding:6px 12px;">Retirer</button>
+                    </div>
+                </div>
+
+                <div class="modal-actions">
+                    <button class="btn-cancel" onclick="document.getElementById('bankImportModal').classList.remove('show')">Annuler</button>
+                    <button class="btn-confirm" id="bankConfirmImportBtn" disabled>Importer et analyser</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MODAL RAPPROCHEMENT -->
+        <div class="modal-overlay" id="bankMatchModal">
+            <div class="modal modal-wide">
+                <h3>Valider le rapprochement</h3>
+                <div id="bankMatchContent" style="max-height:70vh;overflow-y:auto;margin-top:16px;">
+                    <p style="color:#64748b;text-align:center;">Chargement...</p>
+                </div>
+                <div class="modal-actions">
+                    <button class="btn-cancel" onclick="document.getElementById('bankMatchModal').classList.remove('show')">Fermer</button>
+                </div>
             </div>
         </div>
 
@@ -19224,6 +19310,439 @@
 
             // Exposer pour le rafraichissement
             window.__REFRESH_PROACTIVE__ = loadSuggestions;
+        })();
+
+        // ================================================================
+        // 52. IMPORT BANCAIRE
+        // ================================================================
+        (function initBank() {
+            let allTransactions = [];
+            let currentFilter = 'all';
+            let selectedBankFile = null;
+
+            const STATUS_LABELS = {
+                pending: 'Sans correspondance',
+                suggested: 'A valider',
+                validated: 'Rapprochee',
+                ignored: 'Ignoree'
+            };
+
+            const STATUS_COLORS = {
+                pending: '#94a3b8',
+                suggested: '#f97316',
+                validated: '#22c55e',
+                ignored: '#64748b'
+            };
+
+            // ----- Charger les statistiques -----
+            async function loadBankStats() {
+                const box = document.getElementById('bankStats');
+                if (!box) return;
+
+                try {
+                    const res = await apiFetch('/api/bank/stats');
+                    const s = await res.json();
+
+                    box.innerHTML =
+                        '<div class="stat-card"><div class="number">' + s.total + '</div><div class="label">Transactions</div></div>' +
+                        '<div class="stat-card"><div class="number" style="color:' + (s.suggested > 0 ? '#f97316' : '#94a3b8') + ';">' + s.suggested + '</div><div class="label">A valider</div></div>' +
+                        '<div class="stat-card"><div class="number" style="color:#22c55e;">' + s.validated + '</div><div class="label">Rapprochees</div></div>' +
+                        '<div class="stat-card"><div class="number" style="color:#3b82f6;">' + s.totalReconciled.toFixed(2) + ' EUR</div><div class="label">Montant rapproche</div></div>';
+
+                    // Badge
+                    const badge = document.getElementById('bankBadge');
+                    if (badge) {
+                        if (s.suggested > 0) {
+                            badge.textContent = s.suggested;
+                            badge.style.display = 'inline-block';
+                        } else {
+                            badge.style.display = 'none';
+                        }
+                    }
+                } catch (err) {
+                    box.innerHTML = '<p style="color:#f87171;">Erreur.</p>';
+                }
+            }
+
+            // ----- Charger les transactions -----
+            async function loadTransactions() {
+                const container = document.getElementById('bankTransactionsList');
+                if (!container) return;
+                container.innerHTML = '<p style="color:#64748b;text-align:center;padding:40px;">Chargement...</p>';
+
+                try {
+                    const params = new URLSearchParams();
+                    if (currentFilter !== 'all') params.set('status', currentFilter);
+
+                    const res = await apiFetch('/api/bank/transactions?' + params.toString());
+                    allTransactions = await res.json();
+                    renderTransactions();
+                } catch (err) {
+                    console.error('Erreur load transactions:', err);
+                    container.innerHTML = '<p style="color:#f87171;text-align:center;padding:40px;">Erreur.</p>';
+                }
+            }
+
+            function renderTransactions() {
+                const container = document.getElementById('bankTransactionsList');
+                if (!container) return;
+
+                if (allTransactions.length === 0) {
+                    container.innerHTML = '<div class="catalog-empty"><div class="big-icon">-</div><h3>Aucune transaction</h3><p>Importez un releve bancaire pour demarrer le rapprochement automatique.</p></div>';
+                    return;
+                }
+
+                let html = '<div style="display:flex;flex-direction:column;gap:10px;">';
+
+                for (const t of allTransactions) {
+                    const statusLabel = STATUS_LABELS[t.status] || t.status;
+                    const statusColor = STATUS_COLORS[t.status] || '#94a3b8';
+                    const isCredit = t.amount > 0;
+                    const amountColor = isCredit ? '#22c55e' : '#f87171';
+                    const amountPrefix = isCredit ? '+' : '';
+                    const date = new Date(t.date).toLocaleDateString('fr-FR');
+
+                    let contextBadge = '';
+                    if (t.invoiceNumber) {
+                        contextBadge = '<span style="font-size:10px;font-weight:600;padding:2px 8px;border-radius:40px;background:rgba(59,130,246,0.15);color:#3b82f6;border:1px solid rgba(59,130,246,0.3);margin-right:4px;">Facture ' + escapeHtml(t.invoiceNumber) + '</span>';
+                    }
+
+                    let actions = '';
+                    if (t.status === 'pending' || t.status === 'suggested') {
+                        actions += '<button onclick="openBankMatch(' + t.id + ')" style="background:#3b82f6;border:none;color:#fff;padding:5px 12px;border-radius:40px;font-size:11px;font-weight:700;cursor:pointer;">Rapprocher</button>';
+                    }
+                    if (t.status === 'pending') {
+                        actions += '<button onclick="ignoreBankTx(' + t.id + ')" style="background:#1a253b;border:1px solid #2a3a55;color:#e2e8f0;padding:5px 12px;border-radius:40px;font-size:11px;cursor:pointer;">Ignorer</button>';
+                    }
+                    if (t.status !== 'validated') {
+                        actions += '<button onclick="deleteBankTx(' + t.id + ')" style="background:#3f1e24;border:1px solid #7f1d1d;color:#f87171;padding:5px 12px;border-radius:40px;font-size:11px;cursor:pointer;">Suppr.</button>';
+                    }
+
+                    html += '<div style="background:#0b1120;border:1px solid #1e2a41;border-left:4px solid ' + statusColor + ';border-radius:12px;padding:14px 18px;">' +
+                        '<div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:8px;">' +
+                        '<div style="flex:1;min-width:200px;">' +
+                        '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:4px;">' +
+                        '<span style="color:#fff;font-weight:700;font-size:14px;">' + date + '</span>' +
+                        contextBadge +
+                        '<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:40px;background:' + statusColor + '22;color:' + statusColor + ';border:1px solid ' + statusColor + '66;">' + statusLabel + '</span>' +
+                        '</div>' +
+                        '<div style="color:#cbd5e1;font-size:13px;line-height:1.5;">' + escapeHtml(t.description || t.counterparty || 'Transaction') + '</div>' +
+                        (t.counterparty && t.description ? '<div style="color:#64748b;font-size:12px;margin-top:2px;">' + escapeHtml(t.counterparty) + '</div>' : '') +
+                        (t.matchReason && t.status === 'suggested' ? '<div style="color:#f97316;font-size:11px;margin-top:6px;font-style:italic;">Correspondance : ' + escapeHtml(t.matchReason) + ' (score ' + t.matchScore + ')</div>' : '') +
+                        '</div>' +
+                        '<div style="text-align:right;">' +
+                        '<div style="color:' + amountColor + ';font-weight:800;font-size:18px;white-space:nowrap;">' + amountPrefix + t.amount.toFixed(2) + ' ' + escapeHtml(t.currency) + '</div>' +
+                        '</div>' +
+                        '</div>' +
+                        (actions ? '<div style="display:flex;gap:6px;flex-wrap:wrap;padding-top:10px;border-top:1px solid #1e2a41;margin-top:8px;">' + actions + '</div>' : '') +
+                        '</div>';
+                }
+
+                html += '</div>';
+                container.innerHTML = html;
+            }
+
+            // ----- Filtres -----
+            document.querySelectorAll('#bankFilters .history-filter').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('#bankFilters .history-filter').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentFilter = btn.dataset.bfilter;
+                    loadTransactions();
+                });
+            });
+
+            // ----- Charger l'historique des imports -----
+            async function loadImports() {
+                const container = document.getElementById('bankImportsList');
+                if (!container) return;
+
+                try {
+                    const res = await apiFetch('/api/bank/imports');
+                    const imports = await res.json();
+
+                    if (imports.length === 0) {
+                        container.innerHTML = '<p style="color:#64748b;text-align:center;padding:20px;">Aucun import pour le moment.</p>';
+                        return;
+                    }
+
+                    let html = '<div style="overflow-x:auto;"><table class="catalog-table"><thead><tr>' +
+                        '<th>Date</th><th>Fichier</th><th>Format</th><th>Transactions</th><th>Rapprochees</th>' +
+                        '</tr></thead><tbody>';
+
+                    for (const imp of imports) {
+                        const date = new Date(imp.createdAt).toLocaleString('fr-FR');
+                        html += '<tr>' +
+                            '<td style="font-size:11px;color:#94a3b8;">' + date + '</td>' +
+                            '<td style="font-size:12px;">' + escapeHtml(imp.originalName || '-') + '</td>' +
+                            '<td style="font-size:11px;text-transform:uppercase;color:#3b82f6;font-weight:600;">' + escapeHtml(imp.format) + '</td>' +
+                            '<td style="font-size:12px;">' + imp.transactionsCount + '</td>' +
+                            '<td style="font-size:12px;color:#22c55e;font-weight:600;">' + imp.reconciledCount + '</td>' +
+                            '</tr>';
+                    }
+
+                    html += '</tbody></table></div>';
+                    container.innerHTML = html;
+                } catch (err) {
+                    container.innerHTML = '<p style="color:#f87171;text-align:center;padding:20px;">Erreur.</p>';
+                }
+            }
+
+            // ----- Ouvrir la modale d'import -----
+            document.getElementById('bankImportBtn')?.addEventListener('click', () => {
+                selectedBankFile = null;
+                document.getElementById('bankFileInput').value = '';
+                document.getElementById('bankImportPreview').style.display = 'none';
+                document.getElementById('bankConfirmImportBtn').disabled = true;
+                document.getElementById('bankImportModal').classList.add('show');
+            });
+
+            // ----- Drag & drop -----
+            const dropZone = document.getElementById('bankDropZone');
+            const fileInput = document.getElementById('bankFileInput');
+
+            dropZone?.addEventListener('click', () => fileInput.click());
+
+            dropZone?.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZone.style.borderColor = '#3b82f6';
+                dropZone.style.background = 'rgba(59,130,246,0.05)';
+            });
+
+            dropZone?.addEventListener('dragleave', () => {
+                dropZone.style.borderColor = '#2a3a55';
+                dropZone.style.background = '#0b1120';
+            });
+
+            dropZone?.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.style.borderColor = '#2a3a55';
+                dropZone.style.background = '#0b1120';
+                if (e.dataTransfer.files.length > 0) handleBankFile(e.dataTransfer.files[0]);
+            });
+
+            fileInput?.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) handleBankFile(e.target.files[0]);
+            });
+
+            function handleBankFile(file) {
+                const allowed = ['csv', 'ofx', 'qfx', 'xml', 'xlsx', 'xls'];
+                const ext = file.name.split('.').pop().toLowerCase();
+                if (!allowed.includes(ext)) {
+                    showToast('Format non supporte.', 'error');
+                    return;
+                }
+                if (file.size > 10 * 1024 * 1024) {
+                    showToast('Fichier trop volumineux (10 Mo max).', 'error');
+                    return;
+                }
+
+                selectedBankFile = file;
+                document.getElementById('bankFileName').textContent = file.name;
+                document.getElementById('bankFileSize').textContent = (file.size / 1024).toFixed(0) + ' Ko';
+                document.getElementById('bankImportPreview').style.display = 'block';
+                document.getElementById('bankConfirmImportBtn').disabled = false;
+            }
+
+            document.getElementById('bankCancelFileBtn')?.addEventListener('click', () => {
+                selectedBankFile = null;
+                document.getElementById('bankFileInput').value = '';
+                document.getElementById('bankImportPreview').style.display = 'none';
+                document.getElementById('bankConfirmImportBtn').disabled = true;
+            });
+
+            // ----- Confirmer l'import -----
+            document.getElementById('bankConfirmImportBtn')?.addEventListener('click', async () => {
+                if (!selectedBankFile) return;
+
+                const btn = document.getElementById('bankConfirmImportBtn');
+                btn.disabled = true;
+                btn.textContent = 'Import en cours...';
+
+                const formData = new FormData();
+                formData.append('file', selectedBankFile);
+
+                try {
+                    const res = await apiFetch('/api/bank/import', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error || 'Erreur import');
+
+                    showToast(data.transactionsCount + ' transaction(s) importee(s), ' + data.matched + ' correspondance(s) trouvee(s)', 'success');
+
+                    document.getElementById('bankImportModal').classList.remove('show');
+                    loadBankStats();
+                    loadTransactions();
+                    loadImports();
+                } catch (err) {
+                    showToast('Erreur : ' + err.message, 'error');
+                } finally {
+                    btn.disabled = false;
+                    btn.textContent = 'Importer et analyser';
+                }
+            });
+
+            // ----- Ouvrir le rapprochement manuel -----
+            window.openBankMatch = async function(txId) {
+                document.getElementById('bankMatchModal').classList.add('show');
+                document.getElementById('bankMatchContent').innerHTML = '<p style="color:#64748b;text-align:center;padding:20px;">Chargement...</p>';
+
+                try {
+                    const res = await apiFetch('/api/bank/transactions/' + txId + '/matches');
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error || 'Erreur');
+
+                    const tx = data.transaction;
+                    const matches = data.matches;
+
+                    let html = '<div style="background:#0b1120;border:1px solid #1e2a41;border-radius:12px;padding:16px;margin-bottom:20px;">' +
+                        '<div style="color:#fff;font-weight:700;font-size:15px;margin-bottom:6px;">Transaction bancaire</div>' +
+                        '<div style="color:#cbd5e1;font-size:13px;">' + escapeHtml(tx.description || 'Transaction') + '</div>' +
+                        '<div style="color:#22c55e;font-weight:700;font-size:16px;margin-top:6px;">+' + tx.amount.toFixed(2) + ' ' + escapeHtml(tx.currency) + '</div>' +
+                        '<div style="color:#64748b;font-size:12px;margin-top:4px;">' + new Date(tx.date).toLocaleDateString('fr-FR') + '</div>' +
+                        '</div>';
+
+                    if (matches.length === 0) {
+                        html += '<div style="text-align:center;padding:32px 16px;">' +
+                            '<div style="color:#94a3b8;font-size:14px;margin-bottom:16px;">Aucune correspondance trouvee automatiquement.</div>' +
+                            '<div style="color:#64748b;font-size:12px;">Verifiez que vos factures sont bien en attente de paiement.</div>' +
+                            '</div>';
+                    } else {
+                        html += '<div style="color:#94a3b8;font-size:12px;font-weight:600;text-transform:uppercase;margin-bottom:10px;">Correspondances proposees</div>';
+                        html += '<div style="display:flex;flex-direction:column;gap:8px;">';
+
+                        for (const m of matches) {
+                            const scoreColor = m.score >= 70 ? '#22c55e' : (m.score >= 50 ? '#f97316' : '#94a3b8');
+                            const date = new Date(m.issueDate).toLocaleDateString('fr-FR');
+
+                            html += '<div style="background:#0b1120;border:1px solid #1e2a41;border-radius:10px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">' +
+                                '<div style="flex:1;min-width:200px;">' +
+                                '<div style="color:#f97316;font-weight:700;font-size:13px;margin-bottom:4px;">' + escapeHtml(m.invoiceNumber) + '</div>' +
+                                '<div style="color:#e2e8f0;font-size:13px;">' + escapeHtml(m.clientName || 'Client non precise') + '</div>' +
+                                '<div style="color:#64748b;font-size:11px;margin-top:2px;">Emise le ' + date + ' - Reste du : ' + m.amountDue.toFixed(2) + ' ' + m.currency + '</div>' +
+                                '<div style="color:' + scoreColor + ';font-size:11px;font-weight:600;margin-top:4px;">Score ' + m.score + '/100 - ' + escapeHtml(m.reason) + '</div>' +
+                                '</div>' +
+                                '<button onclick="validateBankMatch(' + txId + ', ' + m.invoiceId + ')" style="background:#22c55e;border:none;color:#0b1120;padding:10px 18px;border-radius:40px;font-weight:700;font-size:12px;cursor:pointer;flex-shrink:0;">Valider</button>' +
+                                '</div>';
+                        }
+
+                        html += '</div>';
+                    }
+
+                    document.getElementById('bankMatchContent').innerHTML = html;
+                } catch (err) {
+                    document.getElementById('bankMatchContent').innerHTML = '<p style="color:#f87171;text-align:center;padding:20px;">' + escapeHtml(err.message) + '</p>';
+                }
+            };
+
+            // ----- Valider un rapprochement -----
+            window.validateBankMatch = async function(txId, invoiceId) {
+                const ok = await showConfirm({
+                    title: 'Valider le rapprochement',
+                    message: 'Le paiement sera enregistre sur la facture et son statut sera mis a jour.',
+                    confirmText: 'Valider'
+                });
+                if (!ok) return;
+
+                try {
+                    const res = await apiFetch('/api/bank/transactions/' + txId + '/validate', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ invoiceId: invoiceId })
+                    });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error || 'Erreur');
+
+                    showToast('Rapprochement valide. Facture mise a jour.', 'success');
+                    document.getElementById('bankMatchModal').classList.remove('show');
+                    loadBankStats();
+                    loadTransactions();
+                } catch (err) {
+                    showToast('Erreur : ' + err.message, 'error');
+                }
+            };
+
+            // ----- Ignorer une transaction -----
+            window.ignoreBankTx = async function(id) {
+                const ok = await showConfirm({
+                    title: 'Ignorer la transaction',
+                    message: 'Cette transaction sera marquee comme ignoree et ne sera plus proposee.',
+                    confirmText: 'Ignorer'
+                });
+                if (!ok) return;
+
+                try {
+                    const res = await apiFetch('/api/bank/transactions/' + id + '/ignore', { method: 'POST' });
+                    if (!res.ok) throw new Error('Erreur');
+                    showToast('Transaction ignoree', 'success');
+                    loadBankStats();
+                    loadTransactions();
+                } catch (err) {
+                    showToast('Erreur : ' + err.message, 'error');
+                }
+            };
+
+            // ----- Supprimer une transaction -----
+            window.deleteBankTx = async function(id) {
+                const ok = await showConfirm({
+                    title: 'Supprimer la transaction',
+                    message: 'Cette transaction sera supprimee definitivement.',
+                    confirmText: 'Supprimer',
+                    danger: true
+                });
+                if (!ok) return;
+
+                try {
+                    const res = await apiFetch('/api/bank/transactions/' + id, { method: 'DELETE' });
+                    if (!res.ok) throw new Error('Erreur');
+                    showToast('Transaction supprimee', 'success');
+                    loadBankStats();
+                    loadTransactions();
+                } catch (err) {
+                    showToast('Erreur : ' + err.message, 'error');
+                }
+            };
+
+            // ----- Relancer le rapprochement -----
+            document.getElementById('bankRematchBtn')?.addEventListener('click', async () => {
+                const btn = document.getElementById('bankRematchBtn');
+                btn.disabled = true;
+                btn.textContent = 'Analyse...';
+
+                try {
+                    const res = await apiFetch('/api/bank/rematch', { method: 'POST' });
+                    const data = await res.json();
+                    showToast(data.matched + ' correspondance(s) trouvee(s)', 'success');
+                    loadBankStats();
+                    loadTransactions();
+                } catch (err) {
+                    showToast('Erreur : ' + err.message, 'error');
+                } finally {
+                    btn.disabled = false;
+                    btn.textContent = 'Relancer le rapprochement';
+                }
+            });
+
+            // ----- Charger au clic sur l'onglet -----
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    if (btn.dataset.tab === 'tab-bank') {
+                        setTimeout(() => {
+                            loadBankStats();
+                            loadTransactions();
+                            loadImports();
+                        }, 100);
+                    }
+                });
+            });
+
+            // Charger le badge au demarrage
+            if (getToken()) {
+                setTimeout(loadBankStats, 4000);
+                setInterval(loadBankStats, 5 * 60 * 1000);
+            }
         })();
 
     </script>

@@ -61,6 +61,7 @@ const appointmentsRoutes = require('./routes/appointments');
 const chatRoutes = require('./routes/chat');
 const visionRoutes = require('./routes/vision');
 const proactiveRoutes = require('./routes/proactive');
+const bankRoutes = require('./routes/bank');
 
 // ⚙️ INTERRUPTEUR DE QUOTA — Mets à `false` pour désactiver les limites pendant les tests
 const ENABLE_QUOTA_LIMITS = false;
@@ -127,6 +128,7 @@ app.use('/api/appointments', appointmentsRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/vision', visionRoutes);
 app.use('/api/proactive', proactiveRoutes);
+app.use('/api/bank', bankRoutes);
 
 // Multer
 const storage = multer.diskStorage({
