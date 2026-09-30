@@ -2042,6 +2042,7 @@
             .tab-btn[data-tab="tab-assistant"]           { order: 50; }
             .tab-btn[data-tab="tab-sms"]                 { order: 51; }
             .tab-btn[data-tab="tab-chat"]                { order: 52; }
+            .tab-btn[data-tab="tab-vision"]              { order: 53; }
             .tab-btn[data-tab="tab-api"]                 { order: 60; }
             .tab-btn[data-tab="tab-webhooks"]            { order: 61; }
             .tab-btn[data-tab="tab-oauth"]               { order: 62; }
@@ -2412,6 +2413,7 @@
             <button class="tab-btn" data-tab="tab-webhooks" data-i18n="app.tab.webhooks">Webhooks</button>
             <button class="tab-btn" data-tab="tab-sms">SMS</button>
             <button class="tab-btn" data-tab="tab-chat">Chat client</button>
+            <button class="tab-btn" data-tab="tab-vision">Analyse image</button>
             <button class="tab-btn" data-tab="tab-client-portal">Portail client</button>
             <button class="tab-btn" data-tab="tab-online-payments">Paiements</button>
             <button class="tab-btn" data-tab="tab-appointments">Rendez-vous</button>
@@ -3028,6 +3030,96 @@
                     </div>
                 </div>
                 <div id="paymentsList"><p style="color:#64748b;text-align:center;padding:40px;">Chargement...</p></div>
+            </div>
+        </div>
+
+        <!-- ANALYSE IMAGE -->
+        <div id="tab-vision" class="tab-content">
+            <div class="card">
+                <div class="catalog-header">
+                    <h2>Analyse d'images par IA</h2>
+                </div>
+                <p style="color:#94a3b8;font-size:13px;margin-bottom:20px;line-height:1.6;">
+                    Deposez une photo (chantier, plan manuscrit, facture papier...). L'IA analyse l'image, extrait les dimensions, les materiaux et le texte lisible, puis vous pouvez creer un devis en un clic.
+                </p>
+
+                <div id="visionDropZone" style="border:2px dashed #2a3a55;border-radius:16px;padding:40px 24px;text-align:center;background:#0b1120;cursor:pointer;transition:0.2s;">
+                    <div style="font-size:48px;margin-bottom:12px;">📷</div>
+                    <div style="color:#e2e8f0;font-weight:600;margin-bottom:6px;">Deposez une image ici</div>
+                    <div style="color:#64748b;font-size:13px;">ou cliquez pour parcourir</div>
+                    <div style="color:#64748b;font-size:11px;margin-top:8px;">JPEG, PNG, WEBP - 10 Mo max</div>
+                    <input type="file" id="visionFileInput" accept="image/*" style="display:none;" />
+                </div>
+
+                <div id="visionPreviewContainer" style="display:none;margin-top:20px;">
+                    <div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;">
+                        <div style="flex-shrink:0;">
+                            <img id="visionPreview" style="max-width:280px;max-height:280px;border-radius:12px;border:1px solid #2a3a55;" />
+                        </div>
+                        <div style="flex:1;min-width:240px;">
+                            <div id="visionFileName" style="color:#e2e8f0;font-weight:600;font-size:14px;margin-bottom:4px;"></div>
+                            <div id="visionFileSize" style="color:#64748b;font-size:12px;margin-bottom:16px;"></div>
+
+                            <div class="form-group">
+                                <label>Que voulez-vous extraire ? (optionnel)</label>
+                                <textarea id="visionPrompt" rows="2" placeholder="Ex: extrais les dimensions et les materiaux a prevoir pour peindre cette piece"></textarea>
+                            </div>
+
+                            <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                                <button class="btn-primary-sm" id="visionAnalyzeBtn" style="padding:12px 24px;font-size:14px;">Analyser l'image</button>
+                                <button class="btn-secondary" id="visionCancelBtn" style="padding:12px 20px;font-size:13px;">Annuler</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="visionLoading" style="display:none;margin-top:24px;text-align:center;padding:32px;">
+                    <div style="display:inline-block;width:40px;height:40px;border:4px solid #2a3a55;border-top-color:#f97316;border-radius:50%;animation:spin 0.8s linear infinite;"></div>
+                    <div style="color:#94a3b8;margin-top:12px;font-size:14px;">Analyse en cours...</div>
+                </div>
+
+                <div id="visionResult" style="display:none;margin-top:24px;">
+                    <div style="background:#0b1120;border:1px solid #f97316;border-radius:16px;padding:20px;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px;">
+                            <div style="color:#f97316;font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">Analyse terminee</div>
+                            <div id="visionProvider" style="font-size:11px;color:#64748b;"></div>
+                        </div>
+
+                        <div id="visionDescription" style="color:#fff;font-size:15px;line-height:1.6;margin-bottom:20px;"></div>
+
+                        <div id="visionDimensionsBlock" style="display:none;margin-bottom:20px;">
+                            <div style="color:#94a3b8;font-size:12px;font-weight:600;text-transform:uppercase;margin-bottom:8px;">Dimensions detectees</div>
+                            <div id="visionDimensionsList" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+                        </div>
+
+                        <div id="visionMaterialsBlock" style="display:none;margin-bottom:20px;">
+                            <div style="color:#94a3b8;font-size:12px;font-weight:600;text-transform:uppercase;margin-bottom:8px;">Materiaux extraits</div>
+                            <div id="visionMaterialsList"></div>
+                        </div>
+
+                        <div id="visionTextBlock" style="display:none;margin-bottom:20px;">
+                            <div style="color:#94a3b8;font-size:12px;font-weight:600;text-transform:uppercase;margin-bottom:8px;">Texte extrait</div>
+                            <div id="visionExtractedText" style="background:#161f32;border-radius:8px;padding:12px 14px;color:#cbd5e1;font-size:13px;font-family:monospace;line-height:1.6;white-space:pre-wrap;max-height:200px;overflow-y:auto;"></div>
+                        </div>
+
+                        <div id="visionNotesBlock" style="display:none;margin-bottom:20px;">
+                            <div style="color:#94a3b8;font-size:12px;font-weight:600;text-transform:uppercase;margin-bottom:8px;">Notes</div>
+                            <div id="visionNotes" style="color:#cbd5e1;font-size:13px;line-height:1.6;"></div>
+                        </div>
+
+                        <div style="display:flex;gap:10px;margin-top:20px;flex-wrap:wrap;">
+                            <button class="btn-confirm" id="visionCreateQuoteBtn" style="flex:1;min-width:180px;padding:14px;">Creer un devis depuis cette analyse</button>
+                            <button class="btn-secondary" id="visionNewAnalysisBtn" style="padding:14px 20px;">Nouvelle analyse</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="catalog-header">
+                    <h2>Historique des analyses</h2>
+                </div>
+                <div id="visionHistoryList"><p style="color:#64748b;text-align:center;padding:40px;">Chargement...</p></div>
             </div>
         </div>
 
