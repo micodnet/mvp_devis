@@ -318,544 +318,895 @@
 </head>
 <body>
 
-<!-- ECRAN INVITATION -->
-<div class="auth-screen" id="inviteScreen">
-    <div class="auth-card">
-        <h1>Bienvenue chez <span id="inviteCompanyName">...</span></h1>
-        <div class="sub">Vous avez ete invite a creer votre espace client personnel. Choisissez un mot de passe pour acceder a vos devis et factures.</div>
+    <!-- ECRAN INVITATION -->
+    <div class="auth-screen" id="inviteScreen">
+        <div class="auth-card">
+            <h1>Bienvenue chez <span id="inviteCompanyName">...</span></h1>
+            <div class="sub">Vous avez ete invite a creer votre espace client personnel. Choisissez un mot de passe pour acceder a vos devis et factures.</div>
 
-        <div class="error" id="inviteError"></div>
+            <div class="error" id="inviteError"></div>
 
-        <div class="form-group">
-            <label>Email</label>
-            <input type="email" id="inviteEmail" disabled />
-        </div>
-        <div class="form-group">
-            <label>Mot de passe (6 caracteres minimum)</label>
-            <input type="password" id="invitePassword" minlength="6" />
-        </div>
-        <div class="form-group">
-            <label>Confirmer le mot de passe</label>
-            <input type="password" id="invitePasswordConfirm" minlength="6" />
-        </div>
-
-        <button class="btn-primary" id="inviteSubmitBtn">Creer mon compte</button>
-    </div>
-</div>
-
-<!-- ECRAN LOGIN -->
-<div class="auth-screen" id="loginScreen">
-    <div class="auth-card">
-        <h1>Espace <span>client</span></h1>
-        <div class="sub">Connectez-vous pour acceder a vos devis, factures et chantiers.</div>
-
-        <div class="error" id="loginError"></div>
-
-        <div class="form-group">
-            <label>Email</label>
-            <input type="email" id="loginEmail" />
-        </div>
-        <div class="form-group">
-            <label>Mot de passe</label>
-            <input type="password" id="loginPassword" />
-        </div>
-
-        <button class="btn-primary" id="loginSubmitBtn">Se connecter</button>
-    </div>
-</div>
-
-<!-- ESPACE CLIENT -->
-<div id="portalScreen" style="display:none;">
-    <div class="container">
-        <div class="portal-header">
-            <div class="brand">Espace <span>client</span></div>
-            <div class="user">
-                <span class="name" id="portalClientName"></span>
-                <button class="btn-logout" id="logoutBtn">Deconnexion</button>
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="inviteEmail" disabled />
             </div>
-        </div>
-
-        <div class="stats-grid" id="portalStats">
-            <div class="stat-card">
-                <div class="number" id="statQuotes">0</div>
-                <div class="label">Devis</div>
+            <div class="form-group">
+                <label>Mot de passe (6 caracteres minimum)</label>
+                <input type="password" id="invitePassword" minlength="6" />
             </div>
-            <div class="stat-card">
-                <div class="number" id="statInvoices">0</div>
-                <div class="label">Factures</div>
+            <div class="form-group">
+                <label>Confirmer le mot de passe</label>
+                <input type="password" id="invitePasswordConfirm" minlength="6" />
             </div>
-            <div class="stat-card">
-                <div class="number" id="statChantiers">0</div>
-                <div class="label">Chantiers</div>
-            </div>
-            <div class="stat-card">
-                <div class="number" id="statDue">0,00 €</div>
-                <div class="label">Montant du</div>
-            </div>
-        </div>
 
-        <div class="tabs">
-            <button class="tab-btn active" data-tab="quotes">Devis</button>
-            <button class="tab-btn" data-tab="invoices">Factures</button>
-            <button class="tab-btn" data-tab="chantiers">Chantiers</button>
-            <button class="tab-btn" data-tab="profile">Mes coordonnees</button>
-        </div>
-
-        <div class="tab-panel active" id="panel-quotes">
-            <div class="list" id="quotesList"></div>
-        </div>
-
-        <div class="tab-panel" id="panel-invoices">
-            <div class="list" id="invoicesList"></div>
-        </div>
-
-        <div class="tab-panel" id="panel-chantiers">
-            <div class="list" id="chantiersList"></div>
-        </div>
-
-        <div class="tab-panel" id="panel-profile">
-            <div style="background:#0b1120;border:1px solid #1e2a41;border-radius:14px;padding:24px;">
-                <h3 style="color:#fff;font-size:16px;margin-bottom:16px;">Mes coordonnees</h3>
-                <div class="form-group">
-                    <label>Nom / Raison sociale</label>
-                    <input type="text" id="profileName" disabled />
-                </div>
-                <div class="form-group">
-                    <label>Personne de contact</label>
-                    <input type="text" id="profileContact" />
-                </div>
-                <div class="form-group">
-                    <label>Email</label>
-                    <input type="email" id="profileEmail" />
-                </div>
-                <div class="form-group">
-                    <label>Telephone</label>
-                    <input type="text" id="profilePhone" />
-                </div>
-                <div class="form-group">
-                    <label>Adresse</label>
-                    <input type="text" id="profileAddress" />
-                </div>
-                <div class="form-group">
-                    <label>Numero de TVA</label>
-                    <input type="text" id="profileVat" />
-                </div>
-                <button class="btn-primary" id="saveProfileBtn" style="margin-top:12px;">Enregistrer mes coordonnees</button>
-                <div class="success" id="profileSuccess" style="margin-top:12px;">Vos coordonnees ont ete mises a jour.</div>
-            </div>
+            <button class="btn-primary" id="inviteSubmitBtn">Creer mon compte</button>
         </div>
     </div>
-</div>
 
-<script>
-const API_BASE = '/api/client-portal';
+    <!-- ECRAN LOGIN -->
+    <div class="auth-screen" id="loginScreen">
+        <div class="auth-card">
+            <h1>Espace <span>client</span></h1>
+            <div class="sub">Connectez-vous pour acceder a vos devis, factures et chantiers.</div>
 
-function getToken() { return localStorage.getItem('client_portal_token'); }
-function setToken(t) { localStorage.setItem('client_portal_token', t); }
-function clearToken() { localStorage.removeItem('client_portal_token'); localStorage.removeItem('client_portal_user'); }
-function getUser() { try { return JSON.parse(localStorage.getItem('client_portal_user')); } catch(e) { return null; } }
-function setUser(u) { localStorage.setItem('client_portal_user', JSON.stringify(u)); }
+            <div class="error" id="loginError"></div>
 
-function escapeHtml(str) {
-    if (!str) return '';
-    return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
-}
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="loginEmail" />
+            </div>
+            <div class="form-group">
+                <label>Mot de passe</label>
+                <input type="password" id="loginPassword" />
+            </div>
 
-function formatMoney(n) {
-    const num = parseFloat(n) || 0;
-    return num.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
-}
+            <button class="btn-primary" id="loginSubmitBtn">Se connecter</button>
+        </div>
+    </div>
 
-function formatDate(d) {
-    if (!d) return '-';
-    return new Date(d).toLocaleDateString('fr-FR');
-}
+    <!-- ESPACE CLIENT -->
+    <div id="portalScreen" style="display:none;">
+        <div class="container">
+            <div class="portal-header">
+                <div class="brand">Espace <span>client</span></div>
+                <div class="user">
+                    <span class="name" id="portalClientName"></span>
+                    <button class="btn-logout" id="logoutBtn">Deconnexion</button>
+                </div>
+            </div>
 
-async function apiFetch(url, options = {}) {
-    const token = getToken();
-    const headers = { ...(options.headers || {}) };
-    if (token) headers['Authorization'] = 'Bearer ' + token;
-    const response = await fetch(API_BASE + url, { ...options, headers });
-    if (response.status === 401) {
-        clearToken();
-        showLogin();
-        throw new Error('Session expiree.');
-    }
-    return response;
-}
+            <div class="stats-grid" id="portalStats">
+                <div class="stat-card">
+                    <div class="number" id="statQuotes">0</div>
+                    <div class="label">Devis</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number" id="statInvoices">0</div>
+                    <div class="label">Factures</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number" id="statChantiers">0</div>
+                    <div class="label">Chantiers</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number" id="statDue">0,00 €</div>
+                    <div class="label">Montant du</div>
+                </div>
+            </div>
 
-function showInvite() {
-    document.querySelectorAll('.auth-screen').forEach(el => el.classList.remove('active'));
-    document.getElementById('inviteScreen').classList.add('active');
-    document.getElementById('portalScreen').style.display = 'none';
-}
+            <div class="tabs">
+                <button class="tab-btn active" data-tab="quotes">Devis</button>
+                <button class="tab-btn" data-tab="invoices">Factures</button>
+                <button class="tab-btn" data-tab="chantiers">Chantiers</button>
+                <button class="tab-btn" data-tab="messages">Messages</button>
+                <button class="tab-btn" data-tab="profile">Mes coordonnees</button>
+            </div>
 
-function showLogin() {
-    document.querySelectorAll('.auth-screen').forEach(el => el.classList.remove('active'));
-    document.getElementById('loginScreen').classList.add('active');
-    document.getElementById('portalScreen').style.display = 'none';
-}
+            <div class="tab-panel active" id="panel-quotes">
+                <div class="list" id="quotesList"></div>
+            </div>
 
-function showPortal() {
-    document.querySelectorAll('.auth-screen').forEach(el => el.classList.remove('active'));
-    document.getElementById('portalScreen').style.display = 'block';
-}
+            <div class="tab-panel" id="panel-invoices">
+                <div class="list" id="invoicesList"></div>
+            </div>
 
-// ================================================================
-// DEMARRAGE
-// ================================================================
-(async function init() {
-    const params = new URLSearchParams(window.location.search);
+            <div class="tab-panel" id="panel-chantiers">
+                <div class="list" id="chantiersList"></div>
+            </div>
 
-    // Cas 1 : invitation
-    if (params.get('invite')) {
-        const token = params.get('invite');
-        try {
-            const res = await fetch(API_BASE + '/invitation/' + token);
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.error || 'Invitation invalide');
-            document.getElementById('inviteCompanyName').textContent = data.companyName || 'notre entreprise';
-            document.getElementById('inviteEmail').value = data.email || '';
-            showInvite();
+                    <div class="tab-panel" id="panel-messages">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px;">
+                    <h3 style="color:#fff;font-size:16px;font-weight:700;margin:0;">Mes messages</h3>
+                    <button class="btn-primary" style="padding:10px 20px;font-size:13px;width:auto;" id="newConversationBtn">+ Nouvelle conversation</button>
+                </div>
+                <div id="clientConversationsList"><p style="color:#64748b;text-align:center;padding:40px;">Chargement...</p></div>
+            </div>
 
-            // Bouton submit
-            document.getElementById('inviteSubmitBtn').addEventListener('click', async () => {
-                const pw = document.getElementById('invitePassword').value;
-                const pwc = document.getElementById('invitePasswordConfirm').value;
-                const err = document.getElementById('inviteError');
-                err.classList.remove('show');
+            <!-- MODAL NOUVELLE CONVERSATION -->
+            <div class="modal-overlay" id="newConversationModal" style="position:fixed;inset:0;background:rgba(11,17,32,0.85);backdrop-filter:blur(6px);z-index:9000;display:none;align-items:center;justify-content:center;padding:20px;">
+                <div style="background:#161f32;border:1px solid #2a3a55;border-radius:20px;padding:28px;max-width:500px;width:100%;">
+                    <h3 style="color:#fff;font-size:18px;font-weight:700;margin-bottom:16px;">Nouvelle conversation</h3>
+                    <div class="form-group">
+                        <label style="display:block;color:#94a3b8;font-size:13px;margin-bottom:6px;">A quel sujet ?</label>
+                        <select id="newConvSubject" style="width:100%;padding:12px 14px;border-radius:12px;background:#0b1120;border:1px solid #2a3a55;color:#e2e8f0;font-size:14px;outline:none;">
+                            <option value="">-- Aucun sujet specifique --</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label style="display:block;color:#94a3b8;font-size:13px;margin-bottom:6px;">Titre (optionnel)</label>
+                        <input type="text" id="newConvTitle" placeholder="Ex : Question sur le devis" style="width:100%;padding:12px 14px;border-radius:12px;background:#0b1120;border:1px solid #2a3a55;color:#e2e8f0;font-size:14px;outline:none;" />
+                    </div>
+                    <div class="form-group">
+                        <label style="display:block;color:#94a3b8;font-size:13px;margin-bottom:6px;">Votre message</label>
+                        <textarea id="newConvMessage" rows="4" placeholder="Ecrivez votre question..." style="width:100%;padding:12px 14px;border-radius:12px;background:#0b1120;border:1px solid #2a3a55;color:#e2e8f0;font-size:14px;font-family:inherit;outline:none;resize:vertical;"></textarea>
+                    </div>
+                    <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:16px;">
+                        <button onclick="closeNewConversationModal()" style="background:#1a253b;border:1px solid #2a3a55;color:#e2e8f0;padding:12px 22px;border-radius:60px;font-weight:600;font-size:14px;cursor:pointer;">Annuler</button>
+                        <button id="submitNewConversationBtn" style="background:#f97316;color:#0b1120;border:none;padding:12px 22px;border-radius:60px;font-weight:700;font-size:14px;cursor:pointer;">Envoyer</button>
+                    </div>
+                </div>
+            </div>
 
-                if (pw !== pwc) {
-                    err.textContent = 'Les mots de passe ne correspondent pas.';
-                    err.classList.add('show');
-                    return;
-                }
-                if (pw.length < 6) {
-                    err.textContent = 'Le mot de passe doit faire au moins 6 caracteres.';
-                    err.classList.add('show');
-                    return;
-                }
+            <!-- MODAL DETAIL CONVERSATION -->
+            <div class="modal-overlay" id="clientConversationModal" style="position:fixed;inset:0;background:rgba(11,17,32,0.85);backdrop-filter:blur(6px);z-index:9000;display:none;align-items:center;justify-content:center;padding:20px;">
+                <div style="background:#161f32;border:1px solid #2a3a55;border-radius:20px;padding:0;max-width:700px;width:100%;max-height:90vh;display:flex;flex-direction:column;overflow:hidden;">
+                    <div style="padding:18px 22px;border-bottom:1px solid #2a3a55;display:flex;justify-content:space-between;align-items:center;">
+                        <div>
+                            <div id="clientConvTitle" style="color:#fff;font-weight:700;font-size:16px;"></div>
+                            <div id="clientConvSubtitle" style="color:#94a3b8;font-size:12px;margin-top:2px;"></div>
+                        </div>
+                        <button onclick="closeClientConversationModal()" style="background:#1a253b;border:1px solid #2a3a55;color:#94a3b8;width:32px;height:32px;border-radius:8px;cursor:pointer;">X</button>
+                    </div>
+                    <div id="clientConvMessages" style="flex:1;overflow-y:auto;padding:20px;background:#0b1120;display:flex;flex-direction:column;gap:12px;"></div>
+                    <div style="padding:16px;border-top:1px solid #2a3a55;display:flex;gap:10px;align-items:flex-end;background:#161f32;">
+                        <textarea id="clientConvInput" rows="1" placeholder="Ecrivez votre message..." style="flex:1;padding:12px 14px;border-radius:14px;background:#0b1120;border:1px solid #2a3a55;color:#e2e8f0;font-size:14px;font-family:inherit;outline:none;resize:none;max-height:100px;"></textarea>
+                        <button id="clientConvSendBtn" style="background:#f97316;color:#0b1120;border:none;width:44px;height:44px;border-radius:50%;font-size:18px;font-weight:700;cursor:pointer;flex-shrink:0;">➤</button>
+                    </div>
+                </div>
+            </div>
 
-                const btn = document.getElementById('inviteSubmitBtn');
-                btn.disabled = true;
-                btn.textContent = 'Creation...';
+            <div class="tab-panel" id="panel-profile">
+                <div style="background:#0b1120;border:1px solid #1e2a41;border-radius:14px;padding:24px;">
+                    <h3 style="color:#fff;font-size:16px;margin-bottom:16px;">Mes coordonnees</h3>
+                    <div class="form-group">
+                        <label>Nom / Raison sociale</label>
+                        <input type="text" id="profileName" disabled />
+                    </div>
+                    <div class="form-group">
+                        <label>Personne de contact</label>
+                        <input type="text" id="profileContact" />
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="profileEmail" />
+                    </div>
+                    <div class="form-group">
+                        <label>Telephone</label>
+                        <input type="text" id="profilePhone" />
+                    </div>
+                    <div class="form-group">
+                        <label>Adresse</label>
+                        <input type="text" id="profileAddress" />
+                    </div>
+                    <div class="form-group">
+                        <label>Numero de TVA</label>
+                        <input type="text" id="profileVat" />
+                    </div>
+                    <button class="btn-primary" id="saveProfileBtn" style="margin-top:12px;">Enregistrer mes coordonnees</button>
+                    <div class="success" id="profileSuccess" style="margin-top:12px;">Vos coordonnees ont ete mises a jour.</div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-                try {
-                    const r = await fetch(API_BASE + '/invitation/' + token + '/accept', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ password: pw })
-                    });
-                    const d = await r.json();
-                    if (!r.ok) throw new Error(d.error || 'Erreur');
+    <script>
+        const API_BASE = '/api/client-portal';
 
-                    setToken(d.token);
-                    setUser(d.user);
-                    window.history.replaceState({}, '', '/client.html');
-                    showPortal();
-                    loadPortal();
-                } catch (e) {
-                    err.textContent = e.message;
-                    err.classList.add('show');
-                    btn.disabled = false;
-                    btn.textContent = 'Creer mon compte';
-                }
-            });
-            return;
-        } catch (err) {
-            console.error(err);
+        function getToken() { return localStorage.getItem('client_portal_token'); }
+        function setToken(t) { localStorage.setItem('client_portal_token', t); }
+        function clearToken() { localStorage.removeItem('client_portal_token'); localStorage.removeItem('client_portal_user'); }
+        function getUser() { try { return JSON.parse(localStorage.getItem('client_portal_user')); } catch(e) { return null; } }
+        function setUser(u) { localStorage.setItem('client_portal_user', JSON.stringify(u)); }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
         }
-    }
 
-    // Cas 2 : connecte ?
-    const token = getToken();
-    if (token) {
-        try {
-            const res = await apiFetch('/me');
-            if (res.ok) {
-                showPortal();
-                loadPortal();
+        function formatMoney(n) {
+            const num = parseFloat(n) || 0;
+            return num.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+        }
+
+        function formatDate(d) {
+            if (!d) return '-';
+            return new Date(d).toLocaleDateString('fr-FR');
+        }
+
+        async function apiFetch(url, options = {}) {
+            const token = getToken();
+            const headers = { ...(options.headers || {}) };
+            if (token) headers['Authorization'] = 'Bearer ' + token;
+            const response = await fetch(API_BASE + url, { ...options, headers });
+            if (response.status === 401) {
+                clearToken();
+                showLogin();
+                throw new Error('Session expiree.');
+            }
+            return response;
+        }
+
+        function showInvite() {
+            document.querySelectorAll('.auth-screen').forEach(el => el.classList.remove('active'));
+            document.getElementById('inviteScreen').classList.add('active');
+            document.getElementById('portalScreen').style.display = 'none';
+        }
+
+        function showLogin() {
+            document.querySelectorAll('.auth-screen').forEach(el => el.classList.remove('active'));
+            document.getElementById('loginScreen').classList.add('active');
+            document.getElementById('portalScreen').style.display = 'none';
+        }
+
+        function showPortal() {
+            document.querySelectorAll('.auth-screen').forEach(el => el.classList.remove('active'));
+            document.getElementById('portalScreen').style.display = 'block';
+        }
+
+        // ================================================================
+        // DEMARRAGE
+        // ================================================================
+        (async function init() {
+            const params = new URLSearchParams(window.location.search);
+
+            // Cas 1 : invitation
+            if (params.get('invite')) {
+                const token = params.get('invite');
+                try {
+                    const res = await fetch(API_BASE + '/invitation/' + token);
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error || 'Invitation invalide');
+                    document.getElementById('inviteCompanyName').textContent = data.companyName || 'notre entreprise';
+                    document.getElementById('inviteEmail').value = data.email || '';
+                    showInvite();
+
+                    // Bouton submit
+                    document.getElementById('inviteSubmitBtn').addEventListener('click', async () => {
+                        const pw = document.getElementById('invitePassword').value;
+                        const pwc = document.getElementById('invitePasswordConfirm').value;
+                        const err = document.getElementById('inviteError');
+                        err.classList.remove('show');
+
+                        if (pw !== pwc) {
+                            err.textContent = 'Les mots de passe ne correspondent pas.';
+                            err.classList.add('show');
+                            return;
+                        }
+                        if (pw.length < 6) {
+                            err.textContent = 'Le mot de passe doit faire au moins 6 caracteres.';
+                            err.classList.add('show');
+                            return;
+                        }
+
+                        const btn = document.getElementById('inviteSubmitBtn');
+                        btn.disabled = true;
+                        btn.textContent = 'Creation...';
+
+                        try {
+                            const r = await fetch(API_BASE + '/invitation/' + token + '/accept', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({ password: pw })
+                            });
+                            const d = await r.json();
+                            if (!r.ok) throw new Error(d.error || 'Erreur');
+
+                            setToken(d.token);
+                            setUser(d.user);
+                            window.history.replaceState({}, '', '/client.html');
+                            showPortal();
+                            loadPortal();
+                        } catch (e) {
+                            err.textContent = e.message;
+                            err.classList.add('show');
+                            btn.disabled = false;
+                            btn.textContent = 'Creer mon compte';
+                        }
+                    });
+                    return;
+                } catch (err) {
+                    console.error(err);
+                }
+            }
+
+            // Cas 2 : connecte ?
+            const token = getToken();
+            if (token) {
+                try {
+                    const res = await apiFetch('/me');
+                    if (res.ok) {
+                        showPortal();
+                        loadPortal();
+                        return;
+                    }
+                } catch (e) {}
+            }
+
+            // Cas 3 : login
+            showLogin();
+        })();
+
+        // ================================================================
+        // LOGIN
+        // ================================================================
+        document.getElementById('loginSubmitBtn')?.addEventListener('click', async () => {
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            const err = document.getElementById('loginError');
+            err.classList.remove('show');
+
+            if (!email || !password) {
+                err.textContent = 'Email et mot de passe requis.';
+                err.classList.add('show');
                 return;
             }
-        } catch (e) {}
-    }
 
-    // Cas 3 : login
-    showLogin();
-})();
+            const btn = document.getElementById('loginSubmitBtn');
+            btn.disabled = true;
+            btn.textContent = 'Connexion...';
 
-// ================================================================
-// LOGIN
-// ================================================================
-document.getElementById('loginSubmitBtn')?.addEventListener('click', async () => {
-    const email = document.getElementById('loginEmail').value.trim();
-    const password = document.getElementById('loginPassword').value;
-    const err = document.getElementById('loginError');
-    err.classList.remove('show');
+            try {
+                const res = await fetch(API_BASE + '/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Erreur');
 
-    if (!email || !password) {
-        err.textContent = 'Email et mot de passe requis.';
-        err.classList.add('show');
-        return;
-    }
-
-    const btn = document.getElementById('loginSubmitBtn');
-    btn.disabled = true;
-    btn.textContent = 'Connexion...';
-
-    try {
-        const res = await fetch(API_BASE + '/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password })
+                setToken(data.token);
+                setUser(data.user);
+                showPortal();
+                loadPortal();
+            } catch (e) {
+                err.textContent = e.message;
+                err.classList.add('show');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Se connecter';
+            }
         });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'Erreur');
 
-        setToken(data.token);
-        setUser(data.user);
-        showPortal();
-        loadPortal();
-    } catch (e) {
-        err.textContent = e.message;
-        err.classList.add('show');
-    } finally {
-        btn.disabled = false;
-        btn.textContent = 'Se connecter';
-    }
-});
+        // ================================================================
+        // LOGOUT
+        // ================================================================
+        document.getElementById('logoutBtn')?.addEventListener('click', () => {
+            clearToken();
+            showLogin();
+        });
 
-// ================================================================
-// LOGOUT
-// ================================================================
-document.getElementById('logoutBtn')?.addEventListener('click', () => {
-    clearToken();
-    showLogin();
-});
+        // ================================================================
+        // TABS
+        // ================================================================
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+                document.getElementById('panel-' + btn.dataset.tab).classList.add('active');
+            });
+        });
 
-// ================================================================
-// TABS
-// ================================================================
-document.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-        document.getElementById('panel-' + btn.dataset.tab).classList.add('active');
-    });
-});
+        // ================================================================
+        // CHARGEMENT DU PORTAIL
+        // ================================================================
+        let portalData = null;
 
-// ================================================================
-// CHARGEMENT DU PORTAIL
-// ================================================================
-let portalData = null;
+        async function loadPortal() {
+            try {
+                const user = getUser();
+                if (user) {
+                    document.getElementById('portalClientName').textContent = user.clientName || user.email;
+                }
 
-async function loadPortal() {
-    try {
-        const user = getUser();
-        if (user) {
-            document.getElementById('portalClientName').textContent = user.clientName || user.email;
+                const res = await apiFetch('/documents');
+                const data = await res.json();
+
+                portalData = data;
+
+                // Stats
+                document.getElementById('statQuotes').textContent = data.quotes.length;
+                document.getElementById('statInvoices').textContent = data.invoices.length;
+                document.getElementById('statChantiers').textContent = data.chantiers.length;
+
+                const totalDue = data.invoices.reduce((sum, inv) => sum + (inv.amountDue || 0), 0);
+                document.getElementById('statDue').textContent = formatMoney(totalDue);
+
+                renderQuotes(data.quotes);
+                renderInvoices(data.invoices);
+                renderChantiers(data.chantiers);
+                await loadProfile();
+                await loadClientConversations();
+            } catch (err) {
+                console.error('Erreur load portal:', err);
+            }
         }
 
-        const res = await apiFetch('/documents');
-        const data = await res.json();
+        // ================================================================
+        // RENDU DES DEVIS
+        // ================================================================
+        function renderQuotes(quotes) {
+            const container = document.getElementById('quotesList');
+            if (quotes.length === 0) {
+                container.innerHTML = '<div class="empty"><div class="icon">-</div><p>Aucun devis pour le moment.</p></div>';
+                return;
+            }
 
-        portalData = data;
+            const STATUS_LABELS = { draft: 'Brouillon', sent: 'En attente', accepted: 'Accepte', refused: 'Refuse' };
 
-        // Stats
-        document.getElementById('statQuotes').textContent = data.quotes.length;
-        document.getElementById('statInvoices').textContent = data.invoices.length;
-        document.getElementById('statChantiers').textContent = data.chantiers.length;
+            container.innerHTML = quotes.map(q => {
+                const statusLabel = STATUS_LABELS[q.status] || q.status;
+                const isSigned = q.signedAt;
+                const canSign = q.publicToken && !isSigned && q.status !== 'refused';
 
-        const totalDue = data.invoices.reduce((sum, inv) => sum + (inv.amountDue || 0), 0);
-        document.getElementById('statDue').textContent = formatMoney(totalDue);
+                return '<div class="list-item">' +
+                    '<div class="info">' +
+                    '<div class="num">' + escapeHtml(q.number) + '</div>' +
+                    '<div class="meta">Emis le ' + formatDate(q.issueDate) + ' - Valable jusqu\'au ' + formatDate(q.validDate) + '</div>' +
+                    '<span class="status-badge ' + q.status + '">' + statusLabel + '</span>' +
+                    '</div>' +
+                    '<div class="amount">' + formatMoney(q.total) + '</div>' +
+                    '<div class="actions">' +
+                    '<a href="' + API_BASE + '/documents/quotes/' + q.id + '/pdf?token=' + getToken() + '" onclick="downloadPdf(event, \'quotes\', ' + q.id + ')">Telecharger</a>' +
+                    (canSign ? '<a href="/sign.html?token=' + q.publicToken + '" class="primary" target="_blank">Signer</a>' : '') +
+                    '</div>' +
+                    '</div>';
+            }).join('');
+        }
 
-        renderQuotes(data.quotes);
-        renderInvoices(data.invoices);
-        renderChantiers(data.chantiers);
-        await loadProfile();
-    } catch (err) {
-        console.error('Erreur load portal:', err);
-    }
-}
+        // ================================================================
+        // RENDU DES FACTURES
+        // ================================================================
+        function renderInvoices(invoices) {
+            const container = document.getElementById('invoicesList');
+            if (invoices.length === 0) {
+                container.innerHTML = '<div class="empty"><div class="icon">-</div><p>Aucune facture pour le moment.</p></div>';
+                return;
+            }
 
-// ================================================================
-// RENDU DES DEVIS
-// ================================================================
-function renderQuotes(quotes) {
-    const container = document.getElementById('quotesList');
-    if (quotes.length === 0) {
-        container.innerHTML = '<div class="empty"><div class="icon">-</div><p>Aucun devis pour le moment.</p></div>';
-        return;
-    }
+            const STATUS_LABELS = { draft: 'Brouillon', sent: 'A payer', paid: 'Payee', partial: 'Partiel', overdue: 'En retard' };
 
-    const STATUS_LABELS = { draft: 'Brouillon', sent: 'En attente', accepted: 'Accepte', refused: 'Refuse' };
+            container.innerHTML = invoices.map(inv => {
+                const statusLabel = STATUS_LABELS[inv.status] || inv.status;
+                const amountDue = inv.amountDue || 0;
 
-    container.innerHTML = quotes.map(q => {
-        const statusLabel = STATUS_LABELS[q.status] || q.status;
-        const isSigned = q.signedAt;
-        const canSign = q.publicToken && !isSigned && q.status !== 'refused';
+                return '<div class="list-item">' +
+                    '<div class="info">' +
+                    '<div class="num">' + escapeHtml(inv.number) + '</div>' +
+                    '<div class="meta">Emise le ' + formatDate(inv.issueDate) + ' - Echeance : ' + formatDate(inv.dueDate) + '</div>' +
+                    '<span class="status-badge ' + inv.status + '">' + statusLabel + '</span>' +
+                    '</div>' +
+                    '<div class="amount">' + formatMoney(inv.total) + (amountDue > 0 && amountDue < inv.total ? '<div style="color:#f97316;font-size:12px;font-weight:600;">Reste du : ' + formatMoney(amountDue) + '</div>' : '') + '</div>' +
+                    '<div class="actions">' +
+                    '<a href="#" onclick="downloadInvoicePdf(event, ' + inv.id + ')">Telecharger</a>' +
+                    '</div>' +
+                    '</div>';
+            }).join('');
+        }
 
-        return '<div class="list-item">' +
-            '<div class="info">' +
-            '<div class="num">' + escapeHtml(q.number) + '</div>' +
-            '<div class="meta">Emis le ' + formatDate(q.issueDate) + ' - Valable jusqu\'au ' + formatDate(q.validDate) + '</div>' +
-            '<span class="status-badge ' + q.status + '">' + statusLabel + '</span>' +
-            '</div>' +
-            '<div class="amount">' + formatMoney(q.total) + '</div>' +
-            '<div class="actions">' +
-            '<a href="' + API_BASE + '/documents/quotes/' + q.id + '/pdf?token=' + getToken() + '" onclick="downloadPdf(event, \'quotes\', ' + q.id + ')">Telecharger</a>' +
-            (canSign ? '<a href="/sign.html?token=' + q.publicToken + '" class="primary" target="_blank">Signer</a>' : '') +
-            '</div>' +
-            '</div>';
-    }).join('');
-}
+        // ================================================================
+        // RENDU DES CHANTIERS
+        // ================================================================
+        function renderChantiers(chantiers) {
+            const container = document.getElementById('chantiersList');
+            if (chantiers.length === 0) {
+                container.innerHTML = '<div class="empty"><div class="icon">-</div><p>Aucun chantier pour le moment.</p></div>';
+                return;
+            }
 
-// ================================================================
-// RENDU DES FACTURES
-// ================================================================
-function renderInvoices(invoices) {
-    const container = document.getElementById('invoicesList');
-    if (invoices.length === 0) {
-        container.innerHTML = '<div class="empty"><div class="icon">-</div><p>Aucune facture pour le moment.</p></div>';
-        return;
-    }
+            const STATUS_LABELS = {
+                planned: 'Planifie',
+                in_progress: 'En cours',
+                paused: 'En pause',
+                completed: 'Termine',
+                cancelled: 'Annule'
+            };
 
-    const STATUS_LABELS = { draft: 'Brouillon', sent: 'A payer', paid: 'Payee', partial: 'Partiel', overdue: 'En retard' };
+            container.innerHTML = chantiers.map(c => {
+                const statusLabel = STATUS_LABELS[c.status] || c.status;
+                const startDate = c.startDate ? formatDate(c.startDate) : '-';
+                const endDate = c.endDate ? formatDate(c.endDate) : '-';
 
-    container.innerHTML = invoices.map(inv => {
-        const statusLabel = STATUS_LABELS[inv.status] || inv.status;
-        const amountDue = inv.amountDue || 0;
+                return '<div class="list-item">' +
+                    '<div class="info">' +
+                    '<div class="num">' + escapeHtml(c.name) + '</div>' +
+                    (c.reference ? '<div class="meta" style="font-family:monospace;">' + escapeHtml(c.reference) + '</div>' : '') +
+                    '<div class="meta">Du ' + startDate + ' au ' + endDate + '</div>' +
+                    '<span class="status-badge ' + (c.status === 'completed' ? 'accepted' : 'sent') + '">' + statusLabel + '</span>' +
+                    '</div>' +
+                    (c.budgetEstimate ? '<div class="amount">' + formatMoney(c.budgetEstimate) + '</div>' : '') +
+                    '</div>';
+            }).join('');
+        }
 
-        return '<div class="list-item">' +
-            '<div class="info">' +
-            '<div class="num">' + escapeHtml(inv.number) + '</div>' +
-            '<div class="meta">Emise le ' + formatDate(inv.issueDate) + ' - Echeance : ' + formatDate(inv.dueDate) + '</div>' +
-            '<span class="status-badge ' + inv.status + '">' + statusLabel + '</span>' +
-            '</div>' +
-            '<div class="amount">' + formatMoney(inv.total) + (amountDue > 0 && amountDue < inv.total ? '<div style="color:#f97316;font-size:12px;font-weight:600;">Reste du : ' + formatMoney(amountDue) + '</div>' : '') + '</div>' +
-            '<div class="actions">' +
-            '<a href="#" onclick="downloadInvoicePdf(event, ' + inv.id + ')">Telecharger</a>' +
-            '</div>' +
-            '</div>';
-    }).join('');
-}
+        // ================================================================
+        // PROFIL CLIENT
+        // ================================================================
+        async function loadProfile() {
+            try {
+                const res = await apiFetch('/me');
+                const data = await res.json();
 
-// ================================================================
-// RENDU DES CHANTIERS
-// ================================================================
-function renderChantiers(chantiers) {
-    const container = document.getElementById('chantiersList');
-    if (chantiers.length === 0) {
-        container.innerHTML = '<div class="empty"><div class="icon">-</div><p>Aucun chantier pour le moment.</p></div>';
-        return;
-    }
+                const c = data.client || {};
+                document.getElementById('profileName').value = c.name || '';
+                document.getElementById('profileContact').value = c.contactName || '';
+                document.getElementById('profileEmail').value = c.email || '';
+                document.getElementById('profilePhone').value = c.phone || '';
+                document.getElementById('profileAddress').value = c.address || '';
+                document.getElementById('profileVat').value = c.vatNumber || '';
+            } catch (err) {
+                console.warn('Erreur load profile:', err.message);
+            }
+        }
 
-    const STATUS_LABELS = {
-        planned: 'Planifie',
-        in_progress: 'En cours',
-        paused: 'En pause',
-        completed: 'Termine',
-        cancelled: 'Annule'
-    };
+        document.getElementById('saveProfileBtn')?.addEventListener('click', async () => {
+            const btn = document.getElementById('saveProfileBtn');
+            const success = document.getElementById('profileSuccess');
+            success.classList.remove('show');
 
-    container.innerHTML = chantiers.map(c => {
-        const statusLabel = STATUS_LABELS[c.status] || c.status;
-        const startDate = c.startDate ? formatDate(c.startDate) : '-';
-        const endDate = c.endDate ? formatDate(c.endDate) : '-';
+            const payload = {
+                contactName: document.getElementById('profileContact').value.trim(),
+                email: document.getElementById('profileEmail').value.trim(),
+                phone: document.getElementById('profilePhone').value.trim(),
+                address: document.getElementById('profileAddress').value.trim(),
+                vatNumber: document.getElementById('profileVat').value.trim()
+            };
 
-        return '<div class="list-item">' +
-            '<div class="info">' +
-            '<div class="num">' + escapeHtml(c.name) + '</div>' +
-            (c.reference ? '<div class="meta" style="font-family:monospace;">' + escapeHtml(c.reference) + '</div>' : '') +
-            '<div class="meta">Du ' + startDate + ' au ' + endDate + '</div>' +
-            '<span class="status-badge ' + (c.status === 'completed' ? 'accepted' : 'sent') + '">' + statusLabel + '</span>' +
-            '</div>' +
-            (c.budgetEstimate ? '<div class="amount">' + formatMoney(c.budgetEstimate) + '</div>' : '') +
-            '</div>';
-    }).join('');
-}
+            btn.disabled = true;
+            btn.textContent = 'Enregistrement...';
 
-// ================================================================
-// PROFIL CLIENT
-// ================================================================
-async function loadProfile() {
-    try {
-        const res = await apiFetch('/me');
-        const data = await res.json();
+            try {
+                const res = await apiFetch('/update-info', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (!res.ok) throw new Error('Erreur');
 
-        const c = data.client || {};
-        document.getElementById('profileName').value = c.name || '';
-        document.getElementById('profileContact').value = c.contactName || '';
-        document.getElementById('profileEmail').value = c.email || '';
-        document.getElementById('profilePhone').value = c.phone || '';
-        document.getElementById('profileAddress').value = c.address || '';
-        document.getElementById('profileVat').value = c.vatNumber || '';
-    } catch (err) {
-        console.warn('Erreur load profile:', err.message);
-    }
-}
-
-document.getElementById('saveProfileBtn')?.addEventListener('click', async () => {
-    const btn = document.getElementById('saveProfileBtn');
-    const success = document.getElementById('profileSuccess');
-    success.classList.remove('show');
-
-    const payload = {
-        contactName: document.getElementById('profileContact').value.trim(),
-        email: document.getElementById('profileEmail').value.trim(),
-        phone: document.getElementById('profilePhone').value.trim(),
-        address: document.getElementById('profileAddress').value.trim(),
-        vatNumber: document.getElementById('profileVat').value.trim()
-    };
-
-    btn.disabled = true;
-    btn.textContent = 'Enregistrement...';
-
-    try {
-        const res = await apiFetch('/update-info', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
+                success.classList.add('show');
+                setTimeout(() => success.classList.remove('show'), 3000);
+            } catch (err) {
+                alert('Erreur : ' + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Enregistrer mes coordonnees';
+            }
         });
-        if (!res.ok) throw new Error('Erreur');
 
-        success.classList.add('show');
-        setTimeout(() => success.classList.remove('show'), 3000);
-    } catch (err) {
-        alert('Erreur : ' + err.message);
-    } finally {
-        btn.disabled = false;
-        btn.textContent = 'Enregistrer mes coordonnees';
-    }
-});
+        // ================================================================
+        // TELECHARGEMENT DE PDF
+        // ================================================================
+        async function downloadPdf(event, type, id) {
+            event.preventDefault();
+            try {
+                const res = await apiFetch('/documents/' + type + '/' + id + '/pdf');
+                if (!res.ok) throw new Error('Erreur');
+                const blob = await res.blob();
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'devis_' + id + '.pdf';
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                URL.revokeObjectURL(url);
+            } catch (err) {
+                alert('Erreur : ' + err.message);
+            }
+        }
 
-// ================================================================
-// TELECHARGEMENT DE PDF
-// ================================================================
-async function downloadPdf(event, type, id) {
-    event.preventDefault();
-    try {
-        const res = await apiFetch('/documents/' + type + '/' + id + '/pdf');
-        if (!res.ok) throw new Error('Erreur');
-        const blob = await res.blob();
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'devis_' + id + '.pdf';
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        URL.revokeObjectURL(url);
-    } catch (err) {
-        alert('Erreur : ' + err.message);
-    }
-}
+        function downloadInvoicePdf(event, id) {
+            event.preventDefault();
+            alert('Le telechargement des factures sera bientot disponible.');
+        }
 
-function downloadInvoicePdf(event, id) {
-    event.preventDefault();
-    alert('Le telechargement des factures sera bientot disponible.');
-}
-</script>
+        // ================================================================
+        // CHAT CLIENT (dans le portail client)
+        // ================================================================
+        let clientConversations = [];
+        let currentClientConversationId = null;
+
+        async function loadClientConversations() {
+            const container = document.getElementById('clientConversationsList');
+            if (!container) return;
+            container.innerHTML = '<p style="color:#64748b;text-align:center;padding:40px;">Chargement...</p>';
+
+            try {
+                const res = await apiFetch('/my-conversations');
+                clientConversations = await res.json();
+
+                if (clientConversations.length === 0) {
+                    container.innerHTML = '<div style="text-align:center;padding:60px 20px;color:#64748b;"><div style="font-size:48px;margin-bottom:12px;opacity:0.4;">-</div><p>Aucune conversation pour le moment.</p><p style="font-size:13px;margin-top:8px;">Cliquez sur "+ Nouvelle conversation" pour demarrer.</p></div>';
+                    return;
+                }
+
+                // Grouper par type
+                const grouped = {
+                    quote: [],
+                    invoice: [],
+                    chantier: [],
+                    other: []
+                };
+
+                for (const c of clientConversations) {
+                    if (c.relatedQuoteId) grouped.quote.push(c);
+                    else if (c.relatedInvoiceId) grouped.invoice.push(c);
+                    else if (c.relatedChantierId) grouped.chantier.push(c);
+                    else grouped.other.push(c);
+                }
+
+                let html = '';
+
+                if (grouped.quote.length > 0) {
+                    html += renderGroup('Devis', grouped.quote);
+                }
+                if (grouped.invoice.length > 0) {
+                    html += renderGroup('Factures', grouped.invoice);
+                }
+                if (grouped.chantier.length > 0) {
+                    html += renderGroup('Chantiers', grouped.chantier);
+                }
+                if (grouped.other.length > 0) {
+                    html += renderGroup('Autres', grouped.other);
+                }
+
+                container.innerHTML = html;
+            } catch (err) {
+                console.error('Erreur load client conversations:', err);
+                container.innerHTML = '<p style="color:#f87171;text-align:center;padding:40px;">Erreur.</p>';
+            }
+        }
+
+        function renderGroup(title, conversations) {
+            let html = '<div style="margin-bottom:24px;">';
+            html += '<div style="color:#94a3b8;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;">' + title + '</div>';
+            html += '<div style="display:flex;flex-direction:column;gap:8px;">';
+
+            for (const c of conversations) {
+                const lastMsg = c.lastMessageAt ? new Date(c.lastMessageAt).toLocaleString('fr-FR') : '-';
+                const isUnread = c.clientUnreadCount > 0;
+                const context = c.quoteNumber || c.invoiceNumber || c.chantierName || '';
+
+                html += '<div onclick="openClientConversation(' + c.id + ')" style="background:#0b1120;border:1px solid #1e2a41;' + (isUnread ? 'border-left:4px solid #f97316;' : '') + 'border-radius:12px;padding:14px 16px;cursor:pointer;transition:0.2s;" onmouseover="this.style.background=\'#141e33\'" onmouseout="this.style.background=\'#0b1120\'">' +
+                    '<div style="display:flex;justify-content:space-between;gap:12px;margin-bottom:6px;">' +
+                    '<div style="color:#fff;font-weight:600;font-size:14px;">' + escapeHtml(context || c.subject || 'Conversation') + '</div>' +
+                    '<div style="color:#64748b;font-size:11px;white-space:nowrap;">' + lastMsg + (isUnread ? ' <span style="color:#f97316;font-weight:700;">(' + c.clientUnreadCount + ')</span>' : '') + '</div>' +
+                    '</div>' +
+                    (c.lastBody ? '<div style="color:#94a3b8;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + escapeHtml(c.lastBody.slice(0, 100)) + '</div>' : '') +
+                    '</div>';
+            }
+
+            html += '</div></div>';
+            return html;
+        }
+
+        window.openNewConversationModal = async function() {
+            // Peupler le select avec les devis, factures et chantiers
+            const sel = document.getElementById('newConvSubject');
+            sel.innerHTML = '<option value="">-- Aucun sujet specifique --</option>';
+
+            try {
+                const [qRes, iRes, chRes] = await Promise.all([
+                    apiFetch('/documents').then(r => r.json()),
+                    Promise.resolve(null),
+                    Promise.resolve(null)
+                ]);
+
+                // Devis
+                if (qRes.quotes && qRes.quotes.length > 0) {
+                    const grpQ = document.createElement('optgroup');
+                    grpQ.label = 'Devis';
+                    for (const q of qRes.quotes.slice(0, 20)) {
+                        const opt = document.createElement('option');
+                        opt.value = 'quote:' + q.id;
+                        opt.textContent = q.number + ' - ' + (q.total || 0).toFixed(2) + ' EUR';
+                        grpQ.appendChild(opt);
+                    }
+                    sel.appendChild(grpQ);
+                }
+
+                // Factures
+                if (qRes.invoices && qRes.invoices.length > 0) {
+                    const grpI = document.createElement('optgroup');
+                    grpI.label = 'Factures';
+                    for (const i of qRes.invoices.slice(0, 20)) {
+                        const opt = document.createElement('option');
+                        opt.value = 'invoice:' + i.id;
+                        opt.textContent = i.number + ' - ' + (i.total || 0).toFixed(2) + ' EUR';
+                        grpI.appendChild(opt);
+                    }
+                    sel.appendChild(grpI);
+                }
+
+                // Chantiers
+                if (qRes.chantiers && qRes.chantiers.length > 0) {
+                    const grpC = document.createElement('optgroup');
+                    grpC.label = 'Chantiers';
+                    for (const c of qRes.chantiers.slice(0, 20)) {
+                        const opt = document.createElement('option');
+                        opt.value = 'chantier:' + c.id;
+                        opt.textContent = c.name;
+                        grpC.appendChild(opt);
+                    }
+                    sel.appendChild(grpC);
+                }
+            } catch (err) {
+                console.warn('Erreur load subjects:', err.message);
+            }
+
+            document.getElementById('newConvTitle').value = '';
+            document.getElementById('newConvMessage').value = '';
+            document.getElementById('newConversationModal').style.display = 'flex';
+        };
+
+        window.closeNewConversationModal = function() {
+            document.getElementById('newConversationModal').style.display = 'none';
+        };
+
+        document.getElementById('newConversationBtn')?.addEventListener('click', openNewConversationModal);
+
+        document.getElementById('submitNewConversationBtn')?.addEventListener('click', async () => {
+            const subjectValue = document.getElementById('newConvSubject').value;
+            const title = document.getElementById('newConvTitle').value.trim();
+            const message = document.getElementById('newConvMessage').value.trim();
+
+            if (!message) {
+                alert('Ecrivez votre message.');
+                return;
+            }
+
+            // Determiner le contexte
+            let relatedQuoteId = null;
+            let relatedInvoiceId = null;
+            let relatedChantierId = null;
+
+            if (subjectValue.startsWith('quote:')) relatedQuoteId = parseInt(subjectValue.split(':')[1]);
+            else if (subjectValue.startsWith('invoice:')) relatedInvoiceId = parseInt(subjectValue.split(':')[1]);
+            else if (subjectValue.startsWith('chantier:')) relatedChantierId = parseInt(subjectValue.split(':')[1]);
+
+            const btn = document.getElementById('submitNewConversationBtn');
+            btn.disabled = true;
+            btn.textContent = 'Creation...';
+
+            try {
+                // Creer la conversation
+                const convRes = await apiFetch('/my-conversations', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        subject: title,
+                        relatedQuoteId: relatedQuoteId,
+                        relatedInvoiceId: relatedInvoiceId,
+                        relatedChantierId: relatedChantierId
+                    })
+                });
+
+                const convData = await convRes.json();
+                if (!convRes.ok) throw new Error(convData.error || 'Erreur');
+
+                // Envoyer le premier message
+                const msgRes = await apiFetch('/my-conversations/' + convData.conversationId + '/messages', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ body: message })
+                });
+
+                if (!msgRes.ok) throw new Error('Erreur envoi message');
+
+                closeNewConversationModal();
+                await loadClientConversations();
+            } catch (err) {
+                alert('Erreur : ' + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Envoyer';
+            }
+        });
+
+        window.openClientConversation = async function(id) {
+            currentClientConversationId = id;
+            document.getElementById('clientConversationModal').style.display = 'flex';
+            document.getElementById('clientConvMessages').innerHTML = '<p style="color:#64748b;text-align:center;">Chargement...</p>';
+
+            try {
+                const res = await apiFetch('/my-conversations/' + id);
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Erreur');
+
+                const context = data.conversation.quoteNumber || data.conversation.invoiceNumber || data.conversation.chantierName || '';
+                document.getElementById('clientConvTitle').textContent = data.conversation.subject || context || 'Conversation';
+                document.getElementById('clientConvSubtitle').textContent = context;
+
+                renderClientConvMessages(data.messages);
+                document.getElementById('clientConvInput').value = '';
+                setTimeout(() => document.getElementById('clientConvInput').focus(), 100);
+
+                // Rafraichir la liste (compteurs non lus)
+                loadClientConversations();
+            } catch (err) {
+                document.getElementById('clientConvMessages').innerHTML = '<p style="color:#f87171;text-align:center;">' + escapeHtml(err.message) + '</p>';
+            }
+        };
+
+        window.closeClientConversationModal = function() {
+            document.getElementById('clientConversationModal').style.display = 'none';
+            currentClientConversationId = null;
+        };
+
+        function renderClientConvMessages(messages) {
+            const container = document.getElementById('clientConvMessages');
+            if (messages.length === 0) {
+                container.innerHTML = '<p style="color:#64748b;text-align:center;padding:20px;">Aucun message.</p>';
+                return;
+            }
+
+            let html = '';
+            for (const m of messages) {
+                const isClient = m.senderType === 'client';
+                const time = new Date(m.createdAt).toLocaleString('fr-FR');
+                html += '<div style="max-width:80%;padding:12px 14px;border-radius:14px;font-size:13px;line-height:1.5;' +
+                    (isClient
+                        ? 'align-self:flex-end;background:#f97316;color:#0b1120;border-bottom-right-radius:4px;font-weight:500;'
+                        : 'align-self:flex-start;background:#1a253b;border:1px solid #2a3a55;color:#e2e8f0;border-bottom-left-radius:4px;') +
+                    '">' +
+                    escapeHtml(m.body) +
+                    '<div style="font-size:10px;opacity:0.7;margin-top:4px;">' + time + '</div>' +
+                    '</div>';
+            }
+            container.innerHTML = html;
+            container.scrollTop = container.scrollHeight;
+        }
+
+        document.getElementById('clientConvSendBtn')?.addEventListener('click', async () => {
+            const input = document.getElementById('clientConvInput');
+            const body = input.value.trim();
+            if (!body || !currentClientConversationId) return;
+
+            const btn = document.getElementById('clientConvSendBtn');
+            btn.disabled = true;
+
+            try {
+                const res = await apiFetch('/my-conversations/' + currentClientConversationId + '/messages', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ body: body })
+                });
+
+                if (!res.ok) throw new Error('Erreur');
+
+                const time = new Date().toLocaleString('fr-FR');
+                const container = document.getElementById('clientConvMessages');
+                const div = document.createElement('div');
+                div.style.cssText = 'max-width:80%;padding:12px 14px;border-radius:14px;font-size:13px;line-height:1.5;align-self:flex-end;background:#f97316;color:#0b1120;border-bottom-right-radius:4px;font-weight:500;';
+                div.innerHTML = escapeHtml(body) + '<div style="font-size:10px;opacity:0.7;margin-top:4px;">' + time + '</div>';
+                container.appendChild(div);
+                container.scrollTop = container.scrollHeight;
+
+                input.value = '';
+                input.style.height = 'auto';
+            } catch (err) {
+                alert('Erreur : ' + err.message);
+            } finally {
+                btn.disabled = false;
+            }
+        });
+
+        document.getElementById('clientConvInput')?.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                document.getElementById('clientConvSendBtn').click();
+            }
+        });
+    </script>
 </body>
 </html>

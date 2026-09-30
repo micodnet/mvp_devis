@@ -58,6 +58,7 @@ const smsRoutes = require('./routes/sms');
 const quoteTemplatesRoutes = require('./routes/quote-templates');
 const paymentSchedulesRoutes = require('./routes/payment-schedules');
 const appointmentsRoutes = require('./routes/appointments');
+const chatRoutes = require('./routes/chat');
 
 // ⚙️ INTERRUPTEUR DE QUOTA — Mets à `false` pour désactiver les limites pendant les tests
 const ENABLE_QUOTA_LIMITS = false;
@@ -121,6 +122,7 @@ app.use('/api/public-payments', publicPaymentsRoutes);
 app.use('/api/quote-templates', quoteTemplatesRoutes);
 app.use('/api/payment-schedules', paymentSchedulesRoutes);
 app.use('/api/appointments', appointmentsRoutes);
+app.use('/api/chat', chatRoutes);
 
 // Multer
 const storage = multer.diskStorage({
@@ -807,6 +809,7 @@ app.get('/api/public/quotes/:token', async (req, res) => {
         res.json({
             quote: {
                 quoteNumber: q.quote_number,
+                ownerId: q.owner_id,
                 issueDate: q.issue_date,
                 validDate: q.valid_date,
                 status: q.status,

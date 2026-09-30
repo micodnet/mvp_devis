@@ -2041,6 +2041,7 @@
             .tab-btn[data-tab="tab-appointments"]        { order: 44; }
             .tab-btn[data-tab="tab-assistant"]           { order: 50; }
             .tab-btn[data-tab="tab-sms"]                 { order: 51; }
+            .tab-btn[data-tab="tab-chat"]                { order: 52; }
             .tab-btn[data-tab="tab-api"]                 { order: 60; }
             .tab-btn[data-tab="tab-webhooks"]            { order: 61; }
             .tab-btn[data-tab="tab-oauth"]               { order: 62; }
@@ -2410,6 +2411,7 @@
             <button class="tab-btn" data-tab="tab-api" data-i18n="app.tab.api">🗃 API</button>
             <button class="tab-btn" data-tab="tab-webhooks" data-i18n="app.tab.webhooks">Webhooks</button>
             <button class="tab-btn" data-tab="tab-sms">SMS</button>
+            <button class="tab-btn" data-tab="tab-chat">Chat client</button>
             <button class="tab-btn" data-tab="tab-client-portal">Portail client</button>
             <button class="tab-btn" data-tab="tab-online-payments">Paiements</button>
             <button class="tab-btn" data-tab="tab-appointments">Rendez-vous</button>
@@ -3026,6 +3028,47 @@
                     </div>
                 </div>
                 <div id="paymentsList"><p style="color:#64748b;text-align:center;padding:40px;">Chargement...</p></div>
+            </div>
+        </div>
+
+        <!-- CHAT CLIENT -->
+        <div id="tab-chat" class="tab-content">
+            <div class="card">
+                <div class="catalog-header">
+                    <h2>Conversations clients</h2>
+                </div>
+                <p style="color:#94a3b8;font-size:13px;margin-bottom:20px;line-height:1.6;">
+                    Vos clients peuvent vous envoyer des messages depuis la page publique de signature. Vous recevez une notification a chaque nouveau message.
+                </p>
+
+                <div class="stats-grid" id="chatStats" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr));margin-bottom:20px;">
+                    <p style="color:#64748b;">Chargement...</p>
+                </div>
+
+                <div class="history-filters" id="chatFilters">
+                    <button class="history-filter active" data-cfilter="all">Toutes</button>
+                    <button class="history-filter" data-cfilter="unread">Non lues</button>
+                    <button class="history-filter" data-cfilter="open">Ouvertes</button>
+                    <button class="history-filter" data-cfilter="closed">Fermees</button>
+                </div>
+
+                <div id="chatConversationsList"><p style="color:#64748b;text-align:center;padding:40px;">Chargement...</p></div>
+            </div>
+        </div>
+
+        <!-- MODAL CONVERSATION -->
+        <div class="modal-overlay" id="chatConversationModal">
+            <div class="modal modal-wide">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                    <h3 id="chatModalTitle" style="margin:0;">Conversation</h3>
+                    <button class="btn-cancel" onclick="document.getElementById('chatConversationModal').classList.remove('show')" style="padding:6px 12px;font-size:12px;">Fermer</button>
+                </div>
+                <div id="chatModalInfo" style="color:#94a3b8;font-size:13px;margin-bottom:16px;"></div>
+                <div id="chatModalMessages" style="background:#0b1120;border:1px solid #1e2a41;border-radius:12px;padding:16px;max-height:400px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;margin-bottom:16px;"></div>
+                <div style="display:flex;gap:10px;align-items:flex-end;">
+                    <textarea id="chatModalInput" rows="2" placeholder="Votre reponse..." style="flex:1;background:#0b1120;border:1px solid #2a3a55;color:#e2e8f0;padding:12px 14px;border-radius:12px;font-size:14px;font-family:inherit;resize:none;outline:none;"></textarea>
+                    <button class="btn-primary-sm" id="chatModalSendBtn" style="padding:12px 20px;font-size:13px;">Envoyer</button>
+                </div>
             </div>
         </div>
 
@@ -17844,6 +17887,218 @@
                         setTimeout(() => {
                             loadBookingConfig();
                             loadAppointments();
+                        }, 100);
+                    }
+                });
+            });
+        })();
+
+        // ================================================================
+        // 48. CHAT CLIENT
+        // ================================================================
+        (function initClientChat() {
+            let allConversations = [];
+            let currentFilter = 'all';
+            let currentConversationId = null;
+
+            // ----- Charger les statistiques -----
+            async function loadChatStats() {
+                const box = document.getElementById('chatStats');
+                if (!box) return;
+
+                try {
+                    const res = await apiFetch('/api/chat/stats');
+                    const s = await res.json();
+
+                    box.innerHTML =
+                        '<div class="stat-card"><div class="number">' + s.totalConversations + '</div><div class="label">Conversations</div></div>' +
+                        '<div class="stat-card"><div class="number" style="color:#3b82f6;">' + s.openConversations + '</div><div class="label">Ouvertes</div></div>' +
+                        '<div class="stat-card"><div class="number" style="color:' + (s.unreadMessages > 0 ? '#f97316' : '#94a3b8') + ';">' + s.unreadMessages + '</div><div class="label">Non lus</div></div>' +
+                        '<div class="stat-card"><div class="number" style="color:#64748b;">' + s.closedConversations + '</div><div class="label">Fermees</div></div>';
+                } catch (err) {
+                    box.innerHTML = '<p style="color:#f87171;">Erreur.</p>';
+                }
+            }
+
+            // ----- Charger les conversations -----
+            async function loadConversations() {
+                const container = document.getElementById('chatConversationsList');
+                if (!container) return;
+                container.innerHTML = '<p style="color:#64748b;text-align:center;padding:40px;">Chargement...</p>';
+
+                try {
+                    const params = new URLSearchParams();
+                    if (currentFilter !== 'all') params.set('filter', currentFilter);
+
+                    const res = await apiFetch('/api/chat/conversations?' + params.toString());
+                    allConversations = await res.json();
+                    renderConversations();
+                } catch (err) {
+                    console.error('Erreur load conversations:', err);
+                    container.innerHTML = '<p style="color:#f87171;text-align:center;padding:40px;">Erreur.</p>';
+                }
+            }
+
+            function renderConversations() {
+                const container = document.getElementById('chatConversationsList');
+                if (!container) return;
+
+                if (allConversations.length === 0) {
+                    container.innerHTML = '<div class="catalog-empty"><div class="big-icon">-</div><h3>Aucune conversation</h3><p>Vos clients peuvent vous envoyer des messages depuis la page publique de signature ou depuis leur portail.</p></div>';
+                    return;
+                }
+
+                let html = '<div style="display:flex;flex-direction:column;gap:10px;">';
+
+                for (const c of allConversations) {
+                    const lastMsg = c.lastMessageAt ? new Date(c.lastMessageAt).toLocaleString('fr-FR') : '-';
+                    const isUnread = c.ownerUnreadCount > 0;
+                    const statusColor = c.status === 'closed' ? '#94a3b8' : '#22c55e';
+
+                    let contextBadge = '';
+                    if (c.quoteNumber) contextBadge += '<span style="font-size:10px;font-weight:600;padding:2px 8px;border-radius:40px;background:rgba(249,115,22,0.15);color:#f97316;border:1px solid rgba(249,115,22,0.3);margin-right:4px;">Devis ' + escapeHtml(c.quoteNumber) + '</span>';
+                    if (c.invoiceNumber) contextBadge += '<span style="font-size:10px;font-weight:600;padding:2px 8px;border-radius:40px;background:rgba(59,130,246,0.15);color:#3b82f6;border:1px solid rgba(59,130,246,0.3);margin-right:4px;">Facture ' + escapeHtml(c.invoiceNumber) + '</span>';
+                    if (c.chantierName) contextBadge += '<span style="font-size:10px;font-weight:600;padding:2px 8px;border-radius:40px;background:rgba(34,197,94,0.15);color:#22c55e;border:1px solid rgba(34,197,94,0.3);margin-right:4px;">' + escapeHtml(c.chantierName) + '</span>';
+
+                    html += '<div onclick="openConversation(' + c.id + ')" style="background:#0b1120;border:1px solid #1e2a41;' + (isUnread ? 'border-left:4px solid #f97316;' : 'border-left:4px solid ' + statusColor + ';') + 'border-radius:12px;padding:16px;cursor:pointer;transition:0.2s;" onmouseover="this.style.background=\'#141e33\'" onmouseout="this.style.background=\'#0b1120\'">' +
+                        '<div style="display:flex;justify-content:space-between;gap:12px;margin-bottom:8px;">' +
+                        '<div style="flex:1;min-width:0;">' +
+                        '<div style="color:#fff;font-weight:700;font-size:14px;margin-bottom:2px;">' + escapeHtml(c.clientName || 'Client') + (isUnread ? ' <span style="color:#f97316;font-size:11px;">(' + c.ownerUnreadCount + ' nouveau' + (c.ownerUnreadCount > 1 ? 'x' : '') + ')</span>' : '') + '</div>' +
+                        (c.clientEmail ? '<div style="color:#94a3b8;font-size:12px;">' + escapeHtml(c.clientEmail) + '</div>' : '') +
+                        '</div>' +
+                        '<div style="text-align:right;color:#64748b;font-size:11px;white-space:nowrap;">' + lastMsg + '</div>' +
+                        '</div>' +
+
+                        (contextBadge ? '<div style="margin-bottom:8px;">' + contextBadge + '</div>' : '') +
+
+                        (c.lastMessagePreview ? '<div style="color:#cbd5e1;font-size:13px;line-height:1.5;">' + escapeHtml(c.lastMessagePreview) + '</div>' : '') +
+                        '</div>';
+                }
+
+                html += '</div>';
+                container.innerHTML = html;
+            }
+
+            // ----- Ouvrir une conversation -----
+            window.openConversation = async function(id) {
+                currentConversationId = id;
+                document.getElementById('chatConversationModal').classList.add('show');
+                document.getElementById('chatModalMessages').innerHTML = '<p style="color:#64748b;text-align:center;">Chargement...</p>';
+                document.getElementById('chatModalInfo').textContent = '';
+
+                try {
+                    const res = await apiFetch('/api/chat/conversations/' + id);
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error || 'Erreur');
+
+                    document.getElementById('chatModalTitle').textContent = 'Conversation avec ' + (data.conversation.clientName || 'Client');
+
+                    let infoParts = [];
+                    if (data.conversation.clientEmail) infoParts.push(data.conversation.clientEmail);
+                    if (data.conversation.quoteNumber) infoParts.push('Devis ' + data.conversation.quoteNumber);
+                    if (data.conversation.invoiceNumber) infoParts.push('Facture ' + data.conversation.invoiceNumber);
+                    if (data.conversation.chantierName) infoParts.push('Chantier : ' + data.conversation.chantierName);
+                    document.getElementById('chatModalInfo').textContent = infoParts.join(' - ');
+
+                    renderModalMessages(data.messages);
+                    document.getElementById('chatModalInput').value = '';
+                    setTimeout(() => document.getElementById('chatModalInput').focus(), 100);
+
+                    // Rafraichir les stats et la liste (le compteur non lu passe a 0)
+                    loadChatStats();
+                    loadConversations();
+                } catch (err) {
+                    document.getElementById('chatModalMessages').innerHTML = '<p style="color:#f87171;text-align:center;">' + escapeHtml(err.message) + '</p>';
+                }
+            };
+
+            function renderModalMessages(messages) {
+                const container = document.getElementById('chatModalMessages');
+                if (messages.length === 0) {
+                    container.innerHTML = '<p style="color:#64748b;text-align:center;padding:20px;">Aucun message pour le moment.</p>';
+                    return;
+                }
+
+                let html = '';
+                for (const m of messages) {
+                    const isClient = m.senderType === 'client';
+                    const time = new Date(m.createdAt).toLocaleString('fr-FR');
+                    html += '<div style="max-width:80%;padding:12px 14px;border-radius:14px;font-size:13px;line-height:1.5;' +
+                        (isClient
+                            ? 'align-self:flex-start;background:#1a253b;border:1px solid #2a3a55;color:#e2e8f0;border-bottom-left-radius:4px;'
+                            : 'align-self:flex-end;background:#f97316;color:#0b1120;border-bottom-right-radius:4px;font-weight:500;') +
+                        '">' +
+                        escapeHtml(m.body) +
+                        '<div style="font-size:10px;opacity:0.7;margin-top:4px;">' + time + '</div>' +
+                        '</div>';
+                }
+                container.innerHTML = html;
+                container.scrollTop = container.scrollHeight;
+            }
+
+            // ----- Envoyer une reponse -----
+            document.getElementById('chatModalSendBtn')?.addEventListener('click', async () => {
+                const input = document.getElementById('chatModalInput');
+                const body = input.value.trim();
+                if (!body || !currentConversationId) return;
+
+                const btn = document.getElementById('chatModalSendBtn');
+                btn.disabled = true;
+                btn.textContent = 'Envoi...';
+
+                try {
+                    const res = await apiFetch('/api/chat/conversations/' + currentConversationId + '/messages', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ body: body })
+                    });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error || 'Erreur');
+
+                    // Ajouter visuellement le message
+                    const container = document.getElementById('chatModalMessages');
+                    const time = new Date().toLocaleString('fr-FR');
+                    const div = document.createElement('div');
+                    div.style.cssText = 'max-width:80%;padding:12px 14px;border-radius:14px;font-size:13px;line-height:1.5;align-self:flex-end;background:#f97316;color:#0b1120;border-bottom-right-radius:4px;font-weight:500;';
+                    div.innerHTML = escapeHtml(body) + '<div style="font-size:10px;opacity:0.7;margin-top:4px;">' + time + '</div>';
+                    container.appendChild(div);
+                    container.scrollTop = container.scrollHeight;
+
+                    input.value = '';
+                    input.style.height = 'auto';
+                } catch (err) {
+                    showToast('Erreur : ' + err.message, 'error');
+                } finally {
+                    btn.disabled = false;
+                    btn.textContent = 'Envoyer';
+                }
+            });
+
+            // Entree pour envoyer (Shift+Entree pour nouvelle ligne)
+            document.getElementById('chatModalInput')?.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    document.getElementById('chatModalSendBtn').click();
+                }
+            });
+
+            // ----- Filtres -----
+            document.querySelectorAll('#chatFilters .history-filter').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('#chatFilters .history-filter').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentFilter = btn.dataset.cfilter;
+                    loadConversations();
+                });
+            });
+
+            // ----- Charger au clic sur l'onglet -----
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    if (btn.dataset.tab === 'tab-chat') {
+                        setTimeout(() => {
+                            loadChatStats();
+                            loadConversations();
                         }, 100);
                     }
                 });

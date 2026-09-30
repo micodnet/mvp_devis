@@ -187,6 +187,28 @@
         </div>
     </div>
 
+    <!-- BOUTON CHAT FLOTTANT -->
+    <button id="chatFloatingBtn" style="position:fixed;bottom:24px;right:24px;width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#f97316,#fb923c);color:#0b1120;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:26px;box-shadow:0 12px 32px rgba(249,115,22,0.4);z-index:4000;transition:0.25s;" title="Poser une question">💬</button>
+
+    <!-- WIDGET CHAT -->
+    <div id="chatWidget" style="display:none;position:fixed;bottom:24px;right:24px;width:400px;max-width:calc(100vw - 32px);height:600px;max-height:calc(100vh - 48px);background:#161f32;border:1px solid #2a3a55;border-radius:20px;box-shadow:0 30px 80px rgba(0,0,0,0.7);z-index:4001;flex-direction:column;overflow:hidden;">
+        <div style="background:#0b1120;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #1e2a41;">
+            <div style="color:#fff;font-weight:700;font-size:14px;">💬 Poser une question</div>
+            <button id="chatWidgetClose" style="background:#1a253b;border:1px solid #2a3a55;color:#94a3b8;width:30px;height:30px;border-radius:8px;cursor:pointer;font-size:14px;">X</button>
+        </div>
+        <div id="chatWidgetMessages" style="flex:1;overflow-y:auto;padding:16px 18px;background:#0b1120;display:flex;flex-direction:column;gap:12px;"></div>
+        <div id="chatWidgetStartForm" style="padding:16px;border-top:1px solid #2a3a55;background:#161f32;">
+            <p style="color:#94a3b8;font-size:12px;margin-bottom:10px;">Pour commencer, indiquez votre nom et votre email :</p>
+            <input type="text" id="chatWidgetName" placeholder="Votre nom" style="width:100%;padding:10px 12px;border-radius:10px;background:#0b1120;border:1px solid #2a3a55;color:#e2e8f0;font-size:13px;margin-bottom:8px;outline:none;" />
+            <input type="email" id="chatWidgetEmail" placeholder="Votre email" style="width:100%;padding:10px 12px;border-radius:10px;background:#0b1120;border:1px solid #2a3a55;color:#e2e8f0;font-size:13px;margin-bottom:10px;outline:none;" />
+            <button id="chatWidgetStartBtn" style="width:100%;padding:12px;border-radius:60px;background:#f97316;color:#0b1120;border:none;font-weight:700;font-size:14px;cursor:pointer;">Demarrer la conversation</button>
+        </div>
+        <div id="chatWidgetInputArea" style="display:none;padding:12px 14px;border-top:1px solid #1e2a41;background:#161f32;gap:8px;align-items:flex-end;">
+            <textarea id="chatWidgetInput" rows="1" placeholder="Votre message..." style="flex:1;background:#0b1120;border:1px solid #2a3a55;color:#e2e8f0;padding:10px 14px;border-radius:14px;font-size:13px;font-family:inherit;resize:none;max-height:100px;outline:none;"></textarea>
+            <button id="chatWidgetSend" style="background:#f97316;color:#0b1120;border:none;width:40px;height:40px;border-radius:50%;font-size:16px;cursor:pointer;flex-shrink:0;">➤</button>
+        </div>
+    </div>
+
     <script>
         const token = new URLSearchParams(window.location.search).get('token');
         let quoteData = null;
@@ -538,6 +560,206 @@
 
         // Démarrage
         loadQuote();
+    
+        // ================================================================
+        // CHAT WIDGET SUR LA PAGE DE SIGNATURE
+        // ================================================================
+        (function initChatWidget() {
+            let conversationToken = null;
+            let lastMessageCount = 0;
+
+            const btn = document.getElementById('chatFloatingBtn');
+            const widget = document.getElementById('chatWidget');
+            const closeBtn = document.getElementById('chatWidgetClose');
+            const startForm = document.getElementById('chatWidgetStartForm');
+            const inputArea = document.getElementById('chatWidgetInputArea');
+            const messagesEl = document.getElementById('chatWidgetMessages');
+            const nameInput = document.getElementById('chatWidgetName');
+            const emailInput = document.getElementById('chatWidgetEmail');
+            const startBtn = document.getElementById('chatWidgetStartBtn');
+            const msgInput = document.getElementById('chatWidgetInput');
+            const sendBtn = document.getElementById('chatWidgetSend');
+
+            // Recuperer les infos du devis depuis l'URL (token public)
+            const params = new URLSearchParams(window.location.search);
+            const quoteToken = params.get('token');
+
+            btn?.addEventListener('click', () => {
+                widget.style.display = 'flex';
+                btn.style.display = 'none';
+            });
+
+            closeBtn?.addEventListener('click', () => {
+                widget.style.display = 'none';
+                btn.style.display = 'flex';
+            });
+
+            // Demarrer une conversation
+            startBtn?.addEventListener('click', async () => {
+                const name = nameInput.value.trim();
+                const email = emailInput.value.trim();
+
+                if (!name) {
+                    alert('Votre nom est requis.');
+                    return;
+                }
+
+                if (!email) {
+                    alert('Votre email est requis.');
+                    return;
+                }
+
+                startBtn.disabled = true;
+                startBtn.textContent = 'Creation...';
+
+                try {
+                    // Recuperer userId depuis le devis
+                    let userId = null;
+                    let relatedQuoteId = null;
+
+                    if (quoteToken) {
+                        const qRes = await fetch('/api/public/quotes/' + quoteToken);
+                        if (qRes.ok) {
+                            const qData = await qRes.json();
+                            window.quoteData = data.quote;
+                            window.quoteData.ownerId = data.company?.userId || data.quote.ownerId;
+                            // Le quote n'a pas le userId directement, mais on peut le recuperer via l'API chat
+                            // On va utiliser une astuce : passer par la config publique du chat
+                        }
+                    }
+
+                    // Si on n'a pas de userId, on regarde dans les donnees chargees par sign.html
+                    // Note : a adapter selon comment sign.html recupere les donnees du devis
+                    if (window.quoteData && window.quoteData.userId) {
+                        userId = window.quoteData.userId;
+                    } else if (window.quoteData && window.quoteData.ownerId) {
+                        userId = window.quoteData.ownerId;
+                    }
+
+                    // Fallback : on essaie de recuperer via le devis
+                    if (!userId && quoteToken) {
+                        // On va se reposer sur sign.html pour nous donner l'info
+                        // Si sign.html stocke les donnees dans window.quoteData, on l'utilise
+                        console.warn('userId introuvable, tentative via quote');
+                    }
+
+                    if (!userId) {
+                        alert('Impossible de determiner l\'entreprise. Rechargez la page.');
+                        startBtn.disabled = false;
+                        startBtn.textContent = 'Demarrer la conversation';
+                        return;
+                    }
+
+                    const res = await fetch('/api/chat/public/start', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            userId: userId,
+                            clientName: name,
+                            clientEmail: email,
+                            subject: 'Question sur le devis',
+                            relatedQuoteId: relatedQuoteId
+                        })
+                    });
+
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error || 'Erreur');
+
+                    conversationToken = data.accessToken;
+
+                    // Cacher le formulaire de demarrage, afficher l'input
+                    startForm.style.display = 'none';
+                    inputArea.style.display = 'flex';
+                    msgInput.focus();
+
+                    await loadMessages();
+                } catch (err) {
+                    alert('Erreur : ' + err.message);
+                    startBtn.disabled = false;
+                    startBtn.textContent = 'Demarrer la conversation';
+                }
+            });
+
+            async function loadMessages() {
+                if (!conversationToken) return;
+
+                try {
+                    const res = await fetch('/api/chat/public/' + conversationToken);
+                    if (!res.ok) return;
+                    const data = await res.json();
+
+                    if (data.messages.length !== lastMessageCount) {
+                        lastMessageCount = data.messages.length;
+                        renderMessages(data.messages);
+                    }
+                } catch (err) {
+                    console.warn('Erreur load messages:', err.message);
+                }
+            }
+
+            function renderMessages(messages) {
+                if (messages.length === 0) {
+                    messagesEl.innerHTML = '<p style="color:#64748b;font-size:13px;text-align:center;padding:20px;">Ecrivez votre premier message.</p>';
+                    return;
+                }
+
+                let html = '';
+                for (const m of messages) {
+                    const isClient = m.senderType === 'client';
+                    const time = new Date(m.createdAt).toLocaleString('fr-FR');
+                    html += '<div style="max-width:85%;padding:10px 14px;border-radius:14px;font-size:13px;line-height:1.5;' +
+                        (isClient
+                            ? 'align-self:flex-end;background:#f97316;color:#0b1120;border-bottom-right-radius:4px;'
+                            : 'align-self:flex-start;background:#1a253b;border:1px solid #2a3a55;color:#e2e8f0;border-bottom-left-radius:4px;') +
+                        '">' +
+                        escapeHtml(m.body) +
+                        '<div style="font-size:10px;opacity:0.7;margin-top:4px;">' + time + '</div>' +
+                        '</div>';
+                }
+                messagesEl.innerHTML = html;
+                messagesEl.scrollTop = messagesEl.scrollHeight;
+            }
+
+            sendBtn?.addEventListener('click', async () => {
+                const body = msgInput.value.trim();
+                if (!body || !conversationToken) return;
+
+                sendBtn.disabled = true;
+
+                try {
+                    const res = await fetch('/api/chat/public/' + conversationToken + '/messages', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ body: body })
+                    });
+
+                    if (!res.ok) throw new Error('Erreur');
+
+                    msgInput.value = '';
+                    msgInput.style.height = 'auto';
+                    await loadMessages();
+                } catch (err) {
+                    alert('Erreur : ' + err.message);
+                } finally {
+                    sendBtn.disabled = false;
+                }
+            });
+
+            msgInput?.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendBtn.click();
+                }
+            });
+
+            // Rafraichissement toutes les 10s
+            setInterval(loadMessages, 10000);
+
+            function escapeHtml(str) {
+                if (!str) return '';
+                return String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+            }
+        })();
     </script>
 </body>
 </html>
