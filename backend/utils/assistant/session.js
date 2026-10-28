@@ -174,11 +174,21 @@ function buildSessionSummary(session) {
     return parts.length > 0 ? `Session active :\n- ${parts.join('\n- ')}` : '';
 }
 
+async function cleanupStaleSessions(maxAgeMinutes) {
+  // adapte selon ta table réelle (sessions, chat_sessions, etc.)
+  const cutoff = new Date(Date.now() - maxAgeMinutes * 60 * 1000);
+  await db.query(
+    'DELETE FROM sessions WHERE last_activity < $1',
+    [cutoff]
+  );
+}
+
 module.exports = {
     getSession,
     updateSession,
     recordExchange,
     recordAction,
     resetSession,
-    buildSessionSummary
+    buildSessionSummary,
+    cleanupStaleSessions
 };

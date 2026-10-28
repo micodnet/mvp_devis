@@ -71,6 +71,43 @@ const pendingActionsRoute = require('./routes/pendingActions');
 const { errorHandler } = require('./middleware/errorHandler');
 const goalsRoute = require('./routes/goals');
 
+// GARDE-FOUS GLOBAUX — empêchent un job buggé de tuer tout le serveur
+process.on('unhandledRejection', (reason) => {
+    console.error('Unhandled promise rejection:', reason);
+});
+process.on('uncaughtException', (err) => {
+    console.error('Exception non gérée (serveur maintenu en vie):', err);
+    // Volontairement on ne process.exit() pas :
+    // un SaaS ne doit pas mourir parce qu'un cron a un bug
+});
+
+// Exécute un job planifié en isolant les erreurs
+function safeJob(name, fn) {
+    try {
+        const result = fn();
+        if (result && typeof result.catch === 'function') {
+            result.catch(err => console.error(`[job:${name}]`, err?.message || err));
+        }
+    } catch (err) {
+        console.error(`[job:${name}]`, err?.message || err);
+    }
+}
+
+// require() tolérant : retourne null au lieu de crash
+function safeRequire(path, exportName) {
+    try {
+        const mod = require(path);
+        if (exportName && typeof mod?.[exportName] !== 'function') {
+            console.warn(`${exportName} introuvable dans ${path} (exports disponibles : ${Object.keys(mod || {}).join(', ') || 'aucun'})`);
+            return null;
+        }
+        return exportName ? mod[exportName] : mod;
+    } catch (err) {
+        console.warn(`Impossible de charger ${path}: ${err.message}`);
+        return null;
+    }
+}
+
 // ⚙️ INTERRUPTEUR DE QUOTA — Mets à `false` pour désactiver les limites pendant les tests
 const ENABLE_QUOTA_LIMITS = false;
 
@@ -143,7 +180,7 @@ app.use('/api/proactive', proactiveRoutes);
 app.use('/api/bank', bankRoutes);
 app.use("/api", pendingActionsRoute);
 app.use("/api", goalsRoute);
-app.use(errorHandler);
+
 
 // Multer
 const storage = multer.diskStorage({
@@ -159,9 +196,7 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage, limits: { fileSize: 5 * 1024 * 1024 } });
 
-// ============================================================
 // GET /api/settings
-// ============================================================
 app.get('/api/settings', authenticateToken, async (req, res) => {
     try {
         const result = await pool.query(
@@ -199,9 +234,7 @@ app.get('/api/settings', authenticateToken, async (req, res) => {
     }
 });
 
-// ============================================================
 // POST /api/settings
-// ============================================================
 app.post('/api/settings', authenticateToken, async (req, res) => {
     const { companyName, address, siret, tva, phone, email, website, logo, vatRegime, vatRate, signatureMethod, iban, bic, bankName, invoicePrefix, paymentTerms, language, pdfTemplate } = req.body;
     try {
@@ -266,9 +299,7 @@ app.post('/api/settings', authenticateToken, async (req, res) => {
     }
 });
 
-// ============================================================
 // GET /api/history
-// ============================================================
 app.get('/api/history', authenticateToken, async (req, res) => {
     try {
         const result = await pool.query(
@@ -309,9 +340,7 @@ app.get('/api/history', authenticateToken, async (req, res) => {
     }
 });
 
-// ============================================================
 // POST /api/generate-quote
-// ============================================================
 app.post('/api/generate-quote', authenticateToken, upload.single('file'), async (req, res) => {
     const logs = [];
     try {
@@ -504,9 +533,7 @@ app.post('/api/generate-quote', authenticateToken, upload.single('file'), async 
     }
 });
 
-// ============================================================
 // POST /api/download-pdf
-// ============================================================
 app.post('/api/download-pdf', authenticateToken, async (req, res) => {
     try {
         const { items, subtotal, vatAmount, total, vatRegime, vatRate, quoteNumber, issueDate, validDate, company, client, signature, lang, template } = req.body;
@@ -554,9 +581,7 @@ app.post('/api/download-pdf', authenticateToken, async (req, res) => {
     }
 });
 
-// ============================================================
 // POST /api/send-email
-// ============================================================
 app.post('/api/send-email', authenticateToken, async (req, res) => {
     try {
         const { email, items, subtotal, vatAmount, total, vatRegime, vatRate, quoteNumber, issueDate, validDate, company, client, signature } = req.body;
@@ -630,9 +655,7 @@ app.post('/api/send-email', authenticateToken, async (req, res) => {
     }
 });
 
-// ============================================================
 // POST /api/quotes/:id/sign
-// ============================================================
 app.post('/api/quotes/:id/sign', authenticateToken, async (req, res) => {
     const quoteId = parseInt(req.params.id);
     if (!quoteId) return res.status(400).json({ error: 'ID invalide.' });
@@ -690,10 +713,8 @@ app.post('/api/quotes/:id/sign', authenticateToken, async (req, res) => {
     }
 });
 
-// ============================================================
 // POST /api/quotes/:id/send-to-client
 // Génère un token public et envoie le lien au client par email
-// ============================================================
 app.post('/api/quotes/:id/send-to-client', authenticateToken, async (req, res) => {
     const quoteId = parseInt(req.params.id);
     if (!quoteId) return res.status(400).json({ error: 'ID invalide.' });
@@ -794,9 +815,7 @@ app.post('/api/quotes/:id/send-to-client', authenticateToken, async (req, res) =
     }
 });
 
-// ============================================================
 // GET /api/public/quotes/:token — Récupérer un devis par son token
-// ============================================================
 app.get('/api/public/quotes/:token', async (req, res) => {
     try {
         const { token } = req.params;
@@ -883,9 +902,7 @@ app.get('/api/public/quotes/:token', async (req, res) => {
     }
 });
 
-// ============================================================
 // POST /api/public/quotes/:token/select-variant — Client choisit sa variante
-// ============================================================
 app.post('/api/public/quotes/:token/select-variant', async (req, res) => {
     const { token } = req.params;
     const { variantIndex } = req.body;
@@ -947,9 +964,7 @@ app.post('/api/public/quotes/:token/select-variant', async (req, res) => {
     }
 });
 
-// ============================================================
 // POST /api/public/quotes/:token/sign — Signature par le client (sans auth)
-// ============================================================
 app.post('/api/public/quotes/:token/sign', async (req, res) => {
     try {
         
@@ -1103,9 +1118,7 @@ app.post('/api/public/quotes/:token/sign', async (req, res) => {
     }
 });
 
-// ============================================================
 // GET /api/public/quotes/:token/pdf — Télécharger le PDF du devis (sans auth)
-// ============================================================
 app.get('/api/public/quotes/:token/pdf', async (req, res) => {
     try {
         const { token } = req.params;
@@ -1180,9 +1193,7 @@ app.get('/api/public/quotes/:token/pdf', async (req, res) => {
     }
 });
 
-// ============================================================
 // DELETE /api/account — Suppression définitive du compte (RGPD Art. 17)
-// ============================================================
 app.delete('/api/account', authenticateToken, async (req, res) => {
     const { password, confirm } = req.body;
 
@@ -1245,9 +1256,7 @@ app.delete('/api/account', authenticateToken, async (req, res) => {
     }
 });
 
-// ============================================================
 // GET /api/export-data — Export RGPD (toutes les données de l'utilisateur)
-// ============================================================
 app.get('/api/export-data', authenticateToken, async (req, res) => {
     try {
         const userId = req.user.id;
@@ -1320,9 +1329,7 @@ app.get('/api/export-data', authenticateToken, async (req, res) => {
     }
 });
 
-// ============================================================
 // GET /api/dashboard/charts — Données pour les graphiques
-// ============================================================
 app.get('/api/dashboard/charts', authenticateToken, async (req, res) => {
     try {
         // 1. Chiffre d'affaires par mois (12 derniers mois)
@@ -1381,9 +1388,7 @@ app.get('/api/dashboard/charts', authenticateToken, async (req, res) => {
     }
 });
 
-// ============================================================
 // GET /api/dashboard
-// ============================================================
 app.get('/api/dashboard', authenticateToken, async (req, res) => {
     try {
         const result = await pool.query(
@@ -1414,16 +1419,14 @@ app.get('/api/dashboard', authenticateToken, async (req, res) => {
     }
 });
 
-// ============================================================
+app.use(errorHandler);
+
 // Route par défaut
-// ============================================================
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, '../frontend/index.html'));
 });
 
-// ============================================================
 // Démarrage
-// ============================================================
 initDB()
     .then(() => {
         app.listen(port, () => {
@@ -1435,110 +1438,183 @@ initDB()
             const { startProactiveCron } = require('./utils/cron/proactive-cron');
             startProactiveCron();
 
-            const { retryFailedDeliveries } = require('./utils/webhooks/dispatcher');
-            setInterval(() => {
-                retryFailedDeliveries().catch(err => console.warn('Erreur retry webhooks:', err.message));
-            }, 15 * 60 * 1000);
+            // ── Webhooks : retry des livraisons échouées ──────────────────────
+            const retryFailedDeliveries = safeRequire('./utils/webhooks/dispatcher', 'retryFailedDeliveries');
+            if (retryFailedDeliveries) {
+                setInterval(() => safeJob('webhook-retry', () => retryFailedDeliveries()), 15 * 60 * 1000);
+            }
 
-            const { cleanupExpiredTokens } = require('./utils/oauth/helpers');
-            setInterval(() => {
-                cleanupExpiredTokens().catch(err => console.warn('Erreur cleanup OAuth:', err.message));
-            }, 30 * 60 * 1000);
+            // ── OAuth : nettoyage des tokens expirés ──────────────────────────
+            const cleanupExpiredTokens = safeRequire('./utils/oauth/helpers', 'cleanupExpiredTokens');
+            if (cleanupExpiredTokens) {
+                setInterval(() => safeJob('oauth-cleanup', () => cleanupExpiredTokens()), 30 * 60 * 1000);
+            }
 
-            // Nettoyer les comptes demo expires toutes les 15 minutes
-            setInterval(async () => {
-                try {
-                    const result = await pool.query(`
-                        DELETE FROM users
-                        WHERE is_demo = TRUE AND demo_expires_at < NOW()
-                        RETURNING id
-                    `);
-                    if (result.rowCount > 0) {
-                        console.log('Nettoyage demo : ' + result.rowCount + ' compte(s) supprime(s)');
-                    }
-                } catch (err) {
-                    console.warn('Erreur nettoyage demo:', err.message);
+            // ── Comptes démo expirés ──────────────────────────────────────────
+            setInterval(() => safeJob('demo-cleanup', async () => {
+                const result = await pool.query(
+                    `DELETE FROM users WHERE is_demo = TRUE AND demo_expires_at < NOW() RETURNING id`
+                );
+                if (result.rowCount > 0) {
+                    console.log('Nettoyage demo : ' + result.rowCount + ' compte(s) supprime(s)');
                 }
-            }, 15 * 60 * 1000);
+            }), 15 * 60 * 1000);
 
-            // Nettoyage au demarrage
-            setTimeout(async () => {
-                try {
-                    const result = await pool.query(`
-                        DELETE FROM users
-                        WHERE is_demo = TRUE AND demo_expires_at < NOW()
-                        RETURNING id
-                    `);
-                    if (result.rowCount > 0) {
-                        console.log('Nettoyage demo au demarrage : ' + result.rowCount + ' compte(s) supprime(s)');
-                    }
-                } catch (err) {
-                    console.warn('Erreur nettoyage demo au demarrage:', err.message);
+            // Premier passage démo 5s après le démarrage
+            setTimeout(() => safeJob('demo-cleanup-startup', async () => {
+                const result = await pool.query(
+                    `DELETE FROM users WHERE is_demo = TRUE AND demo_expires_at < NOW() RETURNING id`
+                );
+                if (result.rowCount > 0) {
+                    console.log('Nettoyage demo au demarrage : ' + result.rowCount + ' compte(s) supprime(s)');
                 }
-            }, 5000);
+            }), 5000);
 
-            const { processDueRecurringInvoices } = require('./utils/recurring/helpers');
-
-            // Verifier les factures recurrentes toutes les heures
-            setInterval(async () => {
-                try {
+            // ── Factures récurrentes ──────────────────────────────────────────
+            const processDueRecurringInvoices = safeRequire('./utils/recurring/helpers', 'processDueRecurringInvoices');
+            if (processDueRecurringInvoices) {
+                setInterval(() => safeJob('recurring-invoices', async () => {
                     const result = await processDueRecurringInvoices();
-                    if (result.processed.length > 0) {
-                        console.log('Factures recurrentes generees : ' + result.processed.length);
-                    }
-                    if (result.failed.length > 0) {
-                        console.warn('Factures recurrentes en echec : ' + result.failed.length);
-                    }
-                } catch (err) {
-                    console.warn('Erreur cron factures recurrentes:', err.message);
-                }
-            }, 60 * 60 * 1000);
+                    if (result.processed.length > 0) console.log('Factures recurrentes generees : ' + result.processed.length);
+                    if (result.failed.length > 0) console.warn('Factures recurrentes en echec : ' + result.failed.length);
+                }), 60 * 60 * 1000);
 
-            // Premier passage 30 secondes apres le demarrage
-            setTimeout(async () => {
-                try {
+                setTimeout(() => safeJob('recurring-invoices-startup', async () => {
                     const result = await processDueRecurringInvoices();
-                    if (result.processed.length > 0) {
-                        console.log('Factures recurrentes generees au demarrage : ' + result.processed.length);
-                    }
-                } catch (err) {
-                    console.warn('Erreur process recurring au demarrage:', err.message);
-                }
-            }, 30000);
+                    if (result.processed.length > 0) console.log('Factures recurrentes generees au demarrage : ' + result.processed.length);
+                }), 30000);
+            }
 
-            // Warm-up Ollama au démarrage (charge le modèle en mémoire) assistant v2
-            // Warm-up Ollama (sans userId)
+            // ── Warm-up Ollama (assistant v2) ─────────────────────────────────
             if (process.env.OLLAMA_URL) {
-                setTimeout(async () => {
-                    try {
-                        const llm = require('./utils/assistant_v2/llm/client');
-                        await llm.embed('warmup');
-                        console.log('✅ Ollama warm-up OK');
-                    } catch (err) {
-                        console.warn('⚠️  Ollama warm-up échoué :', err.message);
-                    }
-                }, 3000);
-            };
+                setTimeout(() => safeJob('ollama-warmup', async () => {
+                    const llm = require('./utils/assistant_v2/llm/client');
+                    await llm.embed('warmup');
+                    console.log('Ollama warm-up OK');
+                }), 3000);
+            }
 
-            // Nettoyage des sessions assistant inactives (1 fois par jour)
-            const { cleanupStaleSessions } = require('./utils/assistant/session');
-            setInterval(() => {
-                cleanupStaleSessions(90).catch(err => console.warn('Erreur cleanup sessions:', err.message));
-            }, 24 * 60 * 60 * 1000);
-            // Premier passage au démarrage (après 60s)
-            setTimeout(() => {
-                cleanupStaleSessions(90).catch(err => console.warn('Erreur cleanup sessions démarrage:', err.message));
-            }, 60000);
+            // ── Nettoyage des sessions assistant inactives ────────────────────
+            const cleanupStaleSessions = safeRequire('./utils/assistant/session', 'cleanupStaleSessions');
+            if (cleanupStaleSessions) {
+                setInterval(() => safeJob('sessions-cleanup-daily', () => cleanupStaleSessions(90)), 24 * 60 * 60 * 1000);
+                setTimeout(() => safeJob('sessions-cleanup-startup', () => cleanupStaleSessions(90)), 60000);
+            } else {
+                console.warn('⏭Job cleanup sessions désactivé (fonction introuvable dans ./utils/assistant/session)');
+            }
 
+            // ── Supervisor cron (optionnel) ───────────────────────────────────
             if (process.env.SUPERVISOR_ENABLED === "1") {
-                // Import dynamique pour ne pas bloquer si désactivé
                 import("workers/cron.js").catch((e) =>
                     console.error("[server] impossible de démarrer le cron :", e)
                 );
-            };
+            }
+
+            // const { retryFailedDeliveries } = require('./utils/webhooks/dispatcher');
+            // setInterval(() => {
+            //     retryFailedDeliveries().catch(err => console.warn('Erreur retry webhooks:', err.message));
+            // }, 15 * 60 * 1000);
+
+            // const { cleanupExpiredTokens } = require('./utils/oauth/helpers');
+            // setInterval(() => {
+            //     cleanupExpiredTokens().catch(err => console.warn('Erreur cleanup OAuth:', err.message));
+            // }, 30 * 60 * 1000);
+
+            // // Nettoyer les comptes demo expires toutes les 15 minutes
+            // setInterval(async () => {
+            //     try {
+            //         const result = await pool.query(`
+            //             DELETE FROM users
+            //             WHERE is_demo = TRUE AND demo_expires_at < NOW()
+            //             RETURNING id
+            //         `);
+            //         if (result.rowCount > 0) {
+            //             console.log('Nettoyage demo : ' + result.rowCount + ' compte(s) supprime(s)');
+            //         }
+            //     } catch (err) {
+            //         console.warn('Erreur nettoyage demo:', err.message);
+            //     }
+            // }, 15 * 60 * 1000);
+
+            // // Nettoyage au demarrage
+            // setTimeout(async () => {
+            //     try {
+            //         const result = await pool.query(`
+            //             DELETE FROM users
+            //             WHERE is_demo = TRUE AND demo_expires_at < NOW()
+            //             RETURNING id
+            //         `);
+            //         if (result.rowCount > 0) {
+            //             console.log('Nettoyage demo au demarrage : ' + result.rowCount + ' compte(s) supprime(s)');
+            //         }
+            //     } catch (err) {
+            //         console.warn('Erreur nettoyage demo au demarrage:', err.message);
+            //     }
+            // }, 5000);
+
+            // const { processDueRecurringInvoices } = require('./utils/recurring/helpers');
+
+            // // Verifier les factures recurrentes toutes les heures
+            // setInterval(async () => {
+            //     try {
+            //         const result = await processDueRecurringInvoices();
+            //         if (result.processed.length > 0) {
+            //             console.log('Factures recurrentes generees : ' + result.processed.length);
+            //         }
+            //         if (result.failed.length > 0) {
+            //             console.warn('Factures recurrentes en echec : ' + result.failed.length);
+            //         }
+            //     } catch (err) {
+            //         console.warn('Erreur cron factures recurrentes:', err.message);
+            //     }
+            // }, 60 * 60 * 1000);
+
+            // // Premier passage 30 secondes apres le demarrage
+            // setTimeout(async () => {
+            //     try {
+            //         const result = await processDueRecurringInvoices();
+            //         if (result.processed.length > 0) {
+            //             console.log('Factures recurrentes generees au demarrage : ' + result.processed.length);
+            //         }
+            //     } catch (err) {
+            //         console.warn('Erreur process recurring au demarrage:', err.message);
+            //     }
+            // }, 30000);
+
+            // // Warm-up Ollama au démarrage (charge le modèle en mémoire) assistant v2
+            // // Warm-up Ollama (sans userId)
+            // if (process.env.OLLAMA_URL) {
+            //     setTimeout(async () => {
+            //         try {
+            //             const llm = require('./utils/assistant_v2/llm/client');
+            //             await llm.embed('warmup');
+            //             console.log('✅ Ollama warm-up OK');
+            //         } catch (err) {
+            //             console.warn('⚠️  Ollama warm-up échoué :', err.message);
+            //         }
+            //     }, 3000);
+            // };
+
+            // // Nettoyage des sessions assistant inactives (1 fois par jour)
+            // const { cleanupStaleSessions } = require('./utils/assistant/session');
+            // setInterval(() => {
+            //     cleanupStaleSessions(90).catch(err => console.warn('Erreur cleanup sessions:', err.message));
+            // }, 24 * 60 * 60 * 1000);
+            // // Premier passage au démarrage (après 60s)
+            // setTimeout(() => {
+            //     cleanupStaleSessions(90).catch(err => console.warn('Erreur cleanup sessions démarrage:', err.message));
+            // }, 60000);
+
+            // if (process.env.SUPERVISOR_ENABLED === "1") {
+            //     // Import dynamique pour ne pas bloquer si désactivé
+            //     import("workers/cron.js").catch((e) =>
+            //         console.error("[server] impossible de démarrer le cron :", e)
+            //     );
+            // };
         });
     })
     .catch(err => {
         console.error('Erreur init DB:', err);
         process.exit(1);
     });
+
