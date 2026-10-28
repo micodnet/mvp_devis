@@ -10,6 +10,9 @@ const jwt = require('jsonwebtoken');
 function authenticateToken(req, res, next) {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
+    // const header = req.headers.authorization || "";
+    // const token = header.startsWith("Bearer ") ? header.slice(7) : null;
+
 
     if (!token) {
         return res.status(401).json({ error: 'Token manquant. Veuillez vous connecter.' });
@@ -24,6 +27,7 @@ function authenticateToken(req, res, next) {
         req.user = {
             id: accountId,           // ← Utilisé par toutes les routes existantes (data)
             userId: decoded.id,      // ← ID de la personne connectée (pour team)
+            //tenantId: payload.tenantId,
             email: decoded.email,
             role: decoded.role || 'owner'
         };

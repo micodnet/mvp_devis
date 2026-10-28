@@ -5,6 +5,10 @@ const express = require('express');
 const { authenticateToken } = require('../middleware/auth');
 const analytics = require('../utils/stats/analytics');
 
+const { statsService } = require('../services/statsService');
+//const { authMiddleware } = require('../middleware/auth');
+const { asyncHandler } = require('../middleware/errorHandler');
+
 const router = express.Router();
 
 // ============================================================
@@ -102,5 +106,40 @@ router.get('/temporal', authenticateToken, async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+
+//route pour assistant v3
+//router.use("/stats", authMiddleware);
+
+router.get(
+  "/stats/overview",
+  asyncHandler(async (req, res) => {
+    const stats = await statsService.overview({ tenantId: req.user.tenantId });
+    res.json(stats);
+  })
+);
+
+router.get(
+  "/stats/revenue-by-month",
+  asyncHandler(async (req, res) => {
+    const months = Number(req.query.months || 12);
+    const stats = await statsService.revenueByMonth({
+      tenantId: req.user.tenantId,
+      months,
+    });
+    res.json(stats);
+  })
+);
+
+router.get(
+  "/stats/top-clients",
+  asyncHandler(async (req, res) => {
+    const limit = Number(req.query.limit || 10);
+    const stats = await statsService.topClients({
+      tenantId: req.user.tenantId,
+      limit,
+    });
+    res.json(stats);
+  })
+);
 
 module.exports = router;

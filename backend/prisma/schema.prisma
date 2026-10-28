@@ -1,0 +1,1477 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model api_keys {
+  id                  Int        @id @default(autoincrement())
+  user_id             Int
+  name                String     @db.VarChar(255)
+  key_prefix          String     @db.VarChar(16)
+  key_hash            String     @db.VarChar(255)
+  scopes              Json?      @default("[\"read\"]")
+  rate_limit_per_hour Int?       @default(1000)
+  last_used_at        DateTime?  @db.Timestamp(6)
+  expires_at          DateTime?  @db.Timestamp(6)
+  active              Boolean?   @default(true)
+  created_at          DateTime?  @default(now()) @db.Timestamp(6)
+  revoked_at          DateTime?  @db.Timestamp(6)
+  users               users      @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  api_logs            api_logs[]
+
+  @@index([user_id, active], map: "idx_api_keys_active")
+  @@index([key_prefix], map: "idx_api_keys_prefix")
+  @@index([user_id], map: "idx_api_keys_user")
+}
+
+model api_logs {
+  id            Int       @id @default(autoincrement())
+  user_id       Int
+  api_key_id    Int?
+  method        String    @db.VarChar(10)
+  endpoint      String    @db.VarChar(255)
+  status_code   Int?
+  ip_address    String?   @db.VarChar(45)
+  user_agent    String?
+  duration_ms   Int?
+  error_message String?
+  created_at    DateTime? @default(now()) @db.Timestamp(6)
+  api_keys      api_keys? @relation(fields: [api_key_id], references: [id], onUpdate: NoAction)
+  users         users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([user_id, created_at(sort: Desc)], map: "idx_api_logs_date")
+  @@index([api_key_id], map: "idx_api_logs_key")
+  @@index([user_id], map: "idx_api_logs_user")
+}
+
+model appointments {
+  id                  Int       @id @default(autoincrement())
+  user_id             Int
+  client_id           Int?
+  client_name         String    @db.VarChar(255)
+  client_email        String?   @db.VarChar(255)
+  client_phone        String?   @db.VarChar(30)
+  client_address      String?
+  subject             String?   @db.VarChar(255)
+  notes               String?
+  appointment_date    DateTime  @db.Date
+  start_time          DateTime  @db.Time(6)
+  end_time            DateTime  @db.Time(6)
+  duration_minutes    Int?      @default(60)
+  status              String?   @default("pending") @db.VarChar(30)
+  source              String?   @default("manual") @db.VarChar(30)
+  reminder_sent_at    DateTime? @db.Timestamp(6)
+  cancelled_at        DateTime? @db.Timestamp(6)
+  cancellation_reason String?
+  created_at          DateTime? @default(now()) @db.Timestamp(6)
+  updated_at          DateTime? @default(now()) @db.Timestamp(6)
+  clients             clients?  @relation(fields: [client_id], references: [id], onUpdate: NoAction)
+  users               users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([client_email], map: "idx_appointments_email")
+  @@index([user_id, status], map: "idx_appointments_status")
+  @@index([user_id, appointment_date, start_time], map: "idx_appointments_user")
+}
+
+model assistant_learnings {
+  id           BigInt    @id @default(autoincrement())
+  user_id      Int
+  pattern_type String
+  context      String?
+  observation  Json
+  confidence   Float?    @default(0.0)
+  count        Int?      @default(1)
+  status       String?   @default("pending")
+  created_at   DateTime? @default(now()) @db.Timestamptz(6)
+  updated_at   DateTime? @default(now()) @db.Timestamptz(6)
+  users        users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([user_id, pattern_type, context])
+  @@index([user_id, status, pattern_type], map: "assistant_learnings_user_idx")
+}
+
+model assistant_memory {
+  id          BigInt                 @id @default(autoincrement())
+  user_id     Int
+  memory_type String
+  content     String
+  embedding   Unsupported("vector")?
+  metadata    Json?                  @default("{}")
+  weight      Float?                 @default(1.0)
+  created_at  DateTime?              @default(now()) @db.Timestamptz(6)
+  updated_at  DateTime?              @default(now()) @db.Timestamptz(6)
+  users       users                  @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([embedding])
+  @@index([user_id, memory_type], map: "assistant_memory_user_idx")
+}
+
+model assistant_observations {
+  id               Int       @id @default(autoincrement())
+  user_id          Int
+  observation_type String    @db.VarChar(50)
+  context          String?   @db.VarChar(100)
+  field            String    @db.VarChar(50)
+  old_value        Decimal?  @db.Decimal(12, 2)
+  new_value        Decimal?  @db.Decimal(12, 2)
+  count            Int?      @default(1)
+  status           String?   @default("pending") @db.VarChar(20)
+  last_seen_at     DateTime? @default(now()) @db.Timestamp(6)
+  created_at       DateTime? @default(now()) @db.Timestamp(6)
+  updated_at       DateTime? @default(now()) @db.Timestamp(6)
+  users            users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([user_id, observation_type, context, field, new_value])
+  @@index([user_id, status], map: "idx_assistant_observations_user_status")
+}
+
+model assistant_plans {
+  id           BigInt    @id @default(autoincrement())
+  user_id      Int
+  user_message String
+  plan         Json
+  results      Json?     @default("[]")
+  success      Boolean?  @default(false)
+  duration_ms  Int?
+  error        String?
+  created_at   DateTime? @default(now()) @db.Timestamptz(6)
+  users        users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([user_id, created_at(sort: Desc)], map: "assistant_plans_user_idx")
+}
+
+model assistant_preferences {
+  user_id                Int       @id
+  hourly_rates           Json?     @default("{}")
+  default_hourly_rate    Decimal?  @default(45.00) @db.Decimal(10, 2)
+  default_margin_percent Decimal?  @default(0.00) @db.Decimal(5, 2)
+  default_vat_regime     String?   @default("franchise") @db.VarChar(20)
+  default_vat_rate       Decimal?  @default(21.00) @db.Decimal(5, 2)
+  default_payment_terms  Int?      @default(30)
+  preferred_suppliers    Json?     @default("{}")
+  voice_corrections      Json?     @default("{}")
+  misc                   Json?     @default("{}")
+  created_at             DateTime? @default(now()) @db.Timestamp(6)
+  updated_at             DateTime? @default(now()) @db.Timestamp(6)
+  users                  users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model assistant_sessions {
+  user_id           Int       @id
+  last_quote_id     Int?
+  last_quote_number String?   @db.VarChar(50)
+  last_client_name  String?   @db.VarChar(255)
+  last_action       String?   @db.VarChar(50)
+  last_action_at    DateTime? @db.Timestamp(6)
+  context           Json?     @default("{}")
+  recent_history    Json?     @default("[]")
+  created_at        DateTime? @default(now()) @db.Timestamp(6)
+  updated_at        DateTime? @default(now()) @db.Timestamp(6)
+  users             users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([user_id], map: "idx_assistant_sessions_user")
+}
+
+model assistant_suggestions {
+  id                  Int        @id @default(autoincrement())
+  user_id             Int
+  suggestion_type     String     @db.VarChar(50)
+  title               String     @db.VarChar(255)
+  message             String?
+  action_type         String?    @db.VarChar(50)
+  action_payload      Json?
+  related_quote_id    Int?
+  related_invoice_id  Int?
+  related_chantier_id Int?
+  priority            Int?       @default(5)
+  status              String?    @default("active") @db.VarChar(20)
+  dismissed_at        DateTime?  @db.Timestamp(6)
+  actioned_at         DateTime?  @db.Timestamp(6)
+  expires_at          DateTime?  @db.Timestamp(6)
+  created_at          DateTime?  @default(now()) @db.Timestamp(6)
+  chantiers           chantiers? @relation(fields: [related_chantier_id], references: [id], onUpdate: NoAction)
+  invoices            invoices?  @relation(fields: [related_invoice_id], references: [id], onUpdate: NoAction)
+  quotes              quotes?    @relation(fields: [related_quote_id], references: [id], onUpdate: NoAction)
+  users               users      @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([user_id, suggestion_type, status], map: "idx_suggestions_type")
+  @@index([user_id, status, priority(sort: Desc), created_at(sort: Desc)], map: "idx_suggestions_user")
+}
+
+model assistant_training_data {
+  id                BigInt    @id @default(autoincrement())
+  user_id           Int
+  messages          Json
+  source            String?   @default("auto")
+  quality_score     Float?    @default(1.0)
+  used_for_training Boolean?  @default(false)
+  created_at        DateTime? @default(now()) @db.Timestamptz(6)
+  users             users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([user_id, used_for_training, quality_score], map: "assistant_training_user_idx")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model availability_slots {
+  id         Int       @id @default(autoincrement())
+  user_id    Int
+  weekday    Int
+  start_time DateTime  @db.Time(6)
+  end_time   DateTime  @db.Time(6)
+  active     Boolean?  @default(true)
+  created_at DateTime? @default(now()) @db.Timestamp(6)
+  updated_at DateTime? @default(now()) @db.Timestamp(6)
+  users      users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([user_id, weekday, active], map: "idx_availability_user")
+}
+
+model bank_imports {
+  id                 Int                 @id @default(autoincrement())
+  user_id            Int
+  filename           String?             @db.VarChar(255)
+  original_name      String?             @db.VarChar(255)
+  format             String?             @db.VarChar(30)
+  transactions_count Int?                @default(0)
+  reconciled_count   Int?                @default(0)
+  error_message      String?
+  created_at         DateTime?           @default(now()) @db.Timestamp(6)
+  users              users               @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  bank_transactions  bank_transactions[]
+
+  @@index([user_id, created_at(sort: Desc)], map: "idx_bank_imports_user")
+}
+
+model bank_transactions {
+  id                 Int           @id @default(autoincrement())
+  user_id            Int
+  import_id          Int?
+  transaction_date   DateTime      @db.Date
+  value_date         DateTime?     @db.Date
+  amount             Decimal       @db.Decimal(12, 2)
+  currency           String?       @default("EUR") @db.VarChar(3)
+  description        String?
+  counterparty       String?       @db.VarChar(255)
+  reference          String?       @db.VarChar(255)
+  transaction_type   String?       @db.VarChar(20)
+  matched_invoice_id Int?
+  match_score        Int?
+  match_reason       String?       @db.VarChar(255)
+  status             String?       @default("pending") @db.VarChar(30)
+  validated_at       DateTime?     @db.Timestamp(6)
+  created_at         DateTime?     @default(now()) @db.Timestamp(6)
+  bank_imports       bank_imports? @relation(fields: [import_id], references: [id], onUpdate: NoAction)
+  invoices           invoices?     @relation(fields: [matched_invoice_id], references: [id], onUpdate: NoAction)
+  users              users         @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([matched_invoice_id], map: "idx_bank_transactions_invoice")
+  @@index([user_id, status], map: "idx_bank_transactions_status")
+  @@index([user_id, transaction_date(sort: Desc)], map: "idx_bank_transactions_user")
+}
+
+model chantier_events {
+  id          Int       @id @default(autoincrement())
+  user_id     Int
+  chantier_id Int
+  event_type  String    @db.VarChar(50)
+  event_data  Json?
+  created_at  DateTime? @default(now()) @db.Timestamp(6)
+  chantiers   chantiers @relation(fields: [chantier_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users       users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([chantier_id], map: "idx_chantier_events_chantier")
+}
+
+model chantier_photos {
+  id            Int       @id @default(autoincrement())
+  user_id       Int
+  chantier_id   Int
+  filename      String    @db.VarChar(255)
+  original_name String?   @db.VarChar(255)
+  mime_type     String?   @db.VarChar(100)
+  size_bytes    Int?
+  caption       String?   @db.VarChar(500)
+  uploaded_at   DateTime? @default(now()) @db.Timestamp(6)
+  chantiers     chantiers @relation(fields: [chantier_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users         users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([chantier_id], map: "idx_chantier_photos_chantier")
+}
+
+model chantiers {
+  id                        Int                         @id @default(autoincrement())
+  user_id                   Int
+  name                      String                      @db.VarChar(255)
+  reference                 String?                     @db.VarChar(50)
+  description               String?
+  client_id                 Int?
+  client_name               String?                     @db.VarChar(255)
+  client_address            String?
+  status                    String?                     @default("planned") @db.VarChar(30)
+  budget_estimate           Decimal?                    @db.Decimal(12, 2)
+  budget_final              Decimal?                    @db.Decimal(12, 2)
+  start_date                DateTime?                   @db.Date
+  end_date                  DateTime?                   @db.Date
+  completed_at              DateTime?                   @db.Timestamp(6)
+  notes                     String?
+  color                     String?                     @default("#f97316") @db.VarChar(20)
+  created_at                DateTime?                   @default(now()) @db.Timestamp(6)
+  updated_at                DateTime?                   @default(now()) @db.Timestamp(6)
+  currency                  String?                     @default("EUR") @db.VarChar(3)
+  assistant_suggestions     assistant_suggestions[]
+  chantier_events           chantier_events[]
+  chantier_photos           chantier_photos[]
+  clients                   clients?                    @relation(fields: [client_id], references: [id], onUpdate: NoAction)
+  users                     users                       @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  client_conversations      client_conversations[]
+  invoices                  invoices[]
+  quotes                    quotes[]
+  subcontractor_assignments subcontractor_assignments[]
+
+  @@index([client_id], map: "idx_chantiers_client")
+  @@index([user_id, status], map: "idx_chantiers_status")
+  @@index([user_id], map: "idx_chantiers_user")
+}
+
+model client_account_logs {
+  id                Int             @id @default(autoincrement())
+  client_account_id Int
+  user_id           Int
+  action            String          @db.VarChar(50)
+  ip_address        String?         @db.VarChar(45)
+  user_agent        String?
+  details           Json?
+  created_at        DateTime?       @default(now()) @db.Timestamp(6)
+  client_accounts   client_accounts @relation(fields: [client_account_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users             users           @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([client_account_id, created_at(sort: Desc)], map: "idx_client_logs_account")
+  @@index([user_id, created_at(sort: Desc)], map: "idx_client_logs_user")
+}
+
+model client_accounts {
+  id                     Int                   @id @default(autoincrement())
+  user_id                Int
+  client_id              Int
+  email                  String                @unique @db.VarChar(255)
+  password_hash          String?               @db.VarChar(255)
+  invitation_token       String?               @db.VarChar(64)
+  invitation_expires_at  DateTime?             @db.Timestamp(6)
+  invitation_sent_at     DateTime?             @db.Timestamp(6)
+  invitation_accepted_at DateTime?             @db.Timestamp(6)
+  last_login_at          DateTime?             @db.Timestamp(6)
+  active                 Boolean?              @default(true)
+  created_at             DateTime?             @default(now()) @db.Timestamp(6)
+  updated_at             DateTime?             @default(now()) @db.Timestamp(6)
+  client_account_logs    client_account_logs[]
+  clients                clients               @relation(fields: [client_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users                  users                 @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([user_id, client_id])
+  @@index([email], map: "idx_client_accounts_email")
+  @@index([invitation_token], map: "idx_client_accounts_token")
+  @@index([user_id], map: "idx_client_accounts_user")
+}
+
+model client_conversations {
+  id                   Int               @id @default(autoincrement())
+  user_id              Int
+  client_id            Int?
+  client_name          String?           @db.VarChar(255)
+  client_email         String?           @db.VarChar(255)
+  subject              String?           @db.VarChar(255)
+  related_quote_id     Int?
+  related_invoice_id   Int?
+  related_chantier_id  Int?
+  last_message_at      DateTime?         @default(now()) @db.Timestamp(6)
+  last_message_preview String?
+  owner_unread_count   Int?              @default(0)
+  client_unread_count  Int?              @default(0)
+  status               String?           @default("open") @db.VarChar(30)
+  access_token         String?           @db.VarChar(64)
+  created_at           DateTime?         @default(now()) @db.Timestamp(6)
+  updated_at           DateTime?         @default(now()) @db.Timestamp(6)
+  clients              clients?          @relation(fields: [client_id], references: [id], onUpdate: NoAction)
+  chantiers            chantiers?        @relation(fields: [related_chantier_id], references: [id], onUpdate: NoAction)
+  invoices             invoices?         @relation(fields: [related_invoice_id], references: [id], onUpdate: NoAction)
+  quotes               quotes?           @relation(fields: [related_quote_id], references: [id], onUpdate: NoAction)
+  users                users             @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  client_messages      client_messages[]
+
+  @@index([client_id], map: "idx_conversations_client")
+  @@index([access_token], map: "idx_conversations_token")
+  @@index([user_id, owner_unread_count], map: "idx_conversations_unread")
+  @@index([user_id, last_message_at(sort: Desc)], map: "idx_conversations_user")
+}
+
+model client_messages {
+  id                   Int                  @id @default(autoincrement())
+  conversation_id      Int
+  sender_type          String               @db.VarChar(20)
+  sender_name          String?              @db.VarChar(255)
+  body                 String
+  read_at              DateTime?            @db.Timestamp(6)
+  created_at           DateTime?            @default(now()) @db.Timestamp(6)
+  client_conversations client_conversations @relation(fields: [conversation_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([conversation_id, created_at], map: "idx_messages_conversation")
+}
+
+model clients {
+  id                   Int                    @id @default(autoincrement())
+  user_id              Int?
+  name                 String                 @db.VarChar(255)
+  contact_name         String?                @db.VarChar(255)
+  email                String?                @db.VarChar(255)
+  phone                String?                @db.VarChar(50)
+  address              String?
+  vat_number           String?                @db.VarChar(50)
+  notes                String?
+  created_at           DateTime?              @default(now()) @db.Timestamp(6)
+  updated_at           DateTime?              @default(now()) @db.Timestamp(6)
+  appointments         appointments[]
+  chantiers            chantiers[]
+  client_accounts      client_accounts[]
+  client_conversations client_conversations[]
+  users                users?                 @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  invoices             invoices[]
+  quote_templates      quote_templates[]
+  quotes               quotes[]
+  recurring_invoices   recurring_invoices[]
+
+  @@index([user_id, name], map: "idx_clients_name")
+  @@index([user_id], map: "idx_clients_user")
+}
+
+model counters {
+  user_id     Int   @id
+  last_number Int?  @default(0)
+  users       users @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model email_imports {
+  id             Int       @id @default(autoincrement())
+  user_id        Int
+  raw_text       String?
+  from_email     String?   @db.VarChar(255)
+  from_name      String?   @db.VarChar(255)
+  subject        String?   @db.VarChar(500)
+  received_at    DateTime? @db.Timestamp(6)
+  extracted_data Json?
+  quote_id       Int?
+  status         String?   @default("pending") @db.VarChar(30)
+  error_message  String?
+  created_at     DateTime? @default(now()) @db.Timestamp(6)
+  quotes         quotes?   @relation(fields: [quote_id], references: [id], onUpdate: NoAction)
+  users          users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([user_id, status], map: "idx_email_imports_status")
+  @@index([user_id, created_at(sort: Desc)], map: "idx_email_imports_user")
+}
+
+model email_log {
+  id         Int       @id @default(autoincrement())
+  user_id    Int?
+  email_type String    @db.VarChar(50)
+  sent_at    DateTime? @default(now()) @db.Timestamp(6)
+  users      users?    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([user_id, email_type])
+  @@index([email_type], map: "idx_email_log_type")
+  @@index([user_id], map: "idx_email_log_user")
+}
+
+model exchange_rates {
+  id              Int       @id @default(autoincrement())
+  base_currency   String    @db.VarChar(3)
+  target_currency String    @db.VarChar(3)
+  rate            Decimal   @db.Decimal(12, 6)
+  updated_at      DateTime? @default(now()) @db.Timestamp(6)
+
+  @@unique([base_currency, target_currency])
+}
+
+model expiration_notifications {
+  id       Int       @id @default(autoincrement())
+  user_id  Int?
+  quote_id Int?
+  level    String    @db.VarChar(10)
+  sent_at  DateTime? @default(now()) @db.Timestamp(6)
+  quotes   quotes?   @relation(fields: [quote_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users    users?    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([user_id, quote_id, level])
+  @@index([quote_id], map: "idx_exp_notif_quote")
+  @@index([user_id], map: "idx_exp_notif_user")
+}
+
+model image_analyses {
+  id                 Int       @id @default(autoincrement())
+  user_id            Int
+  filename           String    @db.VarChar(255)
+  original_name      String?   @db.VarChar(255)
+  mime_type          String?   @db.VarChar(100)
+  size_bytes         Int?
+  user_prompt        String?
+  provider           String?   @db.VarChar(30)
+  model              String?   @db.VarChar(100)
+  result             Json?
+  raw_response       String?
+  duration_ms        Int?
+  error_message      String?
+  converted_quote_id Int?
+  created_at         DateTime? @default(now()) @db.Timestamp(6)
+  quotes             quotes?   @relation(fields: [converted_quote_id], references: [id], onUpdate: NoAction)
+  users              users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([converted_quote_id], map: "idx_image_analyses_quote")
+  @@index([user_id, created_at(sort: Desc)], map: "idx_image_analyses_user")
+}
+
+model invoice_counters {
+  user_id     Int   @id
+  last_number Int?  @default(0)
+  users       users @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model invoice_payment_schedules {
+  id             Int       @id @default(autoincrement())
+  user_id        Int
+  invoice_id     Int
+  position       Int
+  label          String?   @db.VarChar(255)
+  amount         Decimal   @db.Decimal(12, 2)
+  due_date       DateTime  @db.Date
+  paid_at        DateTime? @db.Timestamp(6)
+  amount_paid    Decimal?  @default(0) @db.Decimal(12, 2)
+  payment_method String?   @db.VarChar(50)
+  status         String?   @default("pending") @db.VarChar(30)
+  notes          String?
+  created_at     DateTime? @default(now()) @db.Timestamp(6)
+  updated_at     DateTime? @default(now()) @db.Timestamp(6)
+  invoices       invoices  @relation(fields: [invoice_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users          users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([user_id, status, due_date], map: "idx_payment_schedules_due")
+  @@index([invoice_id, position], map: "idx_payment_schedules_invoice")
+  @@index([user_id], map: "idx_payment_schedules_user")
+}
+
+model invoice_payments {
+  id             Int       @id @default(autoincrement())
+  user_id        Int
+  invoice_id     Int
+  amount         Decimal   @db.Decimal(12, 2)
+  payment_date   DateTime  @default(dbgenerated("CURRENT_DATE")) @db.Date
+  payment_method String?   @db.VarChar(50)
+  reference      String?   @db.VarChar(100)
+  notes          String?
+  created_at     DateTime? @default(now()) @db.Timestamp(6)
+  invoices       invoices  @relation(fields: [invoice_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users          users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([invoice_id], map: "idx_invoice_payments_invoice")
+}
+
+model invoices {
+  id                        Int                         @id @default(autoincrement())
+  user_id                   Int?
+  invoice_number            String                      @db.VarChar(50)
+  quote_id                  Int?
+  issue_date                DateTime                    @db.Date
+  due_date                  DateTime                    @db.Date
+  subtotal                  Decimal?                    @db.Decimal(10, 2)
+  vat_amount                Decimal?                    @db.Decimal(10, 2)
+  total                     Decimal                     @db.Decimal(10, 2)
+  vat_regime                String?                     @db.VarChar(20)
+  status                    String?                     @default("draft") @db.VarChar(20)
+  paid_at                   DateTime?                   @db.Timestamp(6)
+  payment_method            String?                     @db.VarChar(50)
+  items                     Json
+  client_id                 Int?
+  client_name               String?                     @db.VarChar(255)
+  client_address            String?
+  client_vat                String?                     @db.VarChar(50)
+  client_email              String?                     @db.VarChar(255)
+  notes                     String?
+  created_at                DateTime?                   @default(now()) @db.Timestamp(6)
+  updated_at                DateTime?                   @default(now()) @db.Timestamp(6)
+  peppol_order_id           String?                     @db.VarChar(50)
+  peppol_sent_at            DateTime?                   @db.Timestamp(6)
+  peppol_status             String?                     @db.VarChar(50)
+  peppol_submission_id      String?                     @db.VarChar(255)
+  peppol_delivered_at       DateTime?                   @db.Timestamp(6)
+  peppol_error              String?
+  invoice_type              String?                     @default("invoice") @db.VarChar(20)
+  parent_invoice_id         Int?
+  payment_date              DateTime?                   @db.Timestamp(6)
+  amount_paid               Decimal?                    @default(0) @db.Decimal(12, 2)
+  amount_due                Decimal?                    @db.Decimal(12, 2)
+  deposit_percent           Decimal?                    @db.Decimal(5, 2)
+  is_recurring              Boolean?                    @default(false)
+  recurrence_interval       String?                     @db.VarChar(20)
+  next_recurrence_date      DateTime?                   @db.Date
+  chantier_id               Int?
+  currency                  String?                     @default("EUR") @db.VarChar(3)
+  exchange_rate             Decimal?                    @default(1.0) @db.Decimal(12, 6)
+  public_token              String?                     @unique @db.VarChar(64)
+  assistant_suggestions     assistant_suggestions[]
+  bank_transactions         bank_transactions[]
+  client_conversations      client_conversations[]
+  invoice_payment_schedules invoice_payment_schedules[]
+  invoice_payments          invoice_payments[]
+  chantiers                 chantiers?                  @relation(fields: [chantier_id], references: [id], onUpdate: NoAction)
+  clients                   clients?                    @relation(fields: [client_id], references: [id], onUpdate: NoAction)
+  invoices                  invoices?                   @relation("invoicesToinvoices", fields: [parent_invoice_id], references: [id], onUpdate: NoAction)
+  other_invoices            invoices[]                  @relation("invoicesToinvoices")
+  quotes                    quotes?                     @relation(fields: [quote_id], references: [id], onUpdate: NoAction)
+  users                     users?                      @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  online_payments           online_payments[]
+  payment_reminders         payment_reminders[]
+  recurring_invoice_logs    recurring_invoice_logs[]
+  sms_logs                  sms_logs[]
+  stock_movements           stock_movements[]
+
+  @@index([chantier_id], map: "idx_invoices_chantier")
+  @@index([client_id], map: "idx_invoices_client")
+  @@index([peppol_order_id], map: "idx_invoices_peppol")
+  @@index([public_token], map: "idx_invoices_public_token")
+  @@index([quote_id], map: "idx_invoices_quote")
+  @@index([user_id, status], map: "idx_invoices_status")
+  @@index([user_id], map: "idx_invoices_user")
+}
+
+model monthly_quota {
+  id           Int    @id @default(autoincrement())
+  user_id      Int?
+  month        String @db.VarChar(7)
+  quotes_count Int?   @default(0)
+  users        users? @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([user_id, month])
+  @@index([user_id, month], map: "idx_quota_user_month")
+}
+
+model oauth_access_tokens {
+  id                 Int       @id @default(autoincrement())
+  token              String    @unique @db.VarChar(128)
+  refresh_token      String    @unique @db.VarChar(128)
+  client_id          String    @db.VarChar(64)
+  user_id            Int
+  scopes             Json      @default("[]")
+  expires_at         DateTime  @db.Timestamp(6)
+  refresh_expires_at DateTime  @db.Timestamp(6)
+  revoked            Boolean?  @default(false)
+  last_used_at       DateTime? @db.Timestamp(6)
+  created_at         DateTime? @default(now()) @db.Timestamp(6)
+  users              users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([refresh_token], map: "idx_oauth_tokens_refresh")
+  @@index([token], map: "idx_oauth_tokens_token")
+  @@index([user_id, client_id], map: "idx_oauth_tokens_user")
+}
+
+model oauth_authorization_codes {
+  id                    Int       @id @default(autoincrement())
+  code                  String    @unique @db.VarChar(128)
+  client_id             String    @db.VarChar(64)
+  user_id               Int
+  redirect_uri          String
+  scopes                Json      @default("[]")
+  code_challenge        String?   @db.VarChar(255)
+  code_challenge_method String?   @db.VarChar(10)
+  expires_at            DateTime  @db.Timestamp(6)
+  used                  Boolean?  @default(false)
+  created_at            DateTime? @default(now()) @db.Timestamp(6)
+  users                 users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([code], map: "idx_oauth_codes_code")
+  @@index([expires_at], map: "idx_oauth_codes_expires")
+}
+
+model oauth_clients {
+  id            Int       @id @default(autoincrement())
+  user_id       Int?
+  client_id     String    @unique @db.VarChar(64)
+  client_secret String    @db.VarChar(128)
+  name          String    @db.VarChar(255)
+  description   String?
+  redirect_uris Json      @default("[]")
+  scopes        Json      @default("[\"read\"]")
+  is_public     Boolean?  @default(false)
+  active        Boolean?  @default(true)
+  created_at    DateTime? @default(now()) @db.Timestamp(6)
+  updated_at    DateTime? @default(now()) @db.Timestamp(6)
+  users         users?    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([client_id], map: "idx_oauth_clients_client_id")
+  @@index([user_id], map: "idx_oauth_clients_user")
+}
+
+model oauth_logs {
+  id         Int       @id @default(autoincrement())
+  user_id    Int?
+  client_id  String?   @db.VarChar(64)
+  event      String    @db.VarChar(50)
+  ip_address String?   @db.VarChar(45)
+  user_agent String?
+  details    Json?
+  created_at DateTime? @default(now()) @db.Timestamp(6)
+  users      users?    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([user_id, created_at(sort: Desc)], map: "idx_oauth_logs_user")
+}
+
+model onboarding_progress {
+  user_id             Int       @id
+  completed_steps     Json?     @default("[]")
+  tour_completed      Boolean?  @default(false)
+  welcome_seen        Boolean?  @default(false)
+  checklist_dismissed Boolean?  @default(false)
+  last_step_at        DateTime? @db.Timestamp(6)
+  created_at          DateTime? @default(now()) @db.Timestamp(6)
+  updated_at          DateTime? @default(now()) @db.Timestamp(6)
+  users               users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model online_payments {
+  id                       Int       @id @default(autoincrement())
+  user_id                  Int
+  invoice_id               Int?
+  quote_id                 Int?
+  amount                   Decimal   @db.Decimal(12, 2)
+  currency                 String?   @default("EUR") @db.VarChar(3)
+  stripe_session_id        String?   @db.VarChar(255)
+  stripe_payment_intent_id String?   @db.VarChar(255)
+  stripe_customer_email    String?   @db.VarChar(255)
+  status                   String?   @default("pending") @db.VarChar(30)
+  payment_method           String?   @db.VarChar(50)
+  paid_at                  DateTime? @db.Timestamp(6)
+  error_message            String?
+  created_at               DateTime? @default(now()) @db.Timestamp(6)
+  updated_at               DateTime? @default(now()) @db.Timestamp(6)
+  invoices                 invoices? @relation(fields: [invoice_id], references: [id], onUpdate: NoAction)
+  quotes                   quotes?   @relation(fields: [quote_id], references: [id], onUpdate: NoAction)
+  users                    users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([invoice_id], map: "idx_online_payments_invoice")
+  @@index([stripe_session_id], map: "idx_online_payments_session")
+  @@index([user_id, status], map: "idx_online_payments_status")
+  @@index([user_id], map: "idx_online_payments_user")
+}
+
+model password_reset_tokens {
+  id         Int       @id @default(autoincrement())
+  user_id    Int?
+  token      String    @unique @db.VarChar(255)
+  expires_at DateTime  @db.Timestamp(6)
+  used       Boolean?  @default(false)
+  created_at DateTime? @default(now()) @db.Timestamp(6)
+  users      users?    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([token], map: "idx_reset_tokens_token")
+  @@index([user_id], map: "idx_reset_tokens_user")
+}
+
+model payment_reminders {
+  id             Int       @id @default(autoincrement())
+  user_id        Int
+  invoice_id     Int
+  reminder_level Int
+  sent_at        DateTime? @default(now()) @db.Timestamp(6)
+  sent_to_email  String?   @db.VarChar(255)
+  status         String?   @default("sent") @db.VarChar(20)
+  error_message  String?
+  created_at     DateTime? @default(now()) @db.Timestamp(6)
+  invoices       invoices  @relation(fields: [invoice_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users          users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([invoice_id], map: "idx_payment_reminders_invoice")
+}
+
+model proactive_settings {
+  user_id                  Int       @id
+  enabled                  Boolean?  @default(true)
+  dormant_quote_days       Int?      @default(14)
+  upcoming_payment_days    Int?      @default(3)
+  low_stock_enabled        Boolean?  @default(true)
+  overdue_invoice_enabled  Boolean?  @default(true)
+  dormant_quote_enabled    Boolean?  @default(true)
+  upcoming_payment_enabled Boolean?  @default(true)
+  created_at               DateTime? @default(now()) @db.Timestamp(6)
+  updated_at               DateTime? @default(now()) @db.Timestamp(6)
+  users                    users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model products {
+  id                    Int                    @id @default(autoincrement())
+  user_id               Int?
+  ref                   String?                @db.VarChar(100)
+  name                  String                 @db.VarChar(255)
+  description           String?
+  unit                  String?                @default("u") @db.VarChar(20)
+  unit_price            Decimal                @default(0) @db.Decimal(10, 2)
+  category              String?                @db.VarChar(100)
+  created_at            DateTime?              @default(now()) @db.Timestamp(6)
+  updated_at            DateTime?              @default(now()) @db.Timestamp(6)
+  stock_quantity        Decimal?               @default(0) @db.Decimal(10, 2)
+  stock_alert_threshold Decimal?               @default(0) @db.Decimal(10, 2)
+  stock_max             Decimal?               @default(0) @db.Decimal(10, 2)
+  supplier_id           Int?
+  reorder_quantity      Decimal?               @default(0) @db.Decimal(10, 2)
+  track_stock           Boolean?               @default(false)
+  cost_price            Decimal?               @default(0) @db.Decimal(10, 2)
+  suppliers             suppliers?             @relation(fields: [supplier_id], references: [id], onUpdate: NoAction)
+  users                 users?                 @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  purchase_order_items  purchase_order_items[]
+  stock_movements       stock_movements[]
+
+  @@index([user_id, ref], map: "idx_products_ref")
+  @@index([user_id, supplier_id], map: "idx_products_supplier")
+  @@index([user_id], map: "idx_products_user")
+}
+
+model purchase_order_items {
+  id                Int              @id @default(autoincrement())
+  purchase_order_id Int?
+  product_id        Int?
+  product_ref       String?          @db.VarChar(100)
+  product_name      String           @db.VarChar(255)
+  quantity          Decimal          @db.Decimal(10, 2)
+  unit_price        Decimal?         @default(0) @db.Decimal(10, 2)
+  total             Decimal?         @default(0) @db.Decimal(10, 2)
+  unit              String?          @default("u") @db.VarChar(20)
+  quantity_received Decimal?         @default(0) @db.Decimal(10, 2)
+  products          products?        @relation(fields: [product_id], references: [id], onUpdate: NoAction)
+  purchase_orders   purchase_orders? @relation(fields: [purchase_order_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([purchase_order_id], map: "idx_po_items_po")
+}
+
+model purchase_order_logs {
+  id                Int              @id @default(autoincrement())
+  user_id           Int?
+  purchase_order_id Int?
+  action            String           @db.VarChar(50)
+  details           Json?
+  error_message     String?
+  created_at        DateTime?        @default(now()) @db.Timestamp(6)
+  purchase_orders   purchase_orders? @relation(fields: [purchase_order_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users             users?           @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([purchase_order_id, created_at(sort: Desc)], map: "idx_po_logs_po")
+  @@index([user_id, created_at(sort: Desc)], map: "idx_po_logs_user")
+}
+
+model purchase_orders {
+  id                   Int                    @id @default(autoincrement())
+  user_id              Int?
+  po_number            String                 @db.VarChar(50)
+  supplier_id          Int?
+  supplier_name        String?                @db.VarChar(255)
+  status               String?                @default("draft") @db.VarChar(20)
+  issue_date           DateTime               @db.Date
+  expected_date        DateTime?              @db.Date
+  received_date        DateTime?              @db.Date
+  subtotal             Decimal?               @default(0) @db.Decimal(10, 2)
+  vat_amount           Decimal?               @default(0) @db.Decimal(10, 2)
+  total                Decimal?               @default(0) @db.Decimal(10, 2)
+  notes                String?
+  created_at           DateTime?              @default(now()) @db.Timestamp(6)
+  updated_at           DateTime?              @default(now()) @db.Timestamp(6)
+  sent_at              DateTime?              @db.Timestamp(6)
+  sent_to_email        String?                @db.VarChar(255)
+  source               String?                @default("manual") @db.VarChar(50)
+  source_reference     String?                @db.VarChar(255)
+  purchase_order_items purchase_order_items[]
+  purchase_order_logs  purchase_order_logs[]
+  suppliers            suppliers?             @relation(fields: [supplier_id], references: [id], onUpdate: NoAction)
+  users                users?                 @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([user_id, status], map: "idx_purchase_orders_status")
+  @@index([supplier_id], map: "idx_purchase_orders_supplier")
+  @@index([user_id], map: "idx_purchase_orders_user")
+}
+
+model push_subscriptions {
+  id           Int       @id @default(autoincrement())
+  user_id      Int
+  endpoint     String    @unique
+  p256dh       String    @db.VarChar(255)
+  auth         String    @db.VarChar(255)
+  user_agent   String?
+  device_label String?   @db.VarChar(100)
+  created_at   DateTime? @default(now()) @db.Timestamp(6)
+  last_used_at DateTime? @default(now()) @db.Timestamp(6)
+  users        users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([user_id], map: "idx_push_subscriptions_user")
+}
+
+model quote_templates {
+  id                 Int       @id @default(autoincrement())
+  user_id            Int
+  name               String    @db.VarChar(255)
+  description        String?
+  category           String?   @db.VarChar(100)
+  color              String?   @default("#f97316") @db.VarChar(20)
+  client_id          Int?
+  client_name        String?   @db.VarChar(255)
+  client_address     String?
+  client_vat         String?   @db.VarChar(50)
+  client_email       String?   @db.VarChar(255)
+  items              Json      @default("[]")
+  subtotal           Decimal?  @default(0) @db.Decimal(12, 2)
+  vat_amount         Decimal?  @default(0) @db.Decimal(12, 2)
+  total              Decimal?  @default(0) @db.Decimal(12, 2)
+  vat_regime         String?   @default("franchise") @db.VarChar(20)
+  vat_rate           Decimal?  @default(21) @db.Decimal(5, 2)
+  prepopulate_client Boolean?  @default(false)
+  usage_count        Int?      @default(0)
+  last_used_at       DateTime? @db.Timestamp(6)
+  created_at         DateTime? @default(now()) @db.Timestamp(6)
+  updated_at         DateTime? @default(now()) @db.Timestamp(6)
+  clients            clients?  @relation(fields: [client_id], references: [id], onUpdate: NoAction)
+  users              users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([user_id, category], map: "idx_quote_templates_category")
+  @@index([user_id], map: "idx_quote_templates_user")
+}
+
+model quotes {
+  id                           Int                         @id @default(autoincrement())
+  user_id                      Int?
+  quote_number                 String                      @db.VarChar(50)
+  issue_date                   DateTime                    @db.Date
+  valid_date                   DateTime                    @db.Date
+  total                        Decimal                     @db.Decimal(10, 2)
+  items                        Json
+  client_email                 String?                     @db.VarChar(255)
+  created_at                   DateTime?                   @default(now()) @db.Timestamp(6)
+  client_name                  String?                     @db.VarChar(255)
+  client_address               String?
+  client_vat                   String?                     @db.VarChar(50)
+  subtotal                     Decimal?                    @db.Decimal(10, 2)
+  vat_amount                   Decimal?                    @db.Decimal(10, 2)
+  vat_regime                   String?                     @db.VarChar(20)
+  client_id                    Int?
+  status                       String?                     @default("draft") @db.VarChar(20)
+  updated_at                   DateTime?                   @default(now()) @db.Timestamp(6)
+  signature_required           Boolean?                    @default(false)
+  signature_method             String?                     @db.VarChar(20)
+  signature_data               String?
+  signature_signed_at          DateTime?                   @db.Timestamp(6)
+  signature_signed_by          String?                     @db.VarChar(255)
+  signature_ip                 String?                     @db.VarChar(100)
+  public_token                 String?                     @db.VarChar(64)
+  sent_to_client_at            DateTime?                   @db.Timestamp(6)
+  client_viewed_at             DateTime?                   @db.Timestamp(6)
+  services_snapshot            Json?
+  signature_hash               String?                     @db.VarChar(64)
+  signature_pdf_hash           String?                     @db.VarChar(64)
+  signature_timestamp          DateTime?                   @db.Timestamp(6)
+  signature_timestamp_source   String?                     @db.VarChar(100)
+  signature_verification_token String?                     @db.VarChar(64)
+  signature_user_agent         String?
+  chantier_id                  Int?
+  currency                     String?                     @default("EUR") @db.VarChar(3)
+  exchange_rate                Decimal?                    @default(1.0) @db.Decimal(12, 6)
+  is_multi_option              Boolean?                    @default(false)
+  variants                     Json?                       @default("[]")
+  selected_variant_index       Int?
+  assistant_suggestions        assistant_suggestions[]
+  client_conversations         client_conversations[]
+  email_imports                email_imports[]
+  expiration_notifications     expiration_notifications[]
+  image_analyses               image_analyses[]
+  invoices                     invoices[]
+  online_payments              online_payments[]
+  chantiers                    chantiers?                  @relation(fields: [chantier_id], references: [id], onUpdate: NoAction)
+  clients                      clients?                    @relation(fields: [client_id], references: [id], onUpdate: NoAction)
+  users                        users?                      @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  signature_audit              signature_audit[]
+  signature_verifications      signature_verifications[]
+  sms_logs                     sms_logs[]
+  stock_movements              stock_movements[]
+  subcontractor_assignments    subcontractor_assignments[]
+
+  @@index([chantier_id], map: "idx_quotes_chantier")
+  @@index([client_id], map: "idx_quotes_client")
+  @@index([public_token], map: "idx_quotes_public_token")
+  @@index([user_id, status], map: "idx_quotes_status")
+  @@index([user_id], map: "idx_quotes_user")
+}
+
+model recurring_invoice_logs {
+  id                 Int                @id @default(autoincrement())
+  user_id            Int
+  recurring_id       Int
+  invoice_id         Int?
+  invoice_number     String?            @db.VarChar(50)
+  action             String             @db.VarChar(30)
+  details            Json?
+  error_message      String?
+  created_at         DateTime?          @default(now()) @db.Timestamp(6)
+  invoices           invoices?          @relation(fields: [invoice_id], references: [id], onUpdate: NoAction)
+  recurring_invoices recurring_invoices @relation(fields: [recurring_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users              users              @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([recurring_id, created_at(sort: Desc)], map: "idx_recurring_logs_recurring")
+}
+
+model recurring_invoices {
+  id                     Int                      @id @default(autoincrement())
+  user_id                Int
+  name                   String                   @db.VarChar(255)
+  client_id              Int?
+  client_name            String?                  @db.VarChar(255)
+  client_address         String?
+  client_vat             String?                  @db.VarChar(50)
+  client_email           String?                  @db.VarChar(255)
+  items                  Json                     @default("[]")
+  subtotal               Decimal                  @default(0) @db.Decimal(12, 2)
+  vat_amount             Decimal                  @default(0) @db.Decimal(12, 2)
+  total                  Decimal                  @default(0) @db.Decimal(12, 2)
+  vat_regime             String?                  @default("franchise") @db.VarChar(20)
+  currency               String?                  @default("EUR") @db.VarChar(3)
+  frequency              String                   @db.VarChar(20)
+  day_of_period          Int?
+  start_date             DateTime                 @db.Date
+  end_date               DateTime?                @db.Date
+  max_occurrences        Int?
+  occurrences_count      Int?                     @default(0)
+  payment_terms          Int?                     @default(30)
+  auto_send_email        Boolean?                 @default(false)
+  auto_send_peppol       Boolean?                 @default(false)
+  status                 String?                  @default("active") @db.VarChar(20)
+  next_issue_date        DateTime?                @db.Date
+  notes                  String?
+  created_at             DateTime?                @default(now()) @db.Timestamp(6)
+  updated_at             DateTime?                @default(now()) @db.Timestamp(6)
+  recurring_invoice_logs recurring_invoice_logs[]
+  clients                clients?                 @relation(fields: [client_id], references: [id], onUpdate: NoAction)
+  users                  users                    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([status, next_issue_date], map: "idx_recurring_invoices_next")
+  @@index([user_id, status], map: "idx_recurring_invoices_status")
+  @@index([user_id], map: "idx_recurring_invoices_user")
+}
+
+model reminder_settings {
+  user_id                Int       @id
+  enabled                Boolean?  @default(false)
+  days_before_first      Int?      @default(7)
+  days_between_reminders Int?      @default(7)
+  max_reminders          Int?      @default(3)
+  email_subject_template String?
+  email_body_template    String?
+  created_at             DateTime? @default(now()) @db.Timestamp(6)
+  updated_at             DateTime? @default(now()) @db.Timestamp(6)
+  users                  users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model services {
+  id          Int       @id @default(autoincrement())
+  user_id     Int?
+  ref         String?   @db.VarChar(100)
+  name        String    @db.VarChar(255)
+  description String?
+  unit        String?   @default("forfait") @db.VarChar(20)
+  unit_price  Decimal   @default(0) @db.Decimal(10, 2)
+  cost_price  Decimal?  @default(0) @db.Decimal(10, 2)
+  category    String?   @db.VarChar(100)
+  is_labor    Boolean?  @default(false)
+  active      Boolean?  @default(true)
+  created_at  DateTime? @default(now()) @db.Timestamp(6)
+  updated_at  DateTime? @default(now()) @db.Timestamp(6)
+  users       users?    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([user_id, is_labor], map: "idx_services_labor")
+  @@index([user_id, ref], map: "idx_services_ref")
+  @@index([user_id], map: "idx_services_user")
+}
+
+model settings {
+  user_id                  Int       @id
+  company_name             String?   @default("Votre Entreprise") @db.VarChar(255)
+  address                  String?   @default("")
+  siret                    String?   @default("") @db.VarChar(50)
+  tva                      String?   @default("") @db.VarChar(50)
+  phone                    String?   @default("") @db.VarChar(50)
+  email                    String?   @default("") @db.VarChar(255)
+  website                  String?   @default("") @db.VarChar(255)
+  logo                     String?
+  updated_at               DateTime? @default(now()) @db.Timestamp(6)
+  vat_regime               String?   @default("franchise") @db.VarChar(20)
+  vat_rate                 Decimal?  @default(21) @db.Decimal(5, 2)
+  signature_method         String?   @default("none") @db.VarChar(20)
+  iban                     String?   @db.VarChar(50)
+  bic                      String?   @db.VarChar(20)
+  bank_name                String?   @db.VarChar(100)
+  invoice_prefix           String?   @default("FAC") @db.VarChar(20)
+  payment_terms            Int?      @default(30)
+  language                 String?   @default("fr") @db.VarChar(5)
+  pdf_template             String?   @default("classic") @db.VarChar(20)
+  peppol_enabled           Boolean?  @default(false)
+  peppol_api_key           String?   @db.VarChar(255)
+  peppol_legal_entity_id   String?   @db.VarChar(255)
+  peppol_scheme_id         String?   @default("0208") @db.VarChar(20)
+  peppol_provider          String?   @default("storecove") @db.VarChar(50)
+  default_currency         String?   @default("EUR") @db.VarChar(3)
+  supported_currencies     Json?     @default("[\"EUR\"]")
+  sms_enabled              Boolean?  @default(false)
+  sms_provider             String?   @default("twilio") @db.VarChar(20)
+  sms_account_sid          String?   @db.VarChar(100)
+  sms_auth_token           String?   @db.VarChar(100)
+  sms_from_number          String?   @db.VarChar(30)
+  sms_notify_signature     Boolean?  @default(true)
+  sms_template_quote       String?
+  sms_template_reminder    String?
+  sms_template_appointment String?
+  stripe_enabled           Boolean?  @default(false)
+  stripe_public_key        String?   @db.VarChar(255)
+  stripe_secret_key        String?   @db.VarChar(255)
+  stripe_webhook_secret    String?   @db.VarChar(255)
+  booking_enabled          Boolean?  @default(false)
+  booking_slug             String?   @db.VarChar(60)
+  booking_duration         Int?      @default(60)
+  booking_buffer_minutes   Int?      @default(15)
+  booking_days_ahead       Int?      @default(60)
+  booking_notify_email     Boolean?  @default(true)
+  booking_notify_sms       Boolean?  @default(false)
+  booking_message          String?
+  users                    users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model signature_audit {
+  id          Int       @id @default(autoincrement())
+  user_id     Int
+  quote_id    Int
+  event_type  String    @db.VarChar(50)
+  event_data  Json?
+  ip_address  String?   @db.VarChar(45)
+  user_agent  String?
+  hash_before String?   @db.VarChar(64)
+  hash_after  String?   @db.VarChar(64)
+  created_at  DateTime? @default(now()) @db.Timestamp(6)
+  quotes      quotes    @relation(fields: [quote_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users       users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([quote_id], map: "idx_signature_audit_quote")
+  @@index([user_id], map: "idx_signature_audit_user")
+}
+
+model signature_verifications {
+  id          Int       @id @default(autoincrement())
+  quote_id    Int
+  token       String    @db.VarChar(64)
+  verified_at DateTime? @default(now()) @db.Timestamp(6)
+  ip_address  String?   @db.VarChar(45)
+  user_agent  String?
+  result      String?   @db.VarChar(20)
+  quotes      quotes    @relation(fields: [quote_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([token], map: "idx_signature_verifications_token")
+}
+
+model sms_logs {
+  id                  Int       @id @default(autoincrement())
+  user_id             Int
+  to_number           String    @db.VarChar(30)
+  from_number         String?   @db.VarChar(30)
+  body                String
+  sms_type            String?   @db.VarChar(50)
+  related_quote_id    Int?
+  related_invoice_id  Int?
+  provider            String?   @default("twilio") @db.VarChar(20)
+  provider_message_id String?   @db.VarChar(100)
+  status              String?   @default("pending") @db.VarChar(30)
+  error_message       String?
+  cost                Decimal?  @db.Decimal(8, 4)
+  created_at          DateTime? @default(now()) @db.Timestamp(6)
+  invoices            invoices? @relation(fields: [related_invoice_id], references: [id], onUpdate: NoAction)
+  quotes              quotes?   @relation(fields: [related_quote_id], references: [id], onUpdate: NoAction)
+  users               users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([user_id, sms_type], map: "idx_sms_logs_type")
+  @@index([user_id, created_at(sort: Desc)], map: "idx_sms_logs_user")
+}
+
+model stock_movements {
+  id                        Int       @id @default(autoincrement())
+  user_id                   Int?
+  product_id                Int?
+  movement_type             String    @db.VarChar(20)
+  quantity                  Decimal   @db.Decimal(10, 2)
+  reason                    String?   @db.VarChar(255)
+  reference                 String?   @db.VarChar(100)
+  related_quote_id          Int?
+  related_invoice_id        Int?
+  related_purchase_order_id Int?
+  created_at                DateTime? @default(now()) @db.Timestamp(6)
+  products                  products? @relation(fields: [product_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  invoices                  invoices? @relation(fields: [related_invoice_id], references: [id], onUpdate: NoAction)
+  quotes                    quotes?   @relation(fields: [related_quote_id], references: [id], onUpdate: NoAction)
+  users                     users?    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([product_id, created_at(sort: Desc)], map: "idx_stock_movements_product")
+  @@index([user_id, movement_type], map: "idx_stock_movements_type")
+  @@index([user_id], map: "idx_stock_movements_user")
+}
+
+model stripe_events {
+  id            Int       @id @default(autoincrement())
+  user_id       Int?
+  event_id      String?   @unique @db.VarChar(255)
+  event_type    String?   @db.VarChar(100)
+  payload       Json?
+  processed     Boolean?  @default(false)
+  error_message String?
+  created_at    DateTime? @default(now()) @db.Timestamp(6)
+  users         users?    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([user_id, created_at(sort: Desc)], map: "idx_stripe_events_user")
+}
+
+model subcontractor_assignments {
+  id               Int            @id @default(autoincrement())
+  user_id          Int
+  subcontractor_id Int
+  chantier_id      Int?
+  quote_id         Int?
+  title            String         @db.VarChar(255)
+  description      String?
+  amount           Decimal?       @db.Decimal(12, 2)
+  hourly_rate      Decimal?       @db.Decimal(10, 2)
+  estimated_hours  Decimal?       @db.Decimal(8, 2)
+  actual_hours     Decimal?       @db.Decimal(8, 2)
+  status           String?        @default("pending") @db.VarChar(30)
+  start_date       DateTime?      @db.Date
+  end_date         DateTime?      @db.Date
+  completed_at     DateTime?      @db.Timestamp(6)
+  invoice_number   String?        @db.VarChar(50)
+  invoice_date     DateTime?      @db.Date
+  paid_at          DateTime?      @db.Timestamp(6)
+  payment_method   String?        @db.VarChar(50)
+  notes            String?
+  created_at       DateTime?      @default(now()) @db.Timestamp(6)
+  updated_at       DateTime?      @default(now()) @db.Timestamp(6)
+  chantiers        chantiers?     @relation(fields: [chantier_id], references: [id], onUpdate: NoAction)
+  quotes           quotes?        @relation(fields: [quote_id], references: [id], onUpdate: NoAction)
+  subcontractors   subcontractors @relation(fields: [subcontractor_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users            users          @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([chantier_id], map: "idx_sub_assignments_chantier")
+  @@index([user_id, status], map: "idx_sub_assignments_status")
+  @@index([subcontractor_id], map: "idx_sub_assignments_sub")
+  @@index([user_id], map: "idx_sub_assignments_user")
+}
+
+model subcontractors {
+  id                        Int                         @id @default(autoincrement())
+  user_id                   Int
+  name                      String                      @db.VarChar(255)
+  company_name              String?                     @db.VarChar(255)
+  contact_name              String?                     @db.VarChar(255)
+  email                     String?                     @db.VarChar(255)
+  phone                     String?                     @db.VarChar(50)
+  address                   String?
+  vat_number                String?                     @db.VarChar(50)
+  iban                      String?                     @db.VarChar(50)
+  bic                       String?                     @db.VarChar(20)
+  specialty                 String?                     @db.VarChar(100)
+  hourly_rate               Decimal?                    @db.Decimal(10, 2)
+  payment_terms             Int?                        @default(30)
+  notes                     String?
+  active                    Boolean?                    @default(true)
+  created_at                DateTime?                   @default(now()) @db.Timestamp(6)
+  updated_at                DateTime?                   @default(now()) @db.Timestamp(6)
+  subcontractor_assignments subcontractor_assignments[]
+  users                     users                       @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([user_id, active], map: "idx_subcontractors_active")
+  @@index([user_id], map: "idx_subcontractors_user")
+}
+
+model suppliers {
+  id              Int               @id @default(autoincrement())
+  user_id         Int?
+  name            String            @db.VarChar(255)
+  contact_name    String?           @db.VarChar(255)
+  email           String?           @db.VarChar(255)
+  phone           String?           @db.VarChar(50)
+  address         String?
+  vat_number      String?           @db.VarChar(50)
+  iban            String?           @db.VarChar(50)
+  bic             String?           @db.VarChar(20)
+  website         String?           @db.VarChar(255)
+  category        String?           @db.VarChar(100)
+  delivery_days   Int?              @default(7)
+  payment_terms   Int?              @default(30)
+  notes           String?
+  active          Boolean?          @default(true)
+  created_at      DateTime?         @default(now()) @db.Timestamp(6)
+  updated_at      DateTime?         @default(now()) @db.Timestamp(6)
+  products        products[]
+  purchase_orders purchase_orders[]
+  users           users?            @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([user_id, category], map: "idx_suppliers_category")
+  @@index([user_id, name], map: "idx_suppliers_name")
+  @@index([user_id], map: "idx_suppliers_user")
+}
+
+model team_invitations {
+  id                                       Int       @id @default(autoincrement())
+  account_id                               Int?
+  email                                    String    @db.VarChar(255)
+  role                                     String?   @default("member") @db.VarChar(20)
+  token                                    String    @unique @db.VarChar(64)
+  invited_by                               Int?
+  expires_at                               DateTime  @db.Timestamp(6)
+  accepted_at                              DateTime? @db.Timestamp(6)
+  created_at                               DateTime? @default(now()) @db.Timestamp(6)
+  users_team_invitations_account_idTousers users?    @relation("team_invitations_account_idTousers", fields: [account_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users_team_invitations_invited_byTousers users?    @relation("team_invitations_invited_byTousers", fields: [invited_by], references: [id], onUpdate: NoAction)
+
+  @@index([account_id], map: "idx_invitations_account")
+  @@index([email], map: "idx_invitations_email")
+  @@index([token], map: "idx_invitations_token")
+}
+
+model unavailable_periods {
+  id         Int       @id @default(autoincrement())
+  user_id    Int
+  start_date DateTime  @db.Date
+  end_date   DateTime  @db.Date
+  reason     String?   @db.VarChar(255)
+  created_at DateTime? @default(now()) @db.Timestamp(6)
+  users      users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([user_id, start_date, end_date], map: "idx_unavailable_user")
+}
+
+model users {
+  id                                                  Int                         @id @default(autoincrement())
+  email                                               String                      @unique @db.VarChar(255)
+  password_hash                                       String                      @db.VarChar(255)
+  created_at                                          DateTime?                   @default(now()) @db.Timestamp(6)
+  stripe_customer_id                                  String?                     @db.VarChar(255)
+  subscription_plan                                   String?                     @default("free") @db.VarChar(50)
+  subscription_status                                 String?                     @default("inactive") @db.VarChar(50)
+  subscription_end_date                               DateTime?                   @db.Timestamp(6)
+  terms_accepted_at                                   DateTime?                   @db.Timestamp(6)
+  deleted_at                                          DateTime?                   @db.Timestamp(6)
+  account_id                                          Int?
+  role                                                String?                     @default("owner") @db.VarChar(20)
+  is_demo                                             Boolean?                    @default(false)
+  demo_expires_at                                     DateTime?                   @db.Timestamp(6)
+  api_keys                                            api_keys[]
+  api_logs                                            api_logs[]
+  appointments                                        appointments[]
+  assistant_learnings                                 assistant_learnings[]
+  assistant_memory                                    assistant_memory[]
+  assistant_observations                              assistant_observations[]
+  assistant_plans                                     assistant_plans[]
+  assistant_preferences                               assistant_preferences?
+  assistant_sessions                                  assistant_sessions?
+  assistant_suggestions                               assistant_suggestions[]
+  assistant_training_data                             assistant_training_data[]
+  availability_slots                                  availability_slots[]
+  bank_imports                                        bank_imports[]
+  bank_transactions                                   bank_transactions[]
+  chantier_events                                     chantier_events[]
+  chantier_photos                                     chantier_photos[]
+  chantiers                                           chantiers[]
+  client_account_logs                                 client_account_logs[]
+  client_accounts                                     client_accounts[]
+  client_conversations                                client_conversations[]
+  clients                                             clients[]
+  counters                                            counters?
+  email_imports                                       email_imports[]
+  email_log                                           email_log[]
+  expiration_notifications                            expiration_notifications[]
+  image_analyses                                      image_analyses[]
+  invoice_counters                                    invoice_counters?
+  invoice_payment_schedules                           invoice_payment_schedules[]
+  invoice_payments                                    invoice_payments[]
+  invoices                                            invoices[]
+  monthly_quota                                       monthly_quota[]
+  oauth_access_tokens                                 oauth_access_tokens[]
+  oauth_authorization_codes                           oauth_authorization_codes[]
+  oauth_clients                                       oauth_clients[]
+  oauth_logs                                          oauth_logs[]
+  onboarding_progress                                 onboarding_progress?
+  online_payments                                     online_payments[]
+  password_reset_tokens                               password_reset_tokens[]
+  payment_reminders                                   payment_reminders[]
+  proactive_settings                                  proactive_settings?
+  products                                            products[]
+  purchase_order_logs                                 purchase_order_logs[]
+  purchase_orders                                     purchase_orders[]
+  push_subscriptions                                  push_subscriptions[]
+  quote_templates                                     quote_templates[]
+  quotes                                              quotes[]
+  recurring_invoice_logs                              recurring_invoice_logs[]
+  recurring_invoices                                  recurring_invoices[]
+  reminder_settings                                   reminder_settings?
+  services                                            services[]
+  settings                                            settings?
+  signature_audit                                     signature_audit[]
+  sms_logs                                            sms_logs[]
+  stock_movements                                     stock_movements[]
+  stripe_events                                       stripe_events[]
+  subcontractor_assignments                           subcontractor_assignments[]
+  subcontractors                                      subcontractors[]
+  suppliers                                           suppliers[]
+  team_invitations_team_invitations_account_idTousers team_invitations[]          @relation("team_invitations_account_idTousers")
+  team_invitations_team_invitations_invited_byTousers team_invitations[]          @relation("team_invitations_invited_byTousers")
+  unavailable_periods                                 unavailable_periods[]
+  users                                               users?                      @relation("usersTousers", fields: [account_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  other_users                                         users[]                     @relation("usersTousers")
+  webhook_deliveries                                  webhook_deliveries[]
+  webhooks                                            webhooks[]
+
+  @@index([account_id], map: "idx_users_account")
+}
+
+model webhook_deliveries {
+  id              Int       @id @default(autoincrement())
+  webhook_id      Int
+  user_id         Int
+  event_type      String    @db.VarChar(50)
+  payload         Json
+  response_status Int?
+  response_body   String?
+  duration_ms     Int?
+  success         Boolean?  @default(false)
+  error_message   String?
+  attempt         Int?      @default(1)
+  created_at      DateTime? @default(now()) @db.Timestamp(6)
+  users           users     @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  webhooks        webhooks  @relation(fields: [webhook_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([user_id, created_at(sort: Desc)], map: "idx_webhook_deliveries_user")
+  @@index([webhook_id], map: "idx_webhook_deliveries_webhook")
+}
+
+model webhooks {
+  id                 Int                  @id @default(autoincrement())
+  user_id            Int
+  url                String
+  description        String?              @db.VarChar(255)
+  events             Json                 @default("[]")
+  secret             String               @db.VarChar(64)
+  active             Boolean?             @default(true)
+  created_at         DateTime?            @default(now()) @db.Timestamp(6)
+  updated_at         DateTime?            @default(now()) @db.Timestamp(6)
+  webhook_deliveries webhook_deliveries[]
+  users              users                @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([user_id, active], map: "idx_webhooks_active")
+  @@index([user_id], map: "idx_webhooks_user")
+}

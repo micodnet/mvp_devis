@@ -1,4 +1,5 @@
 require('dotenv').config();
+//const "./utils/assistant_v3/tools/index.js"; // enregistre tous les tools
 const express = require('express');
 const multer = require('multer');
 const cors = require('cors');
@@ -32,7 +33,11 @@ const invoicesRoutes = require('./routes/invoices');
 const servicesRoutes = require('./routes/services');
 const suppliersRoutes = require('./routes/suppliers');
 const stockRoutes = require('./routes/stock');
+
 const assistantRoutes = require('./routes/assistant');
+const assistantV2Routes =  require('./routes/assistant-v2');
+const assistantv3Routes = require('./routes/assistant-v3');
+
 const peppolRoutes = require('./routes/peppol');
 const signatureRoutes = require('./routes/signature');
 const publicVerifyRoutes = require('./routes/public-verify');
@@ -62,6 +67,9 @@ const chatRoutes = require('./routes/chat');
 const visionRoutes = require('./routes/vision');
 const proactiveRoutes = require('./routes/proactive');
 const bankRoutes = require('./routes/bank');
+const pendingActionsRoute = require('./routes/pendingActions');
+const { errorHandler } = require('./middleware/errorHandler');
+const goalsRoute = require('./routes/goals');
 
 // ⚙️ INTERRUPTEUR DE QUOTA — Mets à `false` pour désactiver les limites pendant les tests
 const ENABLE_QUOTA_LIMITS = false;
@@ -83,6 +91,8 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.static(path.join(__dirname, '../frontend')));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
+app.get("/health", (_req, res) => res.json({ ok: true }));
+
 // Routes publiques
 app.use('/api/auth', authRoutes);
 app.use('/api/stripe', stripeRoutes);
@@ -96,6 +106,8 @@ app.use('/api/services', servicesRoutes);
 app.use('/api/suppliers', suppliersRoutes);
 app.use('/api/stock', stockRoutes);
 app.use('/api/assistant', assistantRoutes);
+app.use('/api/assistant/v2', assistantV2Routes);
+app.use("/api/assistant/v3", assistantv3Routes);
 app.use('/api/peppol', peppolRoutes);
 app.use('/api/signature', signatureRoutes);
 app.use('/api/public', publicVerifyRoutes);
@@ -129,6 +141,9 @@ app.use('/api/chat', chatRoutes);
 app.use('/api/vision', visionRoutes);
 app.use('/api/proactive', proactiveRoutes);
 app.use('/api/bank', bankRoutes);
+app.use("/api", pendingActionsRoute);
+app.use("/api", goalsRoute);
+app.use(errorHandler);
 
 // Multer
 const storage = multer.diskStorage({
@@ -316,7 +331,7 @@ app.post('/api/generate-quote', authenticateToken, upload.single('file'), async 
         const mimeType = req.file.mimetype;
 
         const clientId = req.body.clientId ? parseInt(req.body.clientId) : null;
-        const clientName = req.body.clientName || '';
+        let clientName = req.body.clientName || '';
         const clientAddress = req.body.clientAddress || '';
         const clientVat = req.body.clientVat || '';
         const clientEmail = req.body.clientEmail || '';
@@ -328,7 +343,7 @@ app.post('/api/generate-quote', authenticateToken, upload.single('file'), async 
             return res.status(400).json({ error: 'Fichier vide ou illisible.' });
         }
         logs.push(`Texte extrait (${text.length} caractères).`);
-
+        
         // Charger produits ET services du catalogue
         const productsResult = await pool.query(
             'SELECT ref, name, unit_price FROM products WHERE user_id = $1',
@@ -353,12 +368,21 @@ app.post('/api/generate-quote', authenticateToken, upload.single('file'), async 
                 type: 'service'
             }))
         ];
-
+        console.log(text)
         const result = await extractItemsFromText(text, userProducts);
         const items = result.items;
         const iaLogs = result.logs || [];
         fs.unlinkSync(filePath);
 
+        // récupère le nom du client extrait par l'IA
+        // Si le front n'envoie pas de nom, on prend celui trouvé dans le texte
+        const extractedClientName = result.clientName || '';
+        // const extractedClientEmail = result.clientEmail || '';
+        if (extractedClientName) {
+            clientName = extractedClientName
+            
+        }
+        
         // ---- Calcul HT ----
         const subtotal = items.reduce((sum, item) => sum + item.total, 0);
 
@@ -928,11 +952,7 @@ app.post('/api/public/quotes/:token/select-variant', async (req, res) => {
 // ============================================================
 app.post('/api/public/quotes/:token/sign', async (req, res) => {
     try {
-        try {
-            const { notifyQuoteSigned } = require('./utils/push/notifications');
-            await notifyQuoteSigned(q.user_id, { ...q, signature_signed_by: signedBy });
-        } catch (e) { console.warn('Push error:', e.message); }
-
+        
         const { token } = req.params;
         const { method, signedBy, signatureData, accepted } = req.body;
 
@@ -1485,6 +1505,37 @@ initDB()
                     console.warn('Erreur process recurring au demarrage:', err.message);
                 }
             }, 30000);
+
+            // Warm-up Ollama au démarrage (charge le modèle en mémoire) assistant v2
+            // Warm-up Ollama (sans userId)
+            if (process.env.OLLAMA_URL) {
+                setTimeout(async () => {
+                    try {
+                        const llm = require('./utils/assistant_v2/llm/client');
+                        await llm.embed('warmup');
+                        console.log('✅ Ollama warm-up OK');
+                    } catch (err) {
+                        console.warn('⚠️  Ollama warm-up échoué :', err.message);
+                    }
+                }, 3000);
+            };
+
+            // Nettoyage des sessions assistant inactives (1 fois par jour)
+            const { cleanupStaleSessions } = require('./utils/assistant/session');
+            setInterval(() => {
+                cleanupStaleSessions(90).catch(err => console.warn('Erreur cleanup sessions:', err.message));
+            }, 24 * 60 * 60 * 1000);
+            // Premier passage au démarrage (après 60s)
+            setTimeout(() => {
+                cleanupStaleSessions(90).catch(err => console.warn('Erreur cleanup sessions démarrage:', err.message));
+            }, 60000);
+
+            if (process.env.SUPERVISOR_ENABLED === "1") {
+                // Import dynamique pour ne pas bloquer si désactivé
+                import("workers/cron.js").catch((e) =>
+                    console.error("[server] impossible de démarrer le cron :", e)
+                );
+            };
         });
     })
     .catch(err => {

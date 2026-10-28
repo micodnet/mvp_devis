@@ -5,6 +5,10 @@ const express = require('express');
 const { pool } = require('../db');
 const { authenticateToken } = require('../middleware/auth');
 
+const { clientService } = require('../services/clientService');
+//import { authMiddleware } from "../middleware/auth.js";
+const { asyncHandler } = require('../middleware/errorHandler');
+
 const router = express.Router();
 
 // ============================================================
@@ -128,5 +132,66 @@ router.delete('/:id', authenticateToken, async (req, res) => {
         res.status(500).json({ error: 'Erreur serveur.' });
     }
 });
+
+
+// route pour assistant v3
+
+//router.use("/clients", authMiddleware);
+
+router.get(
+  "/clients",
+  asyncHandler(async (req, res) => {
+    const list = await clientService.list({
+      tenantId: req.user.tenantId,
+      search: req.query.search,
+    });
+    res.json(list);
+  })
+);
+
+router.get(
+  "/clients/:id",
+  asyncHandler(async (req, res) => {
+    const client = await clientService.get({
+      tenantId: req.user.tenantId,
+      clientId: req.params.id,
+    });
+    res.json(client);
+  })
+);
+
+router.post(
+  "/clients",
+  asyncHandler(async (req, res) => {
+    const client = await clientService.create({
+      tenantId: req.user.tenantId,
+      data: req.body,
+    });
+    res.status(201).json(client);
+  })
+);
+
+router.patch(
+  "/clients/:id",
+  asyncHandler(async (req, res) => {
+    const client = await clientService.update({
+      tenantId: req.user.tenantId,
+      clientId: req.params.id,
+      data: req.body,
+    });
+    res.json(client);
+  })
+);
+
+router.delete(
+  "/clients/:id",
+  asyncHandler(async (req, res) => {
+    const result = await clientService.remove({
+      tenantId: req.user.tenantId,
+      clientId: req.params.id,
+    });
+    res.json(result);
+  })
+);
 
 module.exports = router;

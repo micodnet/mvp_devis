@@ -10,6 +10,11 @@ const { Resend } = require('resend');
 const { pool } = require('../db');
 const { authenticateToken } = require('../middleware/auth');
 
+const { authService } = require('../services/authService');
+//import { authMiddleware } from "../middleware/auth.js";
+const { asyncHandler } = require('../middleware/errorHandler');
+const { validate } = require('../middleware/validate');
+
 const router = express.Router();
 
 // Helper: build the base URL of the app (works local + Render)
@@ -335,5 +340,34 @@ router.post('/change-password', authenticateToken, async (req, res) => {
         res.status(500).json({ error: 'Erreur serveur.' });
     }
 });
+
+
+
+router.post(
+  "/auth/register",
+  validate({ body: { email: "string!", password: "string!", name: "string!" } }),
+  asyncHandler(async (req, res) => {
+    const result = await authService.register(req.body);
+    res.status(201).json(result);
+  })
+);
+
+router.post(
+  "/auth/login",
+  validate({ body: { email: "string!", password: "string!" } }),
+  asyncHandler(async (req, res) => {
+    const result = await authService.login(req.body);
+    res.json(result);
+  })
+);
+
+router.get(
+  "/auth/me",
+  authenticateToken,
+  asyncHandler(async (req, res) => {
+    const me = await authService.me(req.user.id);
+    res.json(me);
+  })
+);
 
 module.exports = router;

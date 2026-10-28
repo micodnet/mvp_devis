@@ -1,0 +1,72 @@
+# docker-compose.yml
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: devis-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: devis
+      POSTGRES_PASSWORD: devis
+      POSTGRES_DB: devis
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U devis -d devis"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build: .
+    container_name: devis-api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://devis:devis@postgres:5432/devis
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      JWT_SECRET: ${JWT_SECRET:-dev-secret-change-me}
+      PORT: "3000"
+      NODE_ENV: development
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      SMTP_FROM: ${SMTP_FROM:-Mon Entreprise <noreply@example.com>}
+      MAX_TOKENS_PER_SESSION: "60000"
+    ports:
+      - "3000:3000"
+    command: >
+      sh -c "npx prisma migrate deploy && node express/server.js"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  worker:
+    build: .
+    container_name: devis-worker
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      api:
+        condition: service_started
+    environment:
+      DATABASE_URL: postgresql://devis:devis@postgres:5432/devis
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      JWT_SECRET: ${JWT_SECRET:-dev-secret-change-me}
+      NODE_ENV: development
+      SUPERVISOR_ENABLED: "1"
+      SUPERVISOR_INTERVAL_MS: "900000"      # 15 min en dev
+      SUPERVISOR_RUN_ON_START: "1"
+      SUPERVISOR_CYCLE_TIMEOUT_MS: "120000"
+      SUPERVISOR_MAX_PARALLEL: "2"
+    command: ["node", "workers/cron.js"]
+
+volumes:
+  pgdata:

@@ -5,6 +5,10 @@ const { pool } = require('../db');
 const { authenticateToken } = require('../middleware/auth');
 const { computeAllVariants, validateVariants, getSelectedVariant } = require('../utils/variants/helpers');
 
+const { devisService } = require('../services/devisService');
+//const { authMiddleware } = require('../middleware/auth');
+const { asyncHandler } = require('../middleware/errorHandler');
+
 const router = express.Router();
 
 const VALID_STATUSES = ['draft', 'sent', 'accepted', 'refused'];
@@ -382,5 +386,82 @@ router.post('/:id/select-variant', authenticateToken, async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+
+
+// route assistant v3
+
+//router.use("/devis", authMiddleware);
+
+router.get(
+  "/devis",
+  asyncHandler(async (req, res) => {
+    const list = await devisService.list({
+      tenantId: req.user.tenantId,
+      clientName: req.query.clientName,
+      status: req.query.status,
+      from: req.query.from,
+      to: req.query.to,
+    });
+    res.json(list);
+  })
+);
+
+router.get(
+  "/devis/:id",
+  asyncHandler(async (req, res) => {
+    const devis = await devisService.get({
+      tenantId: req.user.tenantId,
+      devisId: req.params.id,
+    });
+    res.json(devis);
+  })
+);
+
+router.post(
+  "/devis",
+  asyncHandler(async (req, res) => {
+    const devis = await devisService.create({
+      tenantId: req.user.tenantId,
+      userId: req.user.id,
+      data: req.body,
+    });
+    res.status(201).json(devis);
+  })
+);
+
+router.patch(
+  "/devis/:id",
+  asyncHandler(async (req, res) => {
+    const devis = await devisService.update({
+      tenantId: req.user.tenantId,
+      devisId: req.params.id,
+      data: req.body,
+    });
+    res.json(devis);
+  })
+);
+
+router.post(
+  "/devis/:id/status",
+  asyncHandler(async (req, res) => {
+    const devis = await devisService.updateStatus({
+      tenantId: req.user.tenantId,
+      devisId: req.params.id,
+      status: req.body.status,
+    });
+    res.json(devis);
+  })
+);
+
+router.delete(
+  "/devis/:id",
+  asyncHandler(async (req, res) => {
+    const result = await devisService.remove({
+      tenantId: req.user.tenantId,
+      devisId: req.params.id,
+    });
+    res.json(result);
+  })
+);
 
 module.exports = router;

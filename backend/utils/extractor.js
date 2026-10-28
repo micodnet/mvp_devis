@@ -221,14 +221,14 @@ function localFallback(text, logs, products) {
 
     // Si aucun produit du catalogue n'est trouvé, on utilise le premier produit du catalogue par défaut
     if (results.length === 0) {
-        const firstProduct = products[0];
-        results.push({
-            ref: firstProduct.ref,
-            name: firstProduct.name,
-            qty: 2,
-            unitPrice: firstProduct.unitPrice,
-            total: 2 * firstProduct.unitPrice,
-        });
+        // const firstProduct = products[0];
+        // results.push({
+        //     ref: firstProduct.ref,
+        //     name: firstProduct.name,
+        //     qty: 2,
+        //     unitPrice: firstProduct.unitPrice,
+        //     total: 2 * firstProduct.unitPrice,
+        // });
         logs.push('[Fallback] No product from the catalog found in the document.');
         return [];
     }
@@ -371,16 +371,24 @@ function singularize(word) {
 }
 
 // Score de similarité : compte les mots en commun (avec singulier/pluriel géré)
-function wordMatchScore(text1, text2) {
+function wordMatchDetails(text1, text2) {
     const words1 = normalize(text1).split(' ').filter(w => w.length > 2).map(singularize);
     const words2 = normalize(text2).split(' ').filter(w => w.length > 2).map(singularize);
-    if (words1.length === 0 || words2.length === 0) return 0;
+    if (words1.length === 0 || words2.length === 0) return { score: 0, matches: 0 };
     let matches = 0;
     for (const w of words1) {
         if (words2.includes(w)) matches++;
     }
     // Score = proportion de mots en commun
-    return matches / Math.max(words1.length, words2.length);
+    return  {
+        score: matches / Math.max(words1.length, words2.length),
+        matches
+    };
+}
+
+// Wrapper rétrocompatible
+function wordMatchScore(text1, text2) {
+    return wordMatchDetails(text1, text2).score;
 }
 
 // Trouve le meilleur produit du catalogue pour un item extrait
@@ -408,21 +416,57 @@ function findBestProduct(itemName, itemRef, products) {
     if (byContains) return { product: byContains, score: 0.9, reason: 'name-contains' };
 
     // 4. Match par score de mots en commun (gère le pluriel)
+    const itemWords = normalize(itemName).split(' ').filter(w => w.length > 2).length;
+    if (itemWords.length === 0) return null;
+
     let best = null;
     let bestScore = 0;
+    let bestMatchCount = 0;
+
+    // for (const p of products) {
+    //     const score = wordMatchScore(itemName, p.name);
+    //     if (score > bestScore) {
+    //         bestScore = score;
+    //         best = p;
+    //     }
+    // }
+    // for (const p of products) {
+    //     const pWords = normalize(p.name).split(' ').filter(w => w.length > 2).map(singularize);
+    //     if (pWords.length === 0) continue;
+
+    //     const itemWordsSing = itemWords.map(singularize);
+    //     let matches = 0;
+    //     for (const w of itemWordsSing) {
+    //         if (pWords.includes(w)) matches++;
+    //     }
+
+    //     const score = matches / Math.max(itemWordsSing.length, pWords.length);
+    //     if (score > bestScore) {
+    //         bestScore = score;
+    //         best = p;
+    //         bestMatchCount = matches;
+    //     }
+    // }
+
+    // // Seuil : au moins 50% de mots en commun
+    // if (best && bestScore >= 0.5 && bestMatchCount >= Math.min(2, itemWords.length)) {
+    //     return { product: best, score: bestScore, reason: 'word-match' };
+    // }
     for (const p of products) {
-        const score = wordMatchScore(itemName, p.name);
-        if (score > bestScore) {
-            bestScore = score;
+        const details = wordMatchDetails(itemName, p.name);
+        if (details.score > bestScore) {
+            bestScore = details.score;
             best = p;
+            bestMatches = details.matches;
         }
     }
 
-    // Seuil : au moins 50% de mots en commun
-    if (best && bestScore >= 0.5) {
+    // Seuil : score >= 0.5 ET au moins 2 mots significatifs en commun
+    const minRequiredMatches = Math.min(2, itemWordsCount);
+    if (best && bestScore >= 0.5 && bestMatches >= minRequiredMatches) {
         return { product: best, score: bestScore, reason: 'word-match' };
     }
-
+    
     return null;
 }
 
@@ -532,7 +576,9 @@ async function extractItemsFromText(text, userProducts = []) {
         CATALOGUE DU PROFESSIONNEL (utilise ces prix EXACTEMENT) :
         ${catalogText}
 
-        MISSION : pour chaque article de la demande, trouve-le dans le catalogue et reprends son prix.
+        MISSION : 
+        pour chaque article de la demande, trouve-le dans le catalogue et reprends son prix.
+        Extrais le nom du client si il s'y trouve (ex: "Alice Dufrasne"), et met le dans (champ: "clientName || client.name").
 
         Extrais les articles demandés au format JSON strict.
         Format : [{"ref":"string","name":"string","qty":number,"unitPrice":number}]
@@ -545,6 +591,37 @@ async function extractItemsFromText(text, userProducts = []) {
 
         Si aucun article n'est trouve, reponds exactement : []
     `;
+    // const prompt = `Tu es un assistant qui extrait les articles d'une demande client et les fait correspondre au catalogue du professionnel.
+
+    //     DEMANDE CLIENT :
+    //     """
+    //     ${text.slice(0, 4000)}
+    //     """
+
+    //     CATALOGUE DU PROFESSIONNEL (utilise ces prix EXACTEMENT) :
+    //     ${catalogText}
+
+    //     MISSION : 
+    //     1. Extrais le nom du client (champ "clientName") depuis le texte (ex: "Alice Dufrasne").
+    //     2. Extrais les articles demandés (champ "items").
+        
+    //     REGLES IMPORTANTES :
+    //     1. Cherche d'abord une correspondance exacte dans le catalogue (nom identique ou tres proche, ou reference identique).
+    //     2. Si trouvé, reprends la reference ET le prix unitaire du catalogue.
+    //     3. Si l'article n'existe pas dans le catalogue, mais qu'un article et un prix unitaire est mentionné dans le texte, utilise-le.
+    //     4. Si aucune référence n'est donnée, creer en une réf commençant par "EXT".
+    //     5. Estime les quantités en fonction des dimensions si mentionnées (ex: 2m x 2.5m = 5m²).
+
+    //     Réponds UNIQUEMENT avec un objet JSON valide, sans texte autour :
+    //     {
+    //       "clientName": "Nom du client ou null",
+    //       "clientMail": "Mail du client ou null",
+    //       "items": [
+    //         {"ref":"EXT-001","name":"Nom de la tâche","description":"description","qty":5,"unitPrice":0}
+    //       ]
+    //     }
+
+    // `;
     
     // Liste des providers (ordre : Groq → KeylessAI → OpenRouter)
     // const providers = [
@@ -606,13 +683,19 @@ async function extractItemsFromText(text, userProducts = []) {
             }
 
             const extracted = JSON.parse(content.substring(start, end + 1));
-
+            // const parsedData = JSON.parse(content.substring(start, end + 1));
+            // const extracted = parsedData.items || [];
+            const clientName = extracted.clientName || null;
+            // const clientMail = parsedData.clientMail || null;
+            
             if (!Array.isArray(extracted)) {
                 throw new Error('La reponse n\'est pas un tableau');
             }
 
             logs.push(extracted.length + ' article(s) extrait(s) par l\'IA');
-
+            if (clientName) logs.push('Client détecté : ' + clientName);
+            // if (clientMail) logs.push('Mail client détecté : ' + clientMail);
+           
             // Normaliser les items
             const items = extracted.map(item => {
                 const qty = parseFloat(item.qty) || 1;
@@ -628,7 +711,7 @@ async function extractItemsFromText(text, userProducts = []) {
                 };
             });
 
-            return { items, logs };
+            return { items, logs };//clientName, clientMail, logs };
         } catch (err) {
             logs.push('Echec du modele ' + model + ' : ' + err.message);
             console.warn('Extractor Groq (' + model + ') echec: ' + err.message);
@@ -637,7 +720,7 @@ async function extractItemsFromText(text, userProducts = []) {
     }
 
     logs.push('Tous les modeles ont echoue, utilisation du fallback');
-    return { items: fallbackExtract(text, userProducts), logs };
+    return { items: fallbackExtract(text, userProducts), logs };//clientName: null, clientMail: null, logs };
 }
 // async function extractItemsFromText(text, products = []) {
 //     const logs = [];

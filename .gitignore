@@ -24,6 +24,8 @@ backend/counter.json
 backend/uploads/
 backend/temp/
 backend/backups/
+backups
+prismatest
 backend/coverage/
 
 retours.md
@@ -42,6 +44,7 @@ dist/
 build/
 out/
 pkg/
+testDevis.txt
 
 # ============================================================
 # Logs

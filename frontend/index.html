@@ -2168,6 +2168,8 @@
         #assistantBubble { box-shadow: 0 12px 34px rgba(249,115,22,.35), 0 0 0 4px rgba(249,115,22,.1); }
         .chantier-card { transition: transform .15s, border-color .15s; }
         .chantier-card:hover { transform: translateY(-2px); }
+
+    
     </style>
 </head>
 <body>
@@ -2402,40 +2404,47 @@
                 <span class="email" id="userEmail"></span>
                 <button class="logout" id="logoutBtn" data-i18n="nav.logout">Déconnexion</button>
             </div>
+            
         </div>
-
+        <hr class="" style="border: none; border-top: 2px solid blue; ">
         <div class="tabs">
             <button class="tab-btn active" data-tab="tab-devis" data-i18n="app.tab.quotes">📄 Devis</button>
             <button class="tab-btn" data-tab="tab-templates">Modèles</button>
             <button class="tab-btn" data-tab="tab-clients" data-i18n="app.tab.clients">👥 Clients</button>
+            <button class="tab-btn" data-tab="tab-history" data-i18n="app.tab.history">📜 Historique</button>
+            <button class="tab-btn" data-tab="tab-invoices" data-i18n="app.tab.invoices">🧾 Factures</button>
+            <button class="tab-btn" data-tab="tab-recurring">Factures recurrentes</button>
+            <button class="tab-btn" data-tab="tab-email-import">Import email</button>
+
             <button class="tab-btn" data-tab="tab-catalogue" data-i18n="app.tab.products">📦 Catalogue</button>
             <button class="tab-btn" data-tab="tab-services" data-i18n="app.tab.services">🔧 Services</button>
             <button class="tab-btn" data-tab="tab-suppliers" data-i18n="app.tab.suppliers">🚚 Fournisseurs</button>
             <button class="tab-btn" data-tab="tab-stock" data-i18n="app.tab.stock">📦 Stock</button>
-            <button class="tab-btn" data-tab="tab-history" data-i18n="app.tab.history">📜 Historique</button>
-            <button class="tab-btn" data-tab="tab-invoices" data-i18n="app.tab.invoices">🧾 Factures</button>
-            <button class="tab-btn" data-tab="tab-dashboard" data-i18n="app.tab.dashboard">📊 Dashboard</button>
-            <button class="tab-btn" data-tab="tab-analytics" data-i18n="app.tab.analytics">📈 Analytics</button>
+            <button class="tab-btn" data-tab="tab-purchase-orders">Bons de commande</button>
+
             <button class="tab-btn" data-tab="tab-chantiers" data-i18n="app.tab.chantiers">🏗️ Chantiers</button>
             <button class="tab-btn" data-tab="tab-subcontractors" data-i18n="app.tab.contractors">Sous-traitants</button>
-            <button class="tab-btn" data-tab="tab-api" data-i18n="app.tab.api">🗃 API</button>
-            <button class="tab-btn" data-tab="tab-webhooks" data-i18n="app.tab.webhooks">Webhooks</button>
+
+            <button class="tab-btn" data-tab="tab-dashboard" data-i18n="app.tab.dashboard">📊 Dashboard</button>
+            <button class="tab-btn" data-tab="tab-analytics" data-i18n="app.tab.analytics">📈 Analytics</button>
+            <button class="tab-btn" data-tab="tab-reports">Rapports</button>
+            <button class="tab-btn" data-tab="tab-client-portal">Portail client</button>
+            <button class="tab-btn" data-tab="tab-online-payments">Paiements</button>
+            <button class="tab-btn" data-tab="tab-appointments">Rendez-vous</button>
+
+            <button class="tab-btn" data-tab="tab-assistant" data-i18n="app.tab.assistant">💬 Assistant</button>
             <button class="tab-btn" data-tab="tab-sms">SMS</button>
             <button class="tab-btn" data-tab="tab-chat">Chat client</button>
             <button class="tab-btn" data-tab="tab-vision">Analyse image</button>
             <button class="tab-btn" data-tab="tab-proactive">Assistant proactif <span id="proactiveBadge" style="display:none;background:#f97316;color:#0b1120;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;margin-left:6px;">0</span></button>
             <button class="tab-btn" data-tab="tab-bank">Banque <span id="bankBadge" style="display:none;background:#3b82f6;color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;margin-left:6px;">0</span></button>
-            <button class="tab-btn" data-tab="tab-client-portal">Portail client</button>
-            <button class="tab-btn" data-tab="tab-online-payments">Paiements</button>
-            <button class="tab-btn" data-tab="tab-appointments">Rendez-vous</button>
-            <button class="tab-btn" data-tab="tab-reports">Rapports</button>
-            <button class="tab-btn" data-tab="tab-email-import">Import email</button>
-            <button class="tab-btn" data-tab="tab-recurring">Factures recurrentes</button>
-            <button class="tab-btn" data-tab="tab-purchase-orders">Bons de commande</button>
+
+            <button class="tab-btn" data-tab="tab-api" data-i18n="app.tab.api">🗃 API</button>
+            <button class="tab-btn" data-tab="tab-webhooks" data-i18n="app.tab.webhooks">Webhooks</button>
             <button class="tab-btn" data-tab="tab-oauth" data-i18n="app.tab.oauth">OAuth</button>
-            <button class="tab-btn" data-tab="tab-team" data-i18n="app.tab.team">👥 Équipe</button>
+
             <button class="tab-btn" data-tab="tab-settings" data-i18n="app.tab.settings">⚙️ Paramètres</button>
-            <button class="tab-btn" data-tab="tab-assistant" data-i18n="app.tab.assistant">💬 Assistant</button>
+            <button class="tab-btn" data-tab="tab-team" data-i18n="app.tab.team">👥 Équipe</button>
             <button class="tab-btn" data-tab="tab-subscription" data-i18n="app.tab.subscription">💳 Abonnement</button>
         </div>
 
@@ -6972,7 +6981,9 @@
             //     <th style="width:180px;text-align:right;">Actions</th>
             // </tr></thead><tbody>`;
             let html = `<table class="catalog-table"><thead><tr>
-                    <th style="width:120px;">Réf.</th><th>Nom</th><th style="width:140px;">Catégorie</th>
+                    <th style="width:120px;">Réf.</th>
+                    <th style="width:140px;">Nom</th>
+                    <th style="width:140px;">Catégorie</th>
                     <th style="width:100px;text-align:right;">Prix vente</th>
                     <th style="width:100px;text-align:right;">Prix achat</th>
                     <th style="width:130px;text-align:right;">Marge</th>
@@ -9426,7 +9437,7 @@
             function renderWelcome() {
                 const welcomeHtml = `
                     <div class="msg assistant">
-                    Bonjour 👋 Je suis votre assistant. Posez-moi une question sur :
+                    Bonjour 👋 Je suis Clara,votre assistante. Posez-moi une question sur :
                     • votre catalogue
                     • vos clients
                     • vos devis et factures
@@ -13735,23 +13746,41 @@
             // Tous les onglets disponibles
             const ALL_TABS = [
                 { id: 'tab-devis', icon: '&#128196;', label: 'Devis', mobileMain: true },
+                { id: 'tab-templates', icon: '&#128196;', label: 'Modeles', mobileMain: false },
                 { id: 'tab-clients', icon: '&#128101;', label: 'Clients', mobileMain: false },
+                { id: 'tab-history', icon: '&#128220;', label: 'Historique', mobileMain: false },
+                { id: 'tab-invoices', icon: '&#129534;', label: 'Factures', mobileMain: true },
+                { id: 'tab-recurring', icon: '&#128196;', label: 'Factures recurrentes', mobileMain: false },
+                { id: 'tab-email-import', icon: '&#128196;', label: 'Import email', mobileMain: false },
+
                 { id: 'tab-catalogue', icon: '&#128230;', label: 'Catalogue', mobileMain: false },
                 { id: 'tab-services', icon: '&#128295;', label: 'Services', mobileMain: false },
                 { id: 'tab-suppliers', icon: '&#128666;', label: 'Fournisseurs', mobileMain: false },
                 { id: 'tab-stock', icon: '&#128230;', label: 'Stock', mobileMain: false },
-                { id: 'tab-history', icon: '&#128220;', label: 'Historique', mobileMain: false },
-                { id: 'tab-invoices', icon: '&#129534;', label: 'Factures', mobileMain: true },
-                { id: 'tab-dashboard', icon: '&#128202;', label: 'Dashboard', mobileMain: true },
-                { id: 'tab-analytics', icon: '&#128200;', label: 'Analytics', mobileMain: false },
+                { id: 'tab-purshase-orders', icon: '&#128196;', label: 'Bons de commandes', mobileMain: false },
                 { id: 'tab-chantiers', icon: '&#127959;', label: 'Chantiers', mobileMain: true },
                 { id: 'tab-subcontractors', icon: '&#128119;', label: 'Sous-traitants', mobileMain: false },
+                
+                { id: 'tab-dashboard', icon: '&#128202;', label: 'Dashboard', mobileMain: true },
+                { id: 'tab-analytics', icon: '&#128200;', label: 'Analytics', mobileMain: false },
+                { id: 'tab-reports', icon: '&#128196;', label: 'Rapports', mobileMain: false },
+                { id: 'tab-client-portal', icon: '&#128196;', label: 'Portail client', mobileMain: false },
+                { id: 'tab-online-payments', icon: '&#128196;', label: 'Paiements', mobileMain: false },
+                { id: 'tab-appointments', icon: '&#128196;', label: 'Rendez-vous', mobileMain: false },
+
+                { id: 'tab-assistant', icon: '&#128172;', label: 'Assistant', mobileMain: true },
+                { id: 'tab-sms', icon: '&#128172;', label: 'Sms', mobileMain: false },
+                { id: 'tab-chat', icon: '&#128172;', label: 'Chat client', mobileMain: false },
+                { id: 'tab-vision', icon: '&#128172;', label: 'Analyse image', mobileMain: false },
+                { id: 'tab-proactive', icon: '&#128172;', label: 'Assistant proactif', mobileMain: false },
+                { id: 'tab-bank', icon: '&#128172;', label: 'Banque', mobileMain: false },
+
                 { id: 'tab-api', icon: '&#128268;', label: 'API', mobileMain: false },
                 { id: 'tab-webhooks', icon: '&#128225;', label: 'Webhooks', mobileMain: false },
                 { id: 'tab-oauth', icon: '&#128273;', label: 'OAuth', mobileMain: false },
-                { id: 'tab-team', icon: '&#128101;', label: 'Equipe', mobileMain: false },
+                
                 { id: 'tab-settings', icon: '&#9881;', label: 'Parametres', mobileMain: false },
-                { id: 'tab-assistant', icon: '&#128172;', label: 'Assistant', mobileMain: true },
+                { id: 'tab-team', icon: '&#128101;', label: 'Equipe', mobileMain: false },
                 { id: 'tab-subscription', icon: '&#128179;', label: 'Abonnement', mobileMain: false }
             ];
 

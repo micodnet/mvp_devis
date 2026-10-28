@@ -5,6 +5,10 @@ const { pool } = require('../db');
 const { authenticateToken, requireRole } = require('../middleware/auth');
 const { generateInvoicePDF } = require('../utils/pdf-generator-invoice');
 
+const { factureService } = require('../services/factureService');
+//import { authMiddleware } from "../middleware/auth.js";
+const { asyncHandler } = require('../middleware/errorHandler');
+
 const router = express.Router();
 
 const VALID_STATUSES = ['draft', 'sent', 'paid', 'overdue', 'cancelled'];
@@ -956,4 +960,67 @@ router.get('/:id/reminders', authenticateToken, async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+
+//route pour assistant v3
+//router.use("/factures", authMiddleware);
+
+router.get(
+  "/factures",
+  asyncHandler(async (req, res) => {
+    const list = await factureService.list({
+      tenantId: req.user.tenantId,
+      clientName: req.query.clientName,
+      status: req.query.status,
+      from: req.query.from,
+      to: req.query.to,
+    });
+    res.json(list);
+  })
+);
+
+router.get(
+  "/factures/:id",
+  asyncHandler(async (req, res) => {
+    const f = await factureService.get({
+      tenantId: req.user.tenantId,
+      factureId: req.params.id,
+    });
+    res.json(f);
+  })
+);
+
+router.post(
+  "/factures",
+  asyncHandler(async (req, res) => {
+    const f = await factureService.createFromDevis({
+      tenantId: req.user.tenantId,
+      devisId: req.body.devisId,
+      dueInDays: req.body.dueInDays,
+    });
+    res.status(201).json(f);
+  })
+);
+
+router.post(
+  "/factures/:id/pay",
+  asyncHandler(async (req, res) => {
+    const f = await factureService.markPaid({
+      tenantId: req.user.tenantId,
+      factureId: req.params.id,
+    });
+    res.json(f);
+  })
+);
+
+router.delete(
+  "/factures/:id",
+  asyncHandler(async (req, res) => {
+    const result = await factureService.remove({
+      tenantId: req.user.tenantId,
+      factureId: req.params.id,
+    });
+    res.json(result);
+  })
+);
+
 module.exports = router;

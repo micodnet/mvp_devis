@@ -11,6 +11,10 @@ const {
     checkChantierAccess
 } = require('../utils/chantiers/helpers');
 
+const { chantierService } = require('../services/chantierService');
+//const { authMiddleware } = require('../middleware/auth');
+const { asyncHandler } = require('../middleware/errorHandler');
+
 const router = express.Router();
 
 // ============================================================
@@ -783,5 +787,77 @@ router.get('/:id/all-quotes', authenticateToken, async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
+
+// routes pour assistant v3
+//router.use("/chantiers", authMiddleware);
+
+router.get(
+  "/chantiers",
+  asyncHandler(async (req, res) => {
+    const list = await chantierService.list({
+      tenantId: req.user.tenantId,
+      clientName: req.query.clientName,
+      status: req.query.status,
+    });
+    res.json(list);
+  })
+);
+
+router.get(
+  "/chantiers/:id",
+  asyncHandler(async (req, res) => {
+    const c = await chantierService.get({
+      tenantId: req.user.tenantId,
+      chantierId: req.params.id,
+    });
+    res.json(c);
+  })
+);
+
+router.post(
+  "/chantiers",
+  asyncHandler(async (req, res) => {
+    const c = await chantierService.create({
+      tenantId: req.user.tenantId,
+      data: req.body,
+    });
+    res.status(201).json(c);
+  })
+);
+
+router.patch(
+  "/chantiers/:id",
+  asyncHandler(async (req, res) => {
+    const c = await chantierService.update({
+      tenantId: req.user.tenantId,
+      chantierId: req.params.id,
+      data: req.body,
+    });
+    res.json(c);
+  })
+);
+
+router.post(
+  "/chantiers/:id/status",
+  asyncHandler(async (req, res) => {
+    const c = await chantierService.updateStatus({
+      tenantId: req.user.tenantId,
+      chantierId: req.params.id,
+      status: req.body.status,
+    });
+    res.json(c);
+  })
+);
+
+router.delete(
+  "/chantiers/:id",
+  asyncHandler(async (req, res) => {
+    const result = await chantierService.remove({
+      tenantId: req.user.tenantId,
+      chantierId: req.params.id,
+    });
+    res.json(result);
+  })
+);
 
 module.exports = router;
